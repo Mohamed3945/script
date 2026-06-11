@@ -8,28 +8,29 @@
 }
 
 :root {
-  --navy: #0D1B2A;
-  --blue: #1565C0;
-  --blue-mid: #2979CC;
-  --blue-soft: #4A90D9;
-  --gold: #C9A84C;
-  --gold-light: #EDD99A;
-  --off-white: #F4F7FB;
-  --surface: #FFFFFF;
-  --text-primary: #0D1B2A;
-  --text-secondary: #445A6F;
-  --text-muted: #7A92A8;
-  --border: #D9E4EF;
-  --border-strong: #B8CCE0;
-  --success: #1B7A4C;
-  --success-bg: #E8F5EE;
+  --navy: #d3a21b;
+  --blue: #1565c0;
+  --blue-mid: #2979cc;
+  --blue-soft: #4a90d9;
+  --gold: #2e2d2a;
+  --gold-light: #edd99a;
+  --off-white: #f4f7fb;
+  --surface: #ffffff;
+  --text-primary: #0d1b2a;
+  --text-secondary: #445a6f;
+  --text-muted: #7a92a8;
+  --border: #d9e4ef;
+  --border-strong: #b8cce0;
+  --success: #1b7a4c;
+  --success-bg: #e8f5ee;
   --radius: 10px;
   --radius-lg: 16px;
   --radius-xl: 22px;
-  --transition: cubic-bezier(.4,0,.2,1);
+  --transition: cubic-bezier(.4, 0, .2, 1);
 }
 
-html, body {
+html,
+body {
   min-height: 100%;
 }
 

@@ -1,0 +1,22 @@
+<div class="start-card">
+  <div class="start-card__content">
+    <h2>Start the recipe wizard</h2>
+    <p>
+      Answer a short sequence of guided questions about your process context.
+      The system will dynamically adapt the questionnaire based on your answers
+      and suggest the best-fit golden recipe.
+    </p>
+
+    <div class="start-card__meta">
+      <div><i class="ti ti-clock"></i> ~3 min</div>
+      <div><i class="ti ti-list-check"></i> 4–8 questions</div>
+      <div><i class="ti ti-route"></i> Adaptive path</div>
+    </div>
+  </div>
+
+  <app-primary-button
+    label="Start wizard"
+    icon="ti ti-player-play"
+    (clicked)="start.emit()">
+  </app-primary-button>
+</div>

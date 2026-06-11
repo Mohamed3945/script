@@ -1,0 +1,47 @@
+.wizard-page {
+  padding: 28px 40px 40px;
+}
+
+.wizard-page__container {
+  max-width: 1060px;
+  margin: 0 auto;
+}
+
+.wizard-page__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.back-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.wizard-page__progress {
+  flex: 1;
+}
+
+.wizard-page__progress-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.wizard-page__grid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+  align-items: start;
+}

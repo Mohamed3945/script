@@ -1,0 +1,66 @@
+.result-card {
+  background: var(--surface);
+  border: 2px solid #bbcfE8;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+
+.result-card--gold {
+  border-color: #e8d9a8;
+}
+
+.result-card__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.result-card__icon {
+  width: 36px;
+  height: 36px;
+  background: #ebf2fb;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--blue);
+}
+
+.result-card--gold .result-card__icon {
+  background: #fdf8ec;
+  color: var(--gold);
+}
+
+.result-card__title {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  font-weight: 500;
+}
+
+.result-card__value {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--navy);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.result-card__meta {
+  background: var(--off-white);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.result-card__meta-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.result-card__meta-value {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+}

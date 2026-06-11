@@ -1,0 +1,27 @@
+<section class="home-page">
+  <div class="home-page__container">
+    <div class="hero">
+      <div class="hero__badge">
+        <i class="ti ti-sparkles"></i>
+        <span>Process Recipe Assistant</span>
+      </div>
+      <h1>Create a new process recipe</h1>
+      <p>
+        The decision wizard will guide you through a structured questionnaire to identify
+        the most appropriate golden recipe and compatible equipment for your process parameters.
+      </p>
+    </div>
+
+    <div class="stats-grid">
+      <app-stat-card
+        *ngFor="let stat of stats"
+        [icon]="stat.icon"
+        [value]="stat.value"
+        [label]="stat.label"
+        [variant]="stat.variant">
+      </app-stat-card>
+    </div>
+
+    <app-wizard-start-card (start)="startWizard()"></app-wizard-start-card>
+  </div>
+</section>

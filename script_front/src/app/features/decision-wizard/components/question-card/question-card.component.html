@@ -1,0 +1,31 @@
+<div class="question-card">
+  <div class="question-card__badge">
+    <i class="ti ti-help-circle"></i>
+    <span>{{ question.code }}</span>
+  </div>
+
+  <h2>{{ question.label }}</h2>
+
+  <app-option-list
+    [options]="question.options"
+    [selectedOptionId]="selectedOptionId"
+    (optionSelected)="optionSelected.emit($event)">
+  </app-option-list>
+
+  <div class="question-card__actions">
+    <app-primary-button
+      *ngIf="showPrevious"
+      variant="secondary"
+      label="Previous"
+      icon="ti ti-arrow-left"
+      (clicked)="previousClicked.emit()">
+    </app-primary-button>
+
+    <app-primary-button
+      label="Continue"
+      icon="ti ti-arrow-right"
+      [disabled]="!selectedOptionId"
+      (clicked)="nextClicked.emit()">
+    </app-primary-button>
+  </div>
+</div>

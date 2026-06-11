@@ -1,0 +1,14 @@
+<div class="result-actions">
+  <app-primary-button
+    variant="secondary"
+    label="Restart"
+    icon="ti ti-refresh"
+    (clicked)="restartClicked.emit()">
+  </app-primary-button>
+
+  <app-primary-button
+    label="Save this configuration"
+    icon="ti ti-bookmark"
+    (clicked)="saveClicked.emit()">
+  </app-primary-button>
+</div>

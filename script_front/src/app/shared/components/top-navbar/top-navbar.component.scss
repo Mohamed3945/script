@@ -1,0 +1,71 @@
+.top-navbar {
+  background: var(--navy);
+  padding: 0 28px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand__icon {
+  width: 30px;
+  height: 30px;
+  background: var(--gold);
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--navy);
+}
+
+.brand__text {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand__title {
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.brand__subtitle {
+  color: rgba(101, 95, 95, 0.4);
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.top-navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.top-navbar__link {
+  color: rgba(255,255,255,.55);
+  font-size: 13px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.top-navbar__avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+}

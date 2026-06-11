@@ -1,0 +1,17 @@
+<div class="result-summary">
+  <h3>
+    <i class="ti ti-list-check"></i>
+    Decision path summary
+  </h3>
+
+  <div class="result-summary__list">
+    <div *ngFor="let selection of selections; let i = index" class="result-summary__item">
+      <div class="result-summary__index">{{ i + 1 }}</div>
+      <div class="result-summary__content">
+        <div class="result-summary__question">{{ selection.questionLabel }}</div>
+        <div class="result-summary__answer">{{ selection.optionLabel }}</div>
+      </div>
+      <i class="ti ti-check result-summary__check"></i>
+    </div>
+  </div>
+</div>

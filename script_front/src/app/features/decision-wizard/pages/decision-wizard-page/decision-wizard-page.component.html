@@ -1,0 +1,41 @@
+<section class="wizard-page">
+  <div class="wizard-page__container">
+    <div class="wizard-page__header">
+      <button class="back-btn" (click)="onBackHome()">
+        <i class="ti ti-arrow-left"></i>
+        Back
+      </button>
+
+      <div class="wizard-page__progress">
+        <div class="wizard-page__progress-meta">
+          <span>Question {{ step$ | async }} · Adaptive path</span>
+          <span>Step {{ step$ | async }}</span>
+        </div>
+        <app-progress-bar [value]="(progress$ | async) ?? 0"></app-progress-bar>
+      </div>
+    </div>
+
+    <div class="wizard-page__grid">
+      <div>
+        <app-loading-panel
+          *ngIf="loading$ | async"
+          message="Fetching next question...">
+        </app-loading-panel>
+
+        <app-question-card
+          *ngIf="!(loading$ | async) && (currentQuestion$ | async) as question"
+          [question]="question"
+          [selectedOptionId]="(selectedOptionId$ | async)"
+          [showPrevious]="((step$ | async) ?? 1) > 1"
+          (optionSelected)="onSelectOption($event)"
+          (nextClicked)="onNext()"
+          (previousClicked)="onPrevious()">
+        </app-question-card>
+      </div>
+
+      <app-wizard-sidebar
+        [selections]="(selections$ | async) ?? []">
+      </app-wizard-sidebar>
+    </div>
+  </div>
+</section>
