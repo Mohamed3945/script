@@ -1,0 +1,23 @@
+package st.tt.script_back.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import st.tt.script_back.enums.ParameterValueType;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class ParameterDefinitionDto {
+    private Long id;
+    private String code;
+    private String name;
+    private String alias;
+    private String unit;
+    private String description;
+    private ParameterValueType valueType;
+    private boolean requiredOnStep;
+    private String defaultValueJson;
+}
