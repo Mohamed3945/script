@@ -1,0 +1,1 @@
+export type RecipeStatus = 'DRAFT' | 'VALIDATED' | 'ARCHIVED';

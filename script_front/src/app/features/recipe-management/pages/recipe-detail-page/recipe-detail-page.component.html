@@ -1,0 +1,80 @@
+﻿<section class="page" *ngIf="recipe$ | async as recipe">
+  <div class="page__container">
+    <app-recipe-detail-header
+      [recipe]="recipe"
+      (editClicked)="onEditRecipe()"
+      (deleteClicked)="onDeleteRecipe()"
+      (addStepClicked)="openStepModal()">
+    </app-recipe-detail-header>
+
+    <div class="workspace">
+      <aside class="workspace__sidebar">
+        <app-recipe-summary-sidecard [recipe]="recipe"></app-recipe-summary-sidecard>
+
+        <div class="workspace__sidebar-section">
+          <app-recipe-tab-nav
+            [activeTab]="activeTab"
+            (tabChanged)="activeTab = $event">
+          </app-recipe-tab-nav>
+        </div>
+      </aside>
+
+      <main class="workspace__main">
+        <div class="workspace__toolbar" *ngIf="activeTab === 'steps'">
+          <app-recipe-view-switch
+            [mode]="viewMode"
+            (modeChanged)="viewMode = $event">
+          </app-recipe-view-switch>
+        </div>
+
+        <div *ngIf="activeTab === 'summary'" class="info-card">
+          <h3>Recipe Summary</h3>
+          <p>
+            Use this recipe workspace to inspect structure, browse steps, compare parameter values
+            in matrix view, or focus on one step at a time.
+          </p>
+        </div>
+
+        <div *ngIf="activeTab === 'prestep'" class="info-card">
+          <h3>Prestep</h3>
+          <p>
+            The PRESTEP corresponds to step kind <strong>PRESTEP</strong> and typically order index 0.
+            You can visualize it through the steps workspace once present in the recipe.
+          </p>
+        </div>
+
+        <ng-container *ngIf="activeTab === 'steps'">
+          <app-recipe-matrix-view
+            *ngIf="viewMode === 'matrix'"
+            [rows]="(gridRows$ | async) ?? []"
+            (addParameterClicked)="openStepParameterModal()">
+          </app-recipe-matrix-view>
+
+          <app-recipe-step-focus-view
+            *ngIf="viewMode === 'focus'"
+            [steps]="(steps$ | async) ?? []"
+            [selectedStepId]="(selectedStep$ | async)?.id"
+            [selectedStep]="(selectedStep$ | async)"
+            [parameters]="(stepParameters$ | async) ?? []"
+            (stepSelected)="onStepSelected($event)"
+            (addParameterClicked)="openStepParameterModal()"
+            (deleteParameterClicked)="onDeleteStepParameter($event)">
+          </app-recipe-step-focus-view>
+        </ng-container>
+      </main>
+    </div>
+  </div>
+
+  <app-step-modal
+    [visible]="showStepModal"
+    (closed)="closeStepModal()"
+    (submitted)="onCreateStep($event)">
+  </app-step-modal>
+
+  <app-step-parameter-modal
+    [visible]="showStepParameterModal"
+    [parentCandidates]="(stepParameters$ | async) ?? []"
+    (closed)="closeStepParameterModal()"
+    (submitted)="onCreateStepParameter($event)">
+  </app-step-parameter-modal>
+</section>

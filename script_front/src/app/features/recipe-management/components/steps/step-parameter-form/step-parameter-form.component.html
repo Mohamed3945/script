@@ -1,0 +1,61 @@
+﻿<form [formGroup]="form" class="form-card" (ngSubmit)="onSubmit()">
+  <h3>Add step parameter</h3>
+
+  <div class="form-grid">
+    <div class="field">
+      <label>Definition</label>
+      <select formControlName="definitionId">
+        <option [ngValue]="null">Select definition</option>
+        <option *ngFor="let definition of definitions" [ngValue]="definition.id">
+          {{ definition.name }} ({{ definition.valueType }})
+        </option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Parent step parameter</label>
+      <select formControlName="parentStepParameterId">
+        <option [ngValue]="null">No parent</option>
+        <option *ngFor="let parent of parentCandidates" [ngValue]="parent.id">
+          #{{ parent.id }} - def {{ parent.definitionId }}
+        </option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Order index</label>
+      <input type="number" formControlName="orderIndex" />
+    </div>
+
+    <div class="field">
+      <label>Label override</label>
+      <input type="text" formControlName="labelOverride" />
+    </div>
+
+    <div class="field field--full" *ngIf="!isEnumDefinition">
+      <label>Value JSON</label>
+      <textarea rows="4" formControlName="valueJson"></textarea>
+    </div>
+
+    <div class="field field--full" *ngIf="isEnumDefinition">
+      <label>Selected option</label>
+      <select formControlName="selectedOptionId">
+        <option [ngValue]="null">Select option</option>
+        <option *ngFor="let option of availableOptions" [ngValue]="option.id">
+          {{ option.label }}
+        </option>
+      </select>
+    </div>
+
+    <div class="field checkbox-field">
+      <label>
+        <input type="checkbox" formControlName="lockedByGolden" />
+        Locked by golden
+      </label>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn" type="submit">Add parameter</button>
+  </div>
+</form>

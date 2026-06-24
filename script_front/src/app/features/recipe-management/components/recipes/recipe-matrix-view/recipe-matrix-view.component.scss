@@ -1,0 +1,66 @@
+.matrix-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.matrix-card__header {
+  padding: 16px;
+  border-bottom: 1px solid var(--off-white);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.matrix-card__header h3 {
+  font-size: 16px;
+  color: var(--navy);
+}
+
+.matrix-wrapper {
+  overflow: auto;
+}
+
+.matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+.matrix-table th,
+.matrix-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--off-white);
+  border-right: 1px solid var(--off-white);
+  text-align: left;
+  vertical-align: top;
+  font-size: 13px;
+}
+
+.matrix-table th {
+  background: #f8fbff;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.matrix-table__param {
+  font-weight: 600;
+  color: var(--navy);
+  min-width: 220px;
+}
+
+.empty-state {
+  padding: 20px;
+  color: var(--text-muted);
+}
+
+.btn {
+  background: var(--blue);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 600;
+}

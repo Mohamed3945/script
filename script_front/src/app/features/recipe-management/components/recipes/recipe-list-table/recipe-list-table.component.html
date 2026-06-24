@@ -1,0 +1,38 @@
+﻿<div class="table-card">
+  <table *ngIf="recipes.length > 0; else emptyState" class="table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Kind</th>
+        <th>Status</th>
+        <th>Version</th>
+        <th>Process family</th>
+        <th>Frozen</th>
+        <th>Parent</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let recipe of recipes">
+        <td>{{ recipe.name }}</td>
+        <td>{{ recipe.recipeKind }}</td>
+        <td>{{ recipe.status }}</td>
+        <td>{{ recipe.version ?? '—' }}</td>
+        <td>{{ recipe.processFamily || '—' }}</td>
+        <td>{{ recipe.frozen ? 'Yes' : 'No' }}</td>
+        <td>{{ recipe.parentRecipeId ?? '—' }}</td>
+        <td class="actions">
+          <button class="link-btn" (click)="viewRecipe.emit(recipe)">Open</button>
+          <button class="link-btn" (click)="editRecipe.emit(recipe)">Edit</button>
+          <button class="link-btn link-btn--danger" (click)="deleteRecipe.emit(recipe)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ng-template #emptyState>
+    <div class="empty-state">
+      <p>No recipes found.</p>
+    </div>
+  </ng-template>
+</div>

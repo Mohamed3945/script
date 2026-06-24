@@ -1,0 +1,23 @@
+.switch {
+  display: inline-flex;
+  gap: 8px;
+  background: #f8fbff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 6px;
+}
+
+.switch__btn {
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.switch__btn--active {
+  background: var(--blue);
+  color: white;
+}

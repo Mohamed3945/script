@@ -1,0 +1,20 @@
+﻿<form [formGroup]="form" class="form-card" (ngSubmit)="onSubmit()">
+  <h3>{{ initialValue ? 'Edit option' : 'Add option' }}</h3>
+
+  <div class="form-grid">
+    <div class="field">
+      <label>Label</label>
+      <input type="text" formControlName="label" />
+    </div>
+
+    <div class="field">
+      <label>Order index</label>
+      <input type="number" formControlName="orderIndex" />
+    </div>
+  </div>
+
+  <div class="actions">
+    <button type="button" class="btn btn--secondary" (click)="cancelled.emit()">Cancel</button>
+    <button type="submit" class="btn">{{ initialValue ? 'Save option' : 'Add option' }}</button>
+  </div>
+</form>

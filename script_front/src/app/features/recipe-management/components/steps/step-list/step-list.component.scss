@@ -1,0 +1,50 @@
+﻿.step-list-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+.step-list-card__header {
+  margin-bottom: 12px;
+}
+
+.step-list-card__header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.empty {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.step-item {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--border);
+  background: white;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.step-item--selected {
+  border-color: var(--blue);
+  background: #ebf2fb;
+}
+
+.step-item__meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.step-item__name {
+  font-weight: 600;
+  color: var(--navy);
+}

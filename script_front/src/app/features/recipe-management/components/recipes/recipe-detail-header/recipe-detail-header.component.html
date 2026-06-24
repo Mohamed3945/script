@@ -1,0 +1,14 @@
+<div class="header-card">
+  <div>
+    <h1>{{ recipe.name }}</h1>
+    <p>
+      {{ recipe.recipeKind }} · {{ recipe.status }} · version {{ recipe.version ?? '—' }}
+    </p>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn--secondary" (click)="editClicked.emit()">Edit recipe</button>
+    <button class="btn" (click)="addStepClicked.emit()">Add step</button>
+    <button class="btn btn--danger" (click)="deleteClicked.emit()">Delete recipe</button>
+  </div>
+</div>

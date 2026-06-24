@@ -1,0 +1,25 @@
+﻿<section class="page">
+  <div class="page__container">
+    <div class="page__header">
+      <div>
+        <h1>Parameter Definitions</h1>
+        <p>Manage parameter definitions and prepare enum options for step parameters.</p>
+      </div>
+
+      <button class="btn" (click)="onCreate()">New definition</button>
+    </div>
+
+    <div class="card" *ngIf="loading$ | async; else tableSection">
+      Loading parameter definitions...
+    </div>
+
+    <ng-template #tableSection>
+      <app-parameter-definition-table
+        [definitions]="(definitions$ | async) || []"
+        (viewDefinition)="onView($event)"
+        (editDefinition)="onEdit($event)"
+        (deleteDefinition)="onDelete($event)">
+      </app-parameter-definition-table>
+    </ng-template>
+  </div>
+</section>

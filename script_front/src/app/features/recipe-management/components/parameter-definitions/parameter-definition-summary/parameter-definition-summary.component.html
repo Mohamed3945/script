@@ -1,0 +1,48 @@
+﻿<div class="summary-card">
+  <div class="summary-grid">
+    <div class="summary-item">
+      <span class="label">Code</span>
+      <span class="value">{{ definition.code || '—' }}</span>
+    </div>
+
+    <div class="summary-item">
+      <span class="label">Name</span>
+      <span class="value">{{ definition.name }}</span>
+    </div>
+
+    <div class="summary-item">
+      <span class="label">Alias</span>
+      <span class="value">{{ definition.alias }}</span>
+    </div>
+
+    <div class="summary-item">
+      <span class="label">Type</span>
+      <span class="value">{{ definition.valueType }}</span>
+    </div>
+
+    <div class="summary-item">
+      <span class="label">Unit</span>
+      <span class="value">{{ definition.unit || '—' }}</span>
+    </div>
+
+    <div class="summary-item">
+      <span class="label">Required on step</span>
+      <span class="value">{{ definition.requiredOnStep ? 'Yes' : 'No' }}</span>
+    </div>
+
+    <div class="summary-item">
+      <span class="label">Options count</span>
+      <span class="value">{{ definition.options.length }}</span>
+    </div>
+
+    <div class="summary-item summary-item--full">
+      <span class="label">Description</span>
+      <span class="value">{{ definition.description || '—' }}</span>
+    </div>
+
+    <div class="summary-item summary-item--full">
+      <span class="label">Default value JSON</span>
+      <pre class="json-block">{{ definition.defaultValueJson || '—' }}</pre>
+    </div>
+  </div>
+</div>

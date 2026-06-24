@@ -1,0 +1,33 @@
+﻿<div class="table-card">
+  <div class="table-card__header">
+    <h3>Parameter options</h3>
+  </div>
+
+  <table *ngIf="options.length > 0; else emptyState" class="table">
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Label</th>
+        <th>Order index</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let option of options">
+        <td>{{ option.code || '—' }}</td>
+        <td>{{ option.label }}</td>
+        <td>{{ option.orderIndex }}</td>
+        <td class="actions">
+          <button class="link-btn" (click)="editOption.emit(option)">Edit</button>
+          <button class="link-btn link-btn--danger" (click)="deleteOption.emit(option)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ng-template #emptyState>
+    <div class="empty-state">
+      No options defined.
+    </div>
+  </ng-template>
+</div>

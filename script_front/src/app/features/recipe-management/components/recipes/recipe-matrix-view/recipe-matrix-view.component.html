@@ -1,0 +1,31 @@
+<div class="matrix-card">
+  <div class="matrix-card__header">
+    <h3>Recipe matrix view</h3>
+    <button class="btn" (click)="addParameterClicked.emit()">Add parameter</button>
+  </div>
+
+  <div class="matrix-wrapper" *ngIf="stepColumns.length > 0; else emptyState">
+    <table class="matrix-table">
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th *ngFor="let step of stepColumns">
+            {{ step.stepName }} (#{{ step.stepOrderIndex }})
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let parameter of parameterRows">
+          <td class="matrix-table__param">{{ parameter.parameterDefinitionName }}</td>
+          <td *ngFor="let step of stepColumns">
+            {{ parameter.values[step.stepId] || '-' }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ng-template #emptyState>
+    <div class="empty-state">No matrix data available.</div>
+  </ng-template>
+</div>

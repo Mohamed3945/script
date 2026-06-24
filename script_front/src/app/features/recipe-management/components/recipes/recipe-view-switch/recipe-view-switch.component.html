@@ -1,0 +1,15 @@
+<div class="switch">
+  <button
+    class="switch__btn"
+    [class.switch__btn--active]="mode === 'matrix'"
+    (click)="modeChanged.emit('matrix')">
+    Matrix view
+  </button>
+
+  <button
+    class="switch__btn"
+    [class.switch__btn--active]="mode === 'focus'"
+    (click)="modeChanged.emit('focus')">
+    Focus step
+  </button>
+</div>

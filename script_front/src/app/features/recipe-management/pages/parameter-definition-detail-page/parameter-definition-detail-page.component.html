@@ -1,0 +1,39 @@
+﻿<section class="page" *ngIf="detail$ | async as detail">
+  <div class="page__container">
+    <div class="page__header">
+      <div>
+        <h1>{{ detail.name }}</h1>
+        <p>Parameter definition details and enum options management.</p>
+      </div>
+
+      <div class="page__actions">
+        <button class="btn btn--secondary" (click)="onEditDefinition()">Edit</button>
+        <button class="btn btn--danger" (click)="onDeleteDefinition()">Delete</button>
+      </div>
+    </div>
+
+    <app-parameter-definition-summary [definition]="detail"></app-parameter-definition-summary>
+
+    <div class="option-section">
+      <div class="option-section__header">
+        <h2>Options</h2>
+        <button class="btn" (click)="onAddOption()">Add option</button>
+      </div>
+
+      <div class="option-section__form" *ngIf="showOptionForm">
+        <app-parameter-option-form
+          [definitionId]="detail.id!"
+          [initialValue]="editingOption"
+          (submitted)="onOptionSubmit($event)"
+          (cancelled)="onOptionCancel()">
+        </app-parameter-option-form>
+      </div>
+
+      <app-parameter-option-table
+        [options]="detail.options"
+        (editOption)="onEditOption($event)"
+        (deleteOption)="onDeleteOption($event)">
+      </app-parameter-option-table>
+    </div>
+  </div>
+</section>

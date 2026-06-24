@@ -1,0 +1,57 @@
+<div class="focus-layout">
+  <div class="focus-layout__left">
+    <app-step-list
+      [steps]="steps"
+      [selectedStepId]="selectedStepId"
+      (stepSelected)="stepSelected.emit($event)">
+    </app-step-list>
+  </div>
+
+  <div class="focus-layout__right">
+    <div class="focus-header">
+      <div>
+        <h3>{{ selectedStep?.name || 'No step selected' }}</h3>
+        <p *ngIf="selectedStep">
+          {{ selectedStep.stepKind }} - order {{ selectedStep.orderIndex }}
+        </p>
+      </div>
+
+      <button class="btn" *ngIf="selectedStep" (click)="addParameterClicked.emit()">
+        Add parameter
+      </button>
+    </div>
+
+    <div class="parameter-list-card" *ngIf="selectedStep; else noStep">
+      <div *ngIf="parameters.length === 0" class="empty-state">
+        No parameters for this step.
+      </div>
+
+      <div class="parameter-row" *ngFor="let parameter of parameters">
+        <div class="parameter-row__main">
+          <div class="parameter-row__title">
+            Definition #{{ parameter.definitionId }}
+          </div>
+          <div class="parameter-row__meta">
+            Activation: {{ parameter.activationState || '-' }} -
+            Locked: {{ parameter.lockedByGolden ? 'Yes' : 'No' }}
+          </div>
+          <div class="parameter-row__value">
+            <strong>Value:</strong>
+            {{ parameter.selectedOptionId ?? parameter.valueJson ?? '-' }}
+          </div>
+        </div>
+
+        <div class="parameter-row__actions">
+          <button class="link-btn" (click)="goToDefinition(parameter)">View definition</button>
+          <button class="link-btn link-btn--danger" (click)="deleteParameterClicked.emit(parameter)">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noStep>
+      <div class="parameter-list-card">
+        <div class="empty-state">Select a step to inspect its parameters.</div>
+      </div>
+    </ng-template>
+  </div>
+</div>

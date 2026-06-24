@@ -1,0 +1,27 @@
+﻿<form [formGroup]="form" class="form-card" (ngSubmit)="onSubmit()">
+  <h3>Add step</h3>
+
+  <div class="form-grid">
+    <div class="field">
+      <label>Step kind</label>
+      <select formControlName="stepKind">
+        <option value="PRESTEP">PRESTEP</option>
+        <option value="STEP">STEP</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Order index</label>
+      <input type="number" formControlName="orderIndex" />
+    </div>
+
+    <div class="field field--full">
+      <label>Name</label>
+      <input type="text" formControlName="name" />
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn" type="submit">Add step</button>
+  </div>
+</form>

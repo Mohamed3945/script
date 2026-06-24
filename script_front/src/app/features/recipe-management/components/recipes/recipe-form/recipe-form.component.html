@@ -1,0 +1,72 @@
+﻿<form [formGroup]="form" class="form-card" (ngSubmit)="onSubmit()">
+  <div class="form-grid">
+    <div class="field">
+      <label>Recipe kind</label>
+      <select formControlName="recipeKind">
+        <option *ngFor="let kind of recipeKinds" [value]="kind" [disabled]="kind === 'IMPORTED' && mode !== 'edit'">
+          {{ kind }}
+        </option>
+      </select>
+    </div>
+
+    <div class="field" *ngIf="isDerived">
+      <label>Parent recipe ID</label>
+      <input type="number" formControlName="parentRecipeId" />
+    </div>
+
+    <div class="field" *ngIf="isDerived">
+      <label>Result profile ID</label>
+      <input type="number" formControlName="resultProfileId" />
+    </div>
+
+    <div class="field field--full">
+      <label>Name</label>
+      <input type="text" formControlName="name" />
+    </div>
+
+    <div class="field field--full">
+      <label>Description</label>
+      <textarea rows="4" formControlName="description"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Creator ID</label>
+      <input type="number" formControlName="creatorId" />
+    </div>
+
+    <div class="field">
+      <label>Revisor ID</label>
+      <input type="number" formControlName="revisorId" />
+    </div>
+
+    <div class="field">
+      <label>Process family</label>
+      <input type="text" formControlName="processFamily" />
+    </div>
+
+    <div class="field">
+      <label>Status</label>
+      <select formControlName="status">
+        <option *ngFor="let status of recipeStatuses" [value]="status">
+          {{ status }}
+        </option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Version</label>
+      <input type="number" formControlName="version" />
+    </div>
+
+    <div class="field checkbox-field">
+      <label>
+        <input type="checkbox" formControlName="frozen" />
+        Frozen
+      </label>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn" type="submit">Save recipe</button>
+  </div>
+</form>
