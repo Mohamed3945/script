@@ -5,11 +5,16 @@
     <div class="field">
       <label>Definition</label>
       <select formControlName="definitionId">
-        <option [ngValue]="null">Select definition</option>
+        <option [ngValue]="null" *ngIf="loadingDefinitions">Loading definitions...</option>
+        <option [ngValue]="null" *ngIf="!loadingDefinitions && definitions.length === 0">No definition available</option>
+        <option [ngValue]="null" *ngIf="!loadingDefinitions && definitions.length > 0">Select definition</option>
         <option *ngFor="let definition of definitions" [ngValue]="definition.id">
           {{ definition.name }} ({{ definition.valueType }})
         </option>
       </select>
+      <small class="field-hint field-hint--error" *ngIf="definitionLoadError">
+        Unable to load definitions. Close and reopen the modal to retry.
+      </small>
     </div>
 
     <div class="field">

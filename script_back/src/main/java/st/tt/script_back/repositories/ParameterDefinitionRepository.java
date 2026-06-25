@@ -1,6 +1,8 @@
 package st.tt.script_back.repositories;
 
 import java.util.Optional;
+import java.util.List;
+import st.tt.script_back.enums.StepType;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -15,5 +17,7 @@ public interface ParameterDefinitionRepository extends JpaRepository<ParameterDe
     Optional<ParameterDefinition> findByAlias(String alias);
 
     Optional<ParameterDefinition> findByName(String name);
+
+    List<ParameterDefinition> findByStepTypeOrderByNameAsc(StepType stepType);
 
 }

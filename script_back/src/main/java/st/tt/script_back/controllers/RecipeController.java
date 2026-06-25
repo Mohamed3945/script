@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import st.tt.script_back.dto.RecipeDto;
+import st.tt.script_back.dto.RecipeMatrixDto;
 import st.tt.script_back.dto.StepDto;
 import st.tt.script_back.dto.StepParameterDto;
 import st.tt.script_back.dto.StepParameterGridRowDto;
@@ -63,5 +64,10 @@ public class RecipeController {
     @GetMapping("/recipes/{recipeId}/step-parameter-grid")
     public List<StepParameterGridRowDto> getRecipeStepParameterGrid(@PathVariable Long recipeId) {
         return recipeQueryService.getRecipeStepParameterGrid(recipeId);
+    }
+
+    @GetMapping("/recipes/{recipeId}/matrix")
+    public RecipeMatrixDto getRecipeMatrix(@PathVariable Long recipeId) {
+        return recipeQueryService.getRecipeMatrix(recipeId);
     }
 }

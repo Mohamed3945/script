@@ -26,6 +26,6 @@ export class RecipeStepFocusViewComponent {
 
   goToDefinition(parameter: StepParameter): void {
     if (!parameter.definitionId) return;
-    this.router.navigate(['/parameter-definitions', parameter.definitionId]);
+    this.router.navigate(['/parameter', parameter.definitionId]);
   }
 }

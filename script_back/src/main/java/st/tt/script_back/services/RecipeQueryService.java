@@ -2,8 +2,11 @@ package st.tt.script_back.services;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -11,17 +14,26 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 import st.tt.script_back.dto.RecipeDto;
+import st.tt.script_back.dto.RecipeMatrixCellDto;
+import st.tt.script_back.dto.RecipeMatrixColumnDto;
+import st.tt.script_back.dto.RecipeMatrixDto;
+import st.tt.script_back.dto.RecipeMatrixRowDto;
 import st.tt.script_back.dto.StepDto;
 import st.tt.script_back.dto.StepParameterDto;
 import st.tt.script_back.dto.StepParameterGridRowDto;
+import st.tt.script_back.dto.ParameterOptionDto;
+import st.tt.script_back.entities.ParameterOption;
 import st.tt.script_back.entities.Recipe;
 import st.tt.script_back.entities.Step;
 import st.tt.script_back.entities.StepParameter;
+import st.tt.script_back.enums.ParameterValueType;
 import st.tt.script_back.enums.RecipeKind;
 import st.tt.script_back.enums.StepKind;
 import st.tt.script_back.mappers.RecipeMapper;
+import st.tt.script_back.mappers.ParameterOptionMapper;
 import st.tt.script_back.mappers.StepMapper;
 import st.tt.script_back.mappers.StepParameterMapper;
+import st.tt.script_back.repositories.ParameterOptionRepository;
 import st.tt.script_back.repositories.RecipeRepository;
 import st.tt.script_back.repositories.StepParameterRepository;
 import st.tt.script_back.repositories.StepRepository;
@@ -32,7 +44,9 @@ public class RecipeQueryService {
     private final RecipeRepository recipeRepository;
     private final StepRepository stepRepository;
     private final StepParameterRepository stepParameterRepository;
+    private final ParameterOptionRepository parameterOptionRepository;
     private final RecipeMapper recipeMapper;
+    private final ParameterOptionMapper parameterOptionMapper;
     private final StepMapper stepMapper;
     private final StepParameterMapper stepParameterMapper;
 
@@ -41,12 +55,16 @@ public class RecipeQueryService {
             StepRepository stepRepository,
             StepParameterRepository stepParameterRepository,
             RecipeMapper recipeMapper,
+            ParameterOptionRepository parameterOptionRepository,
+            ParameterOptionMapper parameterOptionMapper,
             StepMapper stepMapper,
             StepParameterMapper stepParameterMapper) {
         this.recipeRepository = recipeRepository;
         this.stepRepository = stepRepository;
         this.stepParameterRepository = stepParameterRepository;
         this.recipeMapper = recipeMapper;
+        this.parameterOptionRepository = parameterOptionRepository;
+        this.parameterOptionMapper = parameterOptionMapper;
         this.stepMapper = stepMapper;
         this.stepParameterMapper = stepParameterMapper;
     }
@@ -127,6 +145,120 @@ public class RecipeQueryService {
         List<StepParameter> parameters = stepParameterRepository.findByStepIdsWithDefinitionAndSelectedOption(stepIds);
 
         return parameters.stream().map(parameter -> toGridRow(recipeId, stepById, parameter)).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public RecipeMatrixDto getRecipeMatrix(Long recipeId) {
+        ensureRecipeExists(recipeId);
+
+        List<Step> steps = stepRepository.findByRecipeIdOrderByOrderIndexAsc(recipeId);
+        if (steps.isEmpty()) {
+            return new RecipeMatrixDto(recipeId, List.of(), List.of());
+        }
+
+        List<Long> stepIds = steps.stream().map(Step::getId).toList();
+        List<StepParameter> parameters = stepParameterRepository.findByStepIdsWithDefinitionAndSelectedOption(stepIds);
+
+        Map<Long, List<ParameterOptionDto>> optionsByDefinitionId = new HashMap<>();
+        Set<Long> enumDefinitionIds = parameters.stream()
+                .filter(p -> p.getDefinition() != null
+                        && p.getDefinition().getValueType() == ParameterValueType.ENUM)
+                .map(p -> p.getDefinition().getId())
+                .filter(id -> id != null)
+                .collect(Collectors.toSet());
+
+        for (Long definitionId : enumDefinitionIds) {
+            List<ParameterOption> options = parameterOptionRepository.findByDefinitionIdOrderByOrderIndexAsc(
+                    definitionId);
+            optionsByDefinitionId.put(definitionId, parameterOptionMapper.toDtoList(options));
+        }
+
+        List<RecipeMatrixColumnDto> columns = steps.stream()
+                .map(step -> new RecipeMatrixColumnDto(
+                        step.getId(),
+                        step.getCode(),
+                        step.getName(),
+                        step.getStepKind(),
+                        step.getOrderIndex()))
+                .toList();
+
+        Map<Long, Map<Long, StepParameter>> parameterByDefinitionAndStep = new HashMap<>();
+        Map<Long, StepParameter> representativeParameterByDefinition = new LinkedHashMap<>();
+
+        for (StepParameter parameter : parameters) {
+            if (parameter.getDefinition() == null
+                    || parameter.getDefinition().getId() == null
+                    || parameter.getStep() == null
+                    || parameter.getStep().getId() == null) {
+                continue;
+            }
+
+            Long definitionId = parameter.getDefinition().getId();
+            Long stepId = parameter.getStep().getId();
+
+            parameterByDefinitionAndStep
+                    .computeIfAbsent(definitionId, ignored -> new HashMap<>())
+                    .put(stepId, parameter);
+
+            representativeParameterByDefinition.putIfAbsent(definitionId, parameter);
+        }
+
+        List<RecipeMatrixRowDto> rows = representativeParameterByDefinition.values().stream()
+                .map(parameter -> {
+                    Long definitionId = parameter.getDefinition().getId();
+
+                    List<RecipeMatrixCellDto> cells = steps.stream()
+                            .map(step -> {
+                                StepParameter cellParameter = parameterByDefinitionAndStep
+                                        .getOrDefault(definitionId, Map.of())
+                                        .get(step.getId());
+
+                                if (cellParameter == null) {
+                                    return new RecipeMatrixCellDto(
+                                            step.getId(),
+                                            null,
+                                            definitionId,
+                                            parameter.getDefinition().getValueType(),
+                                            "-",
+                                            null,
+                                            null,
+                                            null,
+                                            optionsByDefinitionId.getOrDefault(definitionId, List.of()),
+                                            null,
+                                            false,
+                                            false);
+                                }
+
+                                String displayValue = cellParameter.getSelectedOption() != null
+                                        ? cellParameter.getSelectedOption().getLabel()
+                                        : (cellParameter.getValueJson() != null ? cellParameter.getValueJson() : "-");
+
+                                return new RecipeMatrixCellDto(
+                                        step.getId(),
+                                        cellParameter.getId(),
+                                        definitionId,
+                                        cellParameter.getDefinition() != null ? cellParameter.getDefinition().getValueType() : null,
+                                        displayValue,
+                                        cellParameter.getValueJson(),
+                                        cellParameter.getSelectedOption() != null ? cellParameter.getSelectedOption().getId() : null,
+                                        cellParameter.getSelectedOption() != null ? cellParameter.getSelectedOption().getLabel() : null,
+                                        optionsByDefinitionId.getOrDefault(definitionId, List.of()),
+                                        cellParameter.getActivationState(),
+                                        cellParameter.isLockedByGolden(),
+                                        !cellParameter.isLockedByGolden());
+                            })
+                            .toList();
+
+                    return new RecipeMatrixRowDto(
+                            definitionId,
+                            parameter.getDefinition().getName(),
+                            parameter.getDefinition().getAlias(),
+                            parameter.getDefinition().getValueType(),
+                            cells);
+                })
+                .toList();
+
+        return new RecipeMatrixDto(recipeId, columns, rows);
     }
 
     private StepParameterGridRowDto toGridRow(Long recipeId, Map<Long, Step> stepById, StepParameter parameter) {

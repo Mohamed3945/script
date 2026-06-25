@@ -5,6 +5,7 @@ import { Recipe } from '../models/recipe.model';
 import { Step } from '../models/step.model';
 import { StepParameter } from '../models/step-parameter.model';
 import { StepParameterGridRow } from '../models/step-parameter-grid-row.model';
+import { RecipeMatrix } from '../models/recipe-matrix.model';
 import { RecipeKind } from '../models/recipe-kind.model';
 import { StepKind } from '../models/step-kind.model';
 
@@ -85,5 +86,9 @@ export class RecipeApiService {
 
   getRecipeStepParameterGrid(recipeId: number): Observable<StepParameterGridRow[]> {
     return this.http.get<StepParameterGridRow[]>(`${this.baseUrl}/recipes/${recipeId}/step-parameter-grid`);
+  }
+
+  getRecipeMatrix(recipeId: number): Observable<RecipeMatrix> {
+    return this.http.get<RecipeMatrix>(`${this.baseUrl}/recipes/${recipeId}/matrix`);
   }
 }

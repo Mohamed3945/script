@@ -1,54 +1,88 @@
-import { NgFor, NgIf } from '@angular/common';
+import { NgFor, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { StepParameterGridRow } from '../../../../../core/models/step-parameter-grid-row.model';
+import { FormsModule } from '@angular/forms';
+import { ParameterValueType } from '../../../../../core/models/parameter-value-type.model';
+import { RecipeMatrix } from '../../../../../core/models/recipe-matrix.model';
+import { RecipeMatrixCell } from '../../../../../core/models/recipe-matrix-cell.model';
+
+export interface RecipeMatrixCellUpdate {
+  cell: RecipeMatrixCell;
+  valueType: ParameterValueType;
+  selectedOptionId?: number | null;
+  valueJson?: string | null;
+}
 
 @Component({
   selector: 'app-recipe-matrix-view',
   standalone: true,
-  imports: [NgIf, NgFor],
+  imports: [NgIf, NgFor, NgSwitch, NgSwitchCase, NgSwitchDefault, FormsModule],
   templateUrl: './recipe-matrix-view.component.html',
   styleUrl: './recipe-matrix-view.component.scss'
 })
 export class RecipeMatrixViewComponent {
-  @Input() rows: StepParameterGridRow[] = [];
+  @Input() matrix: RecipeMatrix | null = null;
 
-  @Output() addParameterClicked = new EventEmitter<void>();
+  @Output() addStepClicked = new EventEmitter<void>();
+  @Output() cellUpdated = new EventEmitter<RecipeMatrixCellUpdate>();
 
-  get stepColumns(): { stepId: number; stepName: string; stepOrderIndex: number }[] {
-    const map = new Map<number, { stepId: number; stepName: string; stepOrderIndex: number }>();
+  readonly enumValueType: ParameterValueType = 'ENUM';
+  readonly numberValueType: ParameterValueType = 'NUMBER';
 
-    for (const row of this.rows) {
-      if (!map.has(row.stepId)) {
-        map.set(row.stepId, {
-          stepId: row.stepId,
-          stepName: row.stepName,
-          stepOrderIndex: row.stepOrderIndex
-        });
-      }
-    }
-
-    return Array.from(map.values()).sort((a, b) => a.stepOrderIndex - b.stepOrderIndex);
+  get stepColumns() {
+    return this.matrix?.columns ?? [];
   }
 
-  get parameterRows(): { parameterDefinitionName: string; values: Record<number, string> }[] {
-    const map = new Map<string, { parameterDefinitionName: string; values: Record<number, string> }>();
+  get parameterRows() {
+    return this.matrix?.rows ?? [];
+  }
 
-    for (const row of this.rows) {
-      const key = row.parameterDefinitionName;
+  isEditable(cell: RecipeMatrixCell): boolean {
+    return Boolean(cell.editable) && !cell.lockedByGolden && Boolean(cell.stepParameterId);
+  }
 
-      if (!map.has(key)) {
-        map.set(key, {
-          parameterDefinitionName: row.parameterDefinitionName,
-          values: {}
-        });
-      }
-
-      const target = map.get(key)!;
-      target.values[row.stepId] = row.selectedOptionLabel || row.valueJson || '-';
+  onEnumChanged(cell: RecipeMatrixCell, selectedValue: string): void {
+    if (!this.isEditable(cell)) {
+      return;
     }
 
-    return Array.from(map.values()).sort((a, b) =>
-      a.parameterDefinitionName.localeCompare(b.parameterDefinitionName)
-    );
+    const selectedOptionId = selectedValue ? Number(selectedValue) : null;
+    this.cellUpdated.emit({
+      cell,
+      valueType: 'ENUM',
+      selectedOptionId,
+      valueJson: null
+    });
+  }
+
+  onValueCommitted(cell: RecipeMatrixCell, rawValue: string): void {
+    if (!this.isEditable(cell)) {
+      return;
+    }
+
+    this.cellUpdated.emit({
+      cell,
+      valueType: cell.valueType,
+      valueJson: rawValue ?? null,
+      selectedOptionId: null
+    });
+  }
+
+  onNumberCommitted(cell: RecipeMatrixCell, rawValue: string): void {
+    if (!this.isEditable(cell)) {
+      return;
+    }
+
+    const trimmed = (rawValue ?? '').trim();
+    if (trimmed.length === 0) {
+      this.onValueCommitted(cell, '');
+      return;
+    }
+
+    const asNumber = Number(trimmed);
+    if (Number.isNaN(asNumber)) {
+      return;
+    }
+
+    this.onValueCommitted(cell, String(asNumber));
   }
 }

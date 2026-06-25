@@ -1,9 +1,12 @@
-﻿import { AsyncPipe, NgIf } from '@angular/common';
+﻿import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { BehaviorSubject, Subscription, map } from 'rxjs';
 import { Recipe } from '../../../../core/models/recipe.model';
+import { RecipeMatrixCell } from '../../../../core/models/recipe-matrix-cell.model';
+import { RecipeMatrix } from '../../../../core/models/recipe-matrix.model';
 import { Step } from '../../../../core/models/step.model';
+import { StepKind } from '../../../../core/models/step-kind.model';
 import { StepParameter } from '../../../../core/models/step-parameter.model';
 import { RecipeApiService } from '../../../../core/services/recipe-api.service';
 import { RecipeBuilderService } from '../../../../core/services/recipe-builder.service';
@@ -11,7 +14,7 @@ import { RecipeDetailHeaderComponent } from '../../components/recipes/recipe-det
 import { RecipeSummarySidecardComponent } from '../../components/recipes/recipe-summary-sidecard/recipe-summary-sidecard.component';
 import { RecipeTabNavComponent, RecipeWorkspaceTab } from '../../components/recipes/recipe-tab-nav/recipe-tab-nav.component';
 import { RecipeViewSwitchComponent, RecipeViewMode } from '../../components/recipes/recipe-view-switch/recipe-view-switch.component';
-import { RecipeMatrixViewComponent } from '../../components/recipes/recipe-matrix-view/recipe-matrix-view.component';
+import { RecipeMatrixCellUpdate, RecipeMatrixViewComponent } from '../../components/recipes/recipe-matrix-view/recipe-matrix-view.component';
 import { RecipeStepFocusViewComponent } from '../../components/recipes/recipe-step-focus-view/recipe-step-focus-view.component';
 import { StepModalComponent } from '../../components/steps/step-modal/step-modal.component';
 import { StepParameterModalComponent } from '../../components/steps/step-parameter-modal/step-parameter-modal.component';
@@ -21,6 +24,7 @@ import { StepParameterModalComponent } from '../../components/steps/step-paramet
   standalone: true,
   imports: [
     NgIf,
+    NgFor,
     AsyncPipe,
     RecipeDetailHeaderComponent,
     RecipeSummarySidecardComponent,
@@ -39,14 +43,22 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
   steps$;
   selectedStep$;
   stepParameters$;
-  gridRows$;
+  recipeMatrix$;
   loading$;
+  stepsViewSteps$;
+  stepsViewSelectedStep$;
+  stepsViewMatrix$;
+  prestepRows$;
 
   activeTab: RecipeWorkspaceTab = 'steps';
   viewMode: RecipeViewMode = 'matrix';
 
   showStepModal = false;
   showStepParameterModal = false;
+  prestepStep: Step | null = null;
+  modalStepId: number | null = null;
+  modalStepKind: StepKind | null = null;
+  modalParentCandidates: StepParameter[] = [];
 
   private sub = new Subscription();
 
@@ -59,8 +71,30 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     this.steps$ = this.recipeBuilderService.steps$;
     this.selectedStep$ = this.recipeBuilderService.selectedStep$;
     this.stepParameters$ = this.recipeBuilderService.stepParameters$;
-    this.gridRows$ = this.recipeBuilderService.gridRows$;
+    this.recipeMatrix$ = this.recipeBuilderService.recipeMatrix$;
     this.loading$ = this.recipeBuilderService.loading$;
+
+    this.stepsViewSteps$ = this.steps$.pipe(
+      map((steps) => steps.filter((step) => step.stepKind !== 'PRESTEP'))
+    );
+
+    this.stepsViewSelectedStep$ = this.selectedStep$.pipe(
+      map((step) => (step?.stepKind === 'PRESTEP' ? null : step))
+    );
+
+    this.stepsViewMatrix$ = this.recipeMatrix$.pipe(
+      map((matrix) => this.filterMatrixToRegularSteps(matrix))
+    );
+
+    this.prestepRows$ = this.recipeMatrix$.pipe(
+      map((matrix) => this.buildPrestepRows(matrix))
+    );
+
+    this.sub.add(
+      this.steps$.subscribe((steps) => {
+        this.prestepStep = steps.find((step) => step.stepKind === 'PRESTEP') ?? null;
+      })
+    );
   }
 
   ngOnInit(): void {
@@ -124,14 +158,22 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
   }
 
   onCreateStepParameter(payload: StepParameter): void {
-    const selectedStep = this.recipeBuilderService.selectedStepSnapshot;
-    if (!selectedStep?.id) return;
+    if (!this.modalStepId) {
+      return;
+    }
 
-    this.recipeApiService.createStepParameter(selectedStep.id, payload).subscribe({
+    this.recipeApiService.createStepParameter(this.modalStepId, payload).subscribe({
       next: () => {
-        this.showStepParameterModal = false;
-        this.recipeBuilderService.loadStepParameters(selectedStep.id!);
-        this.recipeBuilderService.refreshGrid();
+        const modalStepId = this.modalStepId;
+        const selectedStep = this.recipeBuilderService.selectedStepSnapshot;
+
+        this.closeStepParameterModal();
+
+        if (selectedStep?.id === modalStepId) {
+          this.recipeBuilderService.loadStepParameters(selectedStep.id);
+        }
+
+        this.recipeBuilderService.refreshMatrix();
       },
       error: (error) => {
         console.error('Failed to create step parameter', error);
@@ -151,9 +193,37 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
         if (selectedStep?.id) {
           this.recipeBuilderService.loadStepParameters(selectedStep.id);
         }
-        this.recipeBuilderService.refreshGrid();
+        this.recipeBuilderService.refreshMatrix();
       },
       error: (error) => console.error('Failed to delete step parameter', error)
+    });
+  }
+
+  onMatrixCellUpdated(update: RecipeMatrixCellUpdate): void {
+    const cell: RecipeMatrixCell = update.cell;
+    if (!cell.stepParameterId) {
+      return;
+    }
+
+    const payload: StepParameter = {
+      definitionId: cell.definitionId,
+      valueJson: update.valueType === 'ENUM' ? null : (update.valueJson ?? null),
+      selectedOptionId: update.valueType === 'ENUM' ? (update.selectedOptionId ?? null) : null,
+      lockedByGolden: cell.lockedByGolden
+    };
+
+    this.recipeApiService.updateStepParameter(cell.stepParameterId, payload).subscribe({
+      next: () => {
+        this.recipeBuilderService.refreshMatrix();
+
+        const selectedStep = this.recipeBuilderService.selectedStepSnapshot;
+        if (selectedStep?.id === cell.stepId) {
+          this.recipeBuilderService.loadStepParameters(selectedStep.id);
+        }
+      },
+      error: (error) => {
+        console.error('Failed to update matrix cell', error);
+      }
     });
   }
 
@@ -166,15 +236,104 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
   }
 
   openStepParameterModal(): void {
-    this.showStepParameterModal = true;
+    const selectedStep = this.recipeBuilderService.selectedStepSnapshot;
+    if (!selectedStep) {
+      return;
+    }
+
+    this.prepareStepParameterModal(selectedStep);
+  }
+
+  openPrestepParameterModal(): void {
+    if (!this.prestepStep) {
+      return;
+    }
+
+    this.prepareStepParameterModal(this.prestepStep);
   }
 
   closeStepParameterModal(): void {
     this.showStepParameterModal = false;
+    this.modalStepId = null;
+    this.modalStepKind = null;
+    this.modalParentCandidates = [];
   }
 
   ngOnDestroy(): void {
     this.sub.unsubscribe();
     this.recipeBuilderService.reset();
+  }
+
+  private filterMatrixToRegularSteps(matrix: RecipeMatrix | null): RecipeMatrix | null {
+    if (!matrix) {
+      return null;
+    }
+
+    const stepColumns = matrix.columns.filter((column) => column.stepKind !== 'PRESTEP');
+    const stepColumnIds = new Set(stepColumns.map((column) => column.stepId));
+
+    const filteredRows = matrix.rows
+      .map((row) => ({
+        ...row,
+        cells: row.cells.filter((cell) => stepColumnIds.has(cell.stepId))
+      }))
+      .filter((row) => row.cells.length > 0);
+
+    return {
+      ...matrix,
+      columns: stepColumns,
+      rows: filteredRows
+    };
+  }
+
+  private buildPrestepRows(matrix: RecipeMatrix | null): Array<{ parameter: string; value: string }> {
+    if (!matrix) {
+      return [];
+    }
+
+    const prestepColumn = matrix.columns.find((column) => column.stepKind === 'PRESTEP');
+    if (!prestepColumn) {
+      return [];
+    }
+
+    return matrix.rows
+      .map((row) => {
+        const cell = row.cells.find((candidate) => candidate.stepId === prestepColumn.stepId);
+        if (!cell?.stepParameterId) {
+          return null;
+        }
+
+        const value = cell.selectedOptionLabel ?? cell.valueJson ?? cell.displayValue ?? '-';
+        return {
+          parameter: row.parameterAlias || row.parameterName,
+          value
+        };
+      })
+      .filter((row): row is { parameter: string; value: string } => row !== null);
+  }
+
+  private prepareStepParameterModal(step: Step): void {
+    if (!step.id) {
+      return;
+    }
+
+    this.modalStepId = step.id;
+    this.modalStepKind = step.stepKind;
+    this.modalParentCandidates = [];
+    this.showStepParameterModal = true;
+
+    this.recipeApiService.getStepParameters(step.id).subscribe({
+      next: (parameters) => {
+        if (this.modalStepId === step.id) {
+          this.modalParentCandidates = parameters;
+        }
+      },
+      error: (error) => {
+        console.error('Failed to load step parameters for modal', error);
+        if (this.modalStepId === step.id) {
+          this.modalParentCandidates = [];
+        }
+      }
+    });
   }
 }

@@ -1,7 +1,8 @@
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(13, 27, 42, 0.45);
+  background: rgba(31, 42, 55, 0.34);
+  backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12,29 +13,39 @@
 .modal-card {
   width: 100%;
   max-width: 640px;
-  background: white;
-  border-radius: 16px;
+  background: #fff;
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow-3);
 }
 
 .modal-card__header {
   padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-soft);
+  background: linear-gradient(180deg, #ffffff 0%, #fafbfd 100%);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .modal-card__header h3 {
-  font-size: 18px;
-  color: var(--navy);
+  font-size: 16px;
+  color: var(--text-main);
 }
 
 .close-btn {
-  border: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
   background: transparent;
-  font-size: 24px;
+  width: 30px;
+  height: 30px;
+  font-size: 22px;
   cursor: pointer;
-  color: var(--text-secondary);
+  color: var(--text-soft);
+}
+
+.close-btn:hover {
+  background: #f0f4f8;
+  border-color: var(--border-soft);
 }

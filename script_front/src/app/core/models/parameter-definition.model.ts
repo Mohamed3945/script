@@ -1,4 +1,5 @@
 import { ParameterValueType } from './parameter-value-type.model';
+import { StepType } from './step-type.model';
 
 export interface ParameterDefinition {
   id?: number;
@@ -9,5 +10,6 @@ export interface ParameterDefinition {
   description?: string | null;
   valueType: ParameterValueType;
   requiredOnStep: boolean;
+  stepType: StepType;
   defaultValueJson?: string | null;
 }

@@ -1,40 +1,44 @@
 .focus-layout {
   display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 20px;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 14px;
+  max-height: calc(100vh - 280px);
+  min-height: 0;
 }
 
 .focus-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .focus-header h3 {
-  font-size: 18px;
-  color: var(--navy);
-  margin-bottom: 4px;
+  font-size: 16px;
+  color: var(--text-main);
+  margin-bottom: 2px;
 }
 
 .focus-header p {
-  font-size: 13px;
-  color: var(--text-secondary);
+  font-size: 12px;
+  color: var(--text-soft);
 }
 
 .parameter-list-card {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-soft);
   border-radius: var(--radius-lg);
-  padding: 16px;
+  padding: 12px 14px;
+  overflow: auto;
+  max-height: calc(100vh - 330px);
 }
 
 .parameter-row {
   display: flex;
   justify-content: space-between;
-  gap: 20px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--off-white);
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid #e8edf3;
 }
 
 .parameter-row:last-child {
@@ -43,14 +47,14 @@
 
 .parameter-row__title {
   font-weight: 600;
-  color: var(--navy);
-  margin-bottom: 4px;
+  color: var(--text-main);
+  margin-bottom: 2px;
 }
 
 .parameter-row__meta {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .parameter-row__value {
@@ -61,20 +65,31 @@
 .parameter-row__actions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
   align-items: flex-end;
 }
 
 .link-btn {
-  background: none;
-  border: none;
-  color: var(--blue);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--accent-slate);
   cursor: pointer;
   font-weight: 600;
+  font-size: 12px;
+  border-radius: 8px;
+  padding: 3px 7px;
+}
+
+.link-btn:hover {
+  background: #edf3f8;
 }
 
 .link-btn--danger {
-  color: #c62828;
+  color: var(--danger);
+}
+
+.link-btn--danger:hover {
+  background: var(--danger-bg);
 }
 
 .empty-state {
@@ -82,11 +97,16 @@
 }
 
 .btn {
-  background: var(--blue);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 10px 14px;
-  cursor: pointer;
-  font-weight: 600;
+  padding: 8px 12px;
+}
+
+@media (max-width: 1180px) {
+  .focus-layout {
+    grid-template-columns: 1fr;
+    max-height: none;
+  }
+
+  .parameter-list-card {
+    max-height: none;
+  }
 }

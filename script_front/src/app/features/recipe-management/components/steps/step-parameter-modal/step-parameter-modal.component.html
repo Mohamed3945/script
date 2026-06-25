@@ -6,6 +6,8 @@
     </div>
 
     <app-step-parameter-form
+      [visible]="visible"
+      [stepKind]="stepKind"
       [parentCandidates]="parentCandidates"
       (submitted)="submitted.emit($event)">
     </app-step-parameter-form>

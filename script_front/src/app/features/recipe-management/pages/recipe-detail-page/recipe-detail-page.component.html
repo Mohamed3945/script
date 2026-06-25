@@ -3,8 +3,7 @@
     <app-recipe-detail-header
       [recipe]="recipe"
       (editClicked)="onEditRecipe()"
-      (deleteClicked)="onDeleteRecipe()"
-      (addStepClicked)="openStepModal()">
+      (deleteClicked)="onDeleteRecipe()">
     </app-recipe-detail-header>
 
     <div class="workspace">
@@ -20,13 +19,6 @@
       </aside>
 
       <main class="workspace__main">
-        <div class="workspace__toolbar" *ngIf="activeTab === 'steps'">
-          <app-recipe-view-switch
-            [mode]="viewMode"
-            (modeChanged)="viewMode = $event">
-          </app-recipe-view-switch>
-        </div>
-
         <div *ngIf="activeTab === 'summary'" class="info-card">
           <h3>Recipe Summary</h3>
           <p>
@@ -36,30 +28,66 @@
         </div>
 
         <div *ngIf="activeTab === 'prestep'" class="info-card">
-          <h3>Prestep</h3>
-          <p>
-            The PRESTEP corresponds to step kind <strong>PRESTEP</strong> and typically order index 0.
-            You can visualize it through the steps workspace once present in the recipe.
-          </p>
+          <div class="prestep-header">
+            <h3>Prestep</h3>
+
+            <button class="btn" *ngIf="prestepStep" (click)="openPrestepParameterModal()">
+              Add parameter
+            </button>
+          </div>
+
+          <table *ngIf="(prestepRows$ | async) as prestepRows; else noPrestepParameters" class="prestep-table">
+            <thead>
+              <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of prestepRows">
+                <td>{{ row.parameter }}</td>
+                <td>{{ row.value }}</td>
+              </tr>
+              <tr *ngIf="prestepRows.length === 0">
+                <td colspan="2">No PRESTEP parameters found.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <ng-template #noPrestepParameters>
+            <p>No PRESTEP parameters found.</p>
+          </ng-template>
         </div>
 
         <ng-container *ngIf="activeTab === 'steps'">
-          <app-recipe-matrix-view
-            *ngIf="viewMode === 'matrix'"
-            [rows]="(gridRows$ | async) ?? []"
-            (addParameterClicked)="openStepParameterModal()">
-          </app-recipe-matrix-view>
+          <section class="steps-shell">
+            <div class="steps-shell__content">
+              <app-recipe-matrix-view
+                *ngIf="viewMode === 'matrix'"
+                [matrix]="(stepsViewMatrix$ | async)"
+                (addStepClicked)="openStepModal()"
+                (cellUpdated)="onMatrixCellUpdated($event)">
+              </app-recipe-matrix-view>
 
-          <app-recipe-step-focus-view
-            *ngIf="viewMode === 'focus'"
-            [steps]="(steps$ | async) ?? []"
-            [selectedStepId]="(selectedStep$ | async)?.id"
-            [selectedStep]="(selectedStep$ | async)"
-            [parameters]="(stepParameters$ | async) ?? []"
-            (stepSelected)="onStepSelected($event)"
-            (addParameterClicked)="openStepParameterModal()"
-            (deleteParameterClicked)="onDeleteStepParameter($event)">
-          </app-recipe-step-focus-view>
+              <app-recipe-step-focus-view
+                *ngIf="viewMode === 'focus'"
+                [steps]="(stepsViewSteps$ | async) ?? []"
+                [selectedStepId]="(stepsViewSelectedStep$ | async)?.id"
+                [selectedStep]="(stepsViewSelectedStep$ | async)"
+                [parameters]="(stepParameters$ | async) ?? []"
+                (stepSelected)="onStepSelected($event)"
+                (addParameterClicked)="openStepParameterModal()"
+                (deleteParameterClicked)="onDeleteStepParameter($event)">
+              </app-recipe-step-focus-view>
+            </div>
+
+            <div class="steps-shell__subnav">
+              <app-recipe-view-switch
+                [mode]="viewMode"
+                (modeChanged)="viewMode = $event">
+              </app-recipe-view-switch>
+            </div>
+          </section>
         </ng-container>
       </main>
     </div>
@@ -73,7 +101,8 @@
 
   <app-step-parameter-modal
     [visible]="showStepParameterModal"
-    [parentCandidates]="(stepParameters$ | async) ?? []"
+    [stepKind]="modalStepKind"
+    [parentCandidates]="modalParentCandidates"
     (closed)="closeStepParameterModal()"
     (submitted)="onCreateStepParameter($event)">
   </app-step-parameter-modal>

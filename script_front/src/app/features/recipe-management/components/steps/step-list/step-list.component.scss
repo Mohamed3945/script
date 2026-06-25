@@ -1,8 +1,10 @@
 ﻿.step-list-card {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-soft);
   border-radius: var(--radius-lg);
-  padding: 16px;
+  padding: 12px;
+  max-height: calc(100vh - 330px);
+  overflow: auto;
 }
 
 .step-list-card__header {
@@ -10,9 +12,11 @@
 }
 
 .step-list-card__header h3 {
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--navy);
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .empty {
@@ -23,17 +27,23 @@
 .step-item {
   width: 100%;
   text-align: left;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-soft);
   background: white;
-  border-radius: 10px;
-  padding: 12px;
-  margin-bottom: 10px;
+  border-radius: 9px;
+  padding: 10px;
+  margin-bottom: 8px;
   cursor: pointer;
+  transition: all 130ms var(--transition);
+}
+
+.step-item:hover {
+  border-color: var(--border-strong);
+  background: #fbfcfd;
 }
 
 .step-item--selected {
-  border-color: var(--blue);
-  background: #ebf2fb;
+  border-color: var(--accent-gold-soft);
+  background: var(--accent-gold-bg);
 }
 
 .step-item__meta {
@@ -46,5 +56,5 @@
 
 .step-item__name {
   font-weight: 600;
-  color: var(--navy);
+  color: var(--text-main);
 }

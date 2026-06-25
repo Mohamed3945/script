@@ -19,12 +19,14 @@ public class StepParameterMapper {
                 parameter.getId(),
                 parameter.getStep() != null ? parameter.getStep().getId() : null,
                 parameter.getDefinition() != null ? parameter.getDefinition().getId() : null,
+            parameter.getDefinition() != null ? parameter.getDefinition().getName() : null,
                 parameter.getParentStepParameter() != null ? parameter.getParentStepParameter().getId() : null,
                 parameter.getParentOrderScope(),
                 parameter.getOrderIndex(),
                 parameter.getLabelOverride(),
                 parameter.getValueJson(),
                 parameter.getSelectedOption() != null ? parameter.getSelectedOption().getId() : null,
+            parameter.getSelectedOption() != null ? parameter.getSelectedOption().getLabel() : null,
                 parameter.getActivationState(),
                 parameter.isLockedByGolden()
         );

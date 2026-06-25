@@ -3,6 +3,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ParameterDefinition } from '../../../../../core/models/parameter-definition.model';
 import { ParameterValueType } from '../../../../../core/models/parameter-value-type.model';
+import { StepType } from '../../../../../core/models/step-type.model';
 
 @Component({
   selector: 'app-parameter-definition-form',
@@ -18,6 +19,7 @@ export class ParameterDefinitionFormComponent implements OnInit {
   @Output() submitted = new EventEmitter<ParameterDefinition>();
 
   readonly valueTypes: ParameterValueType[] = ['STRING', 'NUMBER', 'BOOLEAN', 'ENUM', 'JSON'];
+  readonly stepTypes: StepType[] = ['STEP', 'PRESTEP'];
 
   form: ReturnType<FormBuilder['group']>;
 
@@ -29,6 +31,7 @@ export class ParameterDefinitionFormComponent implements OnInit {
       description: [''],
       valueType: ['STRING' as ParameterValueType, Validators.required],
       requiredOnStep: [true],
+      stepType: ['STEP' as StepType, Validators.required],
       defaultValueJson: ['']
     });
   }
@@ -42,6 +45,7 @@ export class ParameterDefinitionFormComponent implements OnInit {
         description: this.initialValue.description || '',
         valueType: this.initialValue.valueType,
         requiredOnStep: this.initialValue.requiredOnStep,
+        stepType: this.initialValue.stepType,
         defaultValueJson: this.initialValue.defaultValueJson || ''
       });
     }
@@ -63,6 +67,7 @@ export class ParameterDefinitionFormComponent implements OnInit {
       description: raw.description || null,
       valueType: raw.valueType!,
       requiredOnStep: !!raw.requiredOnStep,
+      stepType: raw.stepType!,
       defaultValueJson: raw.defaultValueJson || null
     });
   }

@@ -12,6 +12,8 @@ import st.tt.script_back.entities.ParameterOption;
 import st.tt.script_back.entities.Step;
 import st.tt.script_back.entities.StepParameter;
 import st.tt.script_back.enums.ActivationState;
+import st.tt.script_back.enums.StepKind;
+import st.tt.script_back.enums.StepType;
 import st.tt.script_back.mappers.StepParameterMapper;
 import st.tt.script_back.repositories.ParameterDefinitionRepository;
 import st.tt.script_back.repositories.ParameterOptionRepository;
@@ -59,6 +61,8 @@ public class StepParameterService {
         ParameterDefinition definition = parameterDefinitionRepository.findById(request.getDefinitionId())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "ParameterDefinition with id " + request.getDefinitionId() + " not found"));
+
+        validateDefinitionScope(step, definition);
 
         StepParameter parent = null;
         if (request.getParentStepParameterId() != null) {
@@ -150,6 +154,9 @@ public class StepParameterService {
         existing.setParentStepParameter(parent);
         existing.setSelectedOption(selectedOption);
         existing.setActivationState(ActivationState.WAIT);
+        if (existing.getStep() != null && existing.getDefinition() != null) {
+            validateDefinitionScope(existing.getStep(), existing.getDefinition());
+        }
         StepParameter saved = stepParameterRepository.save(existing);
         if (recipeId != null) {
             parameterActivationService.recalculateRecipeActivationStates(recipeId);
@@ -168,6 +175,21 @@ public class StepParameterService {
         stepParameterRepository.delete(existing);
         if (recipeId != null) {
             parameterActivationService.recalculateRecipeActivationStates(recipeId);
+        }
+    }
+
+    private void validateDefinitionScope(Step step, ParameterDefinition definition) {
+        if (step == null || definition == null || step.getStepKind() == null) {
+            return;
+        }
+
+        StepType expected = step.getStepKind() == StepKind.PRESTEP ? StepType.PRESTEP : StepType.STEP;
+        StepType actual = definition.getStepType() == null ? StepType.STEP : definition.getStepType();
+
+        if (expected != actual) {
+            throw new IllegalArgumentException(expected == StepType.PRESTEP
+                    ? "Only PRESTEP parameter definitions are allowed for PRESTEP"
+                    : "PRESTEP parameter definitions are not allowed for STEP");
         }
     }
 }

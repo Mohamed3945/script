@@ -29,7 +29,7 @@
       <div class="parameter-row" *ngFor="let parameter of parameters">
         <div class="parameter-row__main">
           <div class="parameter-row__title">
-            Definition #{{ parameter.definitionId }}
+            {{ parameter.definitionName || ('Definition #' + parameter.definitionId) }}
           </div>
           <div class="parameter-row__meta">
             Activation: {{ parameter.activationState || '-' }} -
@@ -37,7 +37,7 @@
           </div>
           <div class="parameter-row__value">
             <strong>Value:</strong>
-            {{ parameter.selectedOptionId ?? parameter.valueJson ?? '-' }}
+            {{ parameter.selectedOptionLabel ?? parameter.valueJson ?? '-' }}
           </div>
         </div>
 

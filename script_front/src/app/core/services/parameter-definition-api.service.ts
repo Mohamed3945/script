@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, forkJoin, map } from 'rxjs';
 import { ParameterDefinition } from '../models/parameter-definition.model';
 import { ParameterDefinitionDetail } from '../models/parameter-definition-detail.model';
 import { ParameterOption } from '../models/parameter-option.model';
+import { StepType } from '../models/step-type.model';
 
 @Injectable({ providedIn: 'root' })
 export class ParameterDefinitionApiService {
@@ -11,8 +12,12 @@ export class ParameterDefinitionApiService {
 
   constructor(private http: HttpClient) {}
 
-  getDefinitions(): Observable<ParameterDefinition[]> {
-    return this.http.get<ParameterDefinition[]>(`${this.baseUrl}/parameter-definitions`);
+  getDefinitions(stepType?: StepType): Observable<ParameterDefinition[]> {
+    let params = new HttpParams();
+    if (stepType) {
+      params = params.set('stepType', stepType);
+    }
+    return this.http.get<ParameterDefinition[]>(`${this.baseUrl}/parameter-definitions`, { params });
   }
 
   getDefinition(id: number): Observable<ParameterDefinition> {

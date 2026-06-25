@@ -1,27 +1,32 @@
 package st.tt.script_back.dto;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import st.tt.script_back.enums.ActivationState;
+import st.tt.script_back.enums.ParameterValueType;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class StepParameterDto {
-    private Long id;
+public class RecipeMatrixCellDto {
     private Long stepId;
+    private Long stepParameterId;
     private Long definitionId;
-    private String definitionName;
-    private Long parentStepParameterId;
-    private Long parentOrderScope;
-    private Integer orderIndex;
-    private String labelOverride;
+    private ParameterValueType valueType;
+
+    private String displayValue;
     private String valueJson;
     private Long selectedOptionId;
     private String selectedOptionLabel;
+
+    private List<ParameterOptionDto> availableOptions;
+
     private ActivationState activationState;
     private boolean lockedByGolden;
+    private boolean editable;
 }

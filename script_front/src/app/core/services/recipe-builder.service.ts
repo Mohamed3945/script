@@ -3,7 +3,7 @@ import { BehaviorSubject, forkJoin } from 'rxjs';
 import { Recipe } from '../models/recipe.model';
 import { Step } from '../models/step.model';
 import { StepParameter } from '../models/step-parameter.model';
-import { StepParameterGridRow } from '../models/step-parameter-grid-row.model';
+import { RecipeMatrix } from '../models/recipe-matrix.model';
 import { RecipeApiService } from './recipe-api.service';
 
 @Injectable({
@@ -14,14 +14,14 @@ export class RecipeBuilderService {
   private stepsSubject = new BehaviorSubject<Step[]>([]);
   private selectedStepSubject = new BehaviorSubject<Step | null>(null);
   private stepParametersSubject = new BehaviorSubject<StepParameter[]>([]);
-  private gridRowsSubject = new BehaviorSubject<StepParameterGridRow[]>([]);
+  private recipeMatrixSubject = new BehaviorSubject<RecipeMatrix | null>(null);
   private loadingSubject = new BehaviorSubject<boolean>(false);
 
   recipe$ = this.recipeSubject.asObservable();
   steps$ = this.stepsSubject.asObservable();
   selectedStep$ = this.selectedStepSubject.asObservable();
   stepParameters$ = this.stepParametersSubject.asObservable();
-  gridRows$ = this.gridRowsSubject.asObservable();
+  recipeMatrix$ = this.recipeMatrixSubject.asObservable();
   loading$ = this.loadingSubject.asObservable();
 
   get selectedStepSnapshot(): Step | null {
@@ -48,13 +48,13 @@ export class RecipeBuilderService {
 
     forkJoin({
       steps: this.recipeApiService.getRecipeSteps(recipe.id),
-      grid: this.recipeApiService.getRecipeStepParameterGrid(recipe.id)
+      matrix: this.recipeApiService.getRecipeMatrix(recipe.id)
     }).subscribe({
-      next: ({ steps, grid }) => {
+      next: ({ steps, matrix }) => {
         this.stepsSubject.next(steps);
-        this.gridRowsSubject.next(grid);
+        this.recipeMatrixSubject.next(matrix);
 
-        const selectedStep = steps.length > 0 ? steps[0] : null;
+        const selectedStep = steps.find((step) => step.stepKind !== 'PRESTEP') ?? null;
         this.selectedStepSubject.next(selectedStep);
 
         if (selectedStep?.id) {
@@ -77,7 +77,7 @@ export class RecipeBuilderService {
       error: (error) => {
         console.error('Failed to load recipe workspace', error);
         this.stepsSubject.next([]);
-        this.gridRowsSubject.next([]);
+        this.recipeMatrixSubject.next(null);
         this.stepParametersSubject.next([]);
         this.selectedStepSubject.next(null);
         this.loadingSubject.next(false);
@@ -100,15 +100,15 @@ export class RecipeBuilderService {
     });
   }
 
-  refreshGrid(): void {
+  refreshMatrix(): void {
     const recipe = this.recipeSubject.value;
     if (!recipe?.id) {
       return;
     }
 
-    this.recipeApiService.getRecipeStepParameterGrid(recipe.id).subscribe({
-      next: (grid) => this.gridRowsSubject.next(grid),
-      error: (error) => console.error('Failed to refresh parameter grid', error)
+    this.recipeApiService.getRecipeMatrix(recipe.id).subscribe({
+      next: (matrix) => this.recipeMatrixSubject.next(matrix),
+      error: (error) => console.error('Failed to refresh recipe matrix', error)
     });
   }
 
@@ -117,7 +117,7 @@ export class RecipeBuilderService {
     this.stepsSubject.next([]);
     this.selectedStepSubject.next(null);
     this.stepParametersSubject.next([]);
-    this.gridRowsSubject.next([]);
+    this.recipeMatrixSubject.next(null);
     this.loadingSubject.next(false);
   }
 }

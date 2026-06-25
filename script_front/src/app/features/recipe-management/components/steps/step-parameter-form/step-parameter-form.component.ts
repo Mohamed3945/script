@@ -4,6 +4,7 @@ import { NgFor, NgIf } from '@angular/common';
 import { StepParameter } from '../../../../../core/models/step-parameter.model';
 import { ParameterDefinition } from '../../../../../core/models/parameter-definition.model';
 import { ParameterOption } from '../../../../../core/models/parameter-option.model';
+import { StepKind } from '../../../../../core/models/step-kind.model';
 import { ParameterDefinitionApiService } from '../../../../../core/services/parameter-definition-api.service';
 import { ParameterOptionApiService } from '../../../../../core/services/parameter-option-api.service';
 
@@ -15,12 +16,16 @@ import { ParameterOptionApiService } from '../../../../../core/services/paramete
   styleUrl: './step-parameter-form.component.scss'
 })
 export class StepParameterFormComponent implements OnChanges {
+  @Input() visible = false;
+  @Input() stepKind: StepKind | null = null;
   @Input() parentCandidates: StepParameter[] = [];
   @Output() submitted = new EventEmitter<StepParameter>();
 
   definitions: ParameterDefinition[] = [];
   availableOptions: ParameterOption[] = [];
   selectedDefinition?: ParameterDefinition;
+  loadingDefinitions = false;
+  definitionLoadError = false;
 
   form: ReturnType<FormBuilder['group']>;
 
@@ -46,20 +51,36 @@ export class StepParameterFormComponent implements OnChanges {
     });
   }
 
-  ngOnChanges(changes: SimpleChanges): void {}
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['visible']?.currentValue === true || changes['stepKind']) {
+      this.loadDefinitions();
+    }
+  }
 
   get isEnumDefinition(): boolean {
     return this.selectedDefinition?.valueType === 'ENUM';
   }
 
   loadDefinitions(): void {
-    this.parameterDefinitionApiService.getDefinitions().subscribe({
+    this.loadingDefinitions = true;
+    this.definitionLoadError = false;
+
+    const stepType = this.stepKind === 'PRESTEP' ? 'PRESTEP' : 'STEP';
+
+    this.parameterDefinitionApiService.getDefinitions(stepType).subscribe({
       next: (definitions) => {
-        this.definitions = definitions;
+        this.definitions = [...definitions].sort((a, b) => a.name.localeCompare(b.name));
+        const selectedDefinitionId = this.form.get('definitionId')?.value ?? null;
+        if (!this.definitions.some(d => d.id === selectedDefinitionId)) {
+          this.form.patchValue({ definitionId: null }, { emitEvent: true });
+        }
+        this.loadingDefinitions = false;
       },
       error: (error) => {
         console.error('Failed to load parameter definitions', error);
         this.definitions = [];
+        this.loadingDefinitions = false;
+        this.definitionLoadError = true;
       }
     });
   }

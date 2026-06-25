@@ -12,5 +12,4 @@ export class RecipeDetailHeaderComponent {
 
   @Output() editClicked = new EventEmitter<void>();
   @Output() deleteClicked = new EventEmitter<void>();
-  @Output() addStepClicked = new EventEmitter<void>();
 }

@@ -1,23 +1,31 @@
 .switch {
   display: inline-flex;
-  gap: 8px;
-  background: #f8fbff;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 6px;
+  gap: 4px;
+  background: #f3f6f9;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 4px;
 }
 
 .switch__btn {
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
   border-radius: 8px;
-  padding: 10px 14px;
+  padding: 6px 11px;
   cursor: pointer;
   font-weight: 600;
-  color: var(--text-secondary);
+  font-size: 12px;
+  color: var(--text-soft);
+  transition: all 140ms var(--transition);
+}
+
+.switch__btn:hover {
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .switch__btn--active {
-  background: var(--blue);
-  color: white;
+  background: #fff;
+  color: #3f556b;
+  border-color: var(--border-soft);
+  box-shadow: var(--shadow-1);
 }

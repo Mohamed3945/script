@@ -26,6 +26,7 @@ public class ParameterDefinitionMapper {
                 definition.getDescription(),
                 definition.getValueType(),
                 definition.isRequiredOnStep(),
+                definition.getStepType(),
                 definition.getDefaultValueJson()
         );
     }
@@ -43,6 +44,7 @@ public class ParameterDefinitionMapper {
                 definition.getDescription(),
                 definition.getValueType(),
                 definition.isRequiredOnStep(),
+                definition.getStepType(),
                 definition.getDefaultValueJson(),
                 options == null ? Collections.emptyList() : options
         );
@@ -73,6 +75,7 @@ public class ParameterDefinitionMapper {
         entity.setDescription(dto.getDescription());
         entity.setValueType(dto.getValueType());
         entity.setRequiredOnStep(dto.isRequiredOnStep());
+        entity.setStepType(dto.getStepType());
         entity.setDefaultValueJson(dto.getDefaultValueJson());
     }
 }

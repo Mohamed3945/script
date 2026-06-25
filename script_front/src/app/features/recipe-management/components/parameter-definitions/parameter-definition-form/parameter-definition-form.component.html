@@ -38,6 +38,13 @@
         Required on step
       </label>
     </div>
+
+    <div class="field">
+      <label>Step type</label>
+      <select formControlName="stepType">
+        <option *ngFor="let type of stepTypes" [value]="type">{{ type }}</option>
+      </select>
+    </div>
   </div>
 
   <div class="actions">

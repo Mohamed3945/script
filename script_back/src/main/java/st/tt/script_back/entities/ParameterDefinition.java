@@ -19,6 +19,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import st.tt.script_back.enums.ParameterValueType;
+import st.tt.script_back.enums.StepType;
 import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.OneToMany;
@@ -57,6 +58,10 @@ public class ParameterDefinition {
 
     @Column(name = "required_on_step", nullable = false)
     private boolean requiredOnStep = true;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "step_type", nullable = false)
+    private StepType stepType = StepType.STEP;
 
     @Column(name = "default_value_json", columnDefinition = "LONGTEXT")
     private String defaultValueJson;

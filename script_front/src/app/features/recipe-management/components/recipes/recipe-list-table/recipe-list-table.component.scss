@@ -26,6 +26,7 @@
 
 .actions {
   text-align: right;
+  white-space: nowrap;
 }
 
 .link-btn {
@@ -34,6 +35,11 @@
   color: var(--blue);
   cursor: pointer;
   font-weight: 600;
+  margin-left: 8px;
+}
+
+.link-btn--danger {
+  color: #c62828;
 }
 
 .empty-state {

@@ -9,9 +9,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import st.tt.script_back.dto.ParameterDefinitionDto;
+import st.tt.script_back.enums.StepType;
 import st.tt.script_back.services.ParameterDefinitionService;
 
 @RestController
@@ -25,8 +27,9 @@ public class ParameterDefinitionController {
     }
 
     @GetMapping
-    public List<ParameterDefinitionDto> getParameterDefinitions() {
-        return parameterDefinitionService.getParameterDefinitions();
+    public List<ParameterDefinitionDto> getParameterDefinitions(
+            @RequestParam(required = false) StepType stepType) {
+        return parameterDefinitionService.getParameterDefinitions(stepType);
     }
 
     @GetMapping("/{id}")

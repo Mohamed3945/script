@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityNotFoundException;
 import st.tt.script_back.dto.ParameterDefinitionDto;
 import st.tt.script_back.entities.ParameterDefinition;
+import st.tt.script_back.enums.StepType;
 import st.tt.script_back.mappers.ParameterDefinitionMapper;
 import st.tt.script_back.repositories.ParameterDefinitionRepository;
 
@@ -36,6 +37,9 @@ public class ParameterDefinitionService {
         }
 
         ParameterDefinition definition = parameterDefinitionMapper.toEntity(request);
+        if (definition.getStepType() == null) {
+            definition.setStepType(StepType.STEP);
+        }
         String baseCode = toNormalizedCode(request.getName(), "PARAMETER");
         definition.setCode(ensureUniqueCode(baseCode, null));
         ParameterDefinition saved = parameterDefinitionRepository.save(definition);
@@ -43,9 +47,14 @@ public class ParameterDefinitionService {
     }
 
     @Transactional(readOnly = true)
-    public List<ParameterDefinitionDto> getParameterDefinitions() {
-        return parameterDefinitionMapper.toDtoList(
-                parameterDefinitionRepository.findAll(Sort.by(Sort.Direction.ASC, "name")));
+    public List<ParameterDefinitionDto> getParameterDefinitions(StepType stepType) {
+        List<ParameterDefinition> definitions;
+        if (stepType == null) {
+            definitions = parameterDefinitionRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
+        } else {
+            definitions = parameterDefinitionRepository.findByStepTypeOrderByNameAsc(stepType);
+        }
+        return parameterDefinitionMapper.toDtoList(definitions);
     }
 
     @Transactional(readOnly = true)
@@ -70,6 +79,9 @@ public class ParameterDefinitionService {
         }
 
         String baseCode = toNormalizedCode(existing.getName(), "PARAMETER");
+        if (existing.getStepType() == null) {
+            existing.setStepType(StepType.STEP);
+        }
         existing.setCode(ensureUniqueCode(baseCode, existing.getId()));
 
         ParameterDefinition saved = parameterDefinitionRepository.save(existing);
