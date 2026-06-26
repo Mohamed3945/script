@@ -50,7 +50,9 @@ public class StepParameterMapper {
     }
 
     public void updateEntityFromDto(StepParameterDto dto, StepParameter entity) {
-        entity.setOrderIndex(dto.getOrderIndex());
+        if (dto.getOrderIndex() != null) {
+            entity.setOrderIndex(dto.getOrderIndex());
+        }
         entity.setLabelOverride(dto.getLabelOverride());
         entity.setValueJson(dto.getValueJson());
         entity.setLockedByGolden(dto.isLockedByGolden());

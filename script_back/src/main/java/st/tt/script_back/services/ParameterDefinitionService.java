@@ -13,18 +13,22 @@ import st.tt.script_back.entities.ParameterDefinition;
 import st.tt.script_back.enums.StepType;
 import st.tt.script_back.mappers.ParameterDefinitionMapper;
 import st.tt.script_back.repositories.ParameterDefinitionRepository;
+import st.tt.script_back.repositories.StepParameterRepository;
 
 @Service
 public class ParameterDefinitionService {
 
     private final ParameterDefinitionRepository parameterDefinitionRepository;
     private final ParameterDefinitionMapper parameterDefinitionMapper;
+    private final StepParameterRepository stepParameterRepository;
 
     public ParameterDefinitionService(
             ParameterDefinitionRepository parameterDefinitionRepository,
-            ParameterDefinitionMapper parameterDefinitionMapper) {
+            ParameterDefinitionMapper parameterDefinitionMapper,
+            StepParameterRepository stepParameterRepository) {
         this.parameterDefinitionRepository = parameterDefinitionRepository;
         this.parameterDefinitionMapper = parameterDefinitionMapper;
+        this.stepParameterRepository = stepParameterRepository;
     }
 
     @Transactional
@@ -93,6 +97,17 @@ public class ParameterDefinitionService {
         if (!parameterDefinitionRepository.existsById(id)) {
             throw new EntityNotFoundException("ParameterDefinition with id " + id + " not found");
         }
+
+        if (stepParameterRepository.existsByDefinitionId(id)) {
+            throw new IllegalStateException(
+                    "Suppression impossible: ce parametre est utilise dans des recettes.");
+        }
+
+        if (stepParameterRepository.existsBySelectedOptionDefinitionId(id)) {
+            throw new IllegalStateException(
+                    "Suppression impossible: une option de ce parametre est deja utilisee dans des recettes.");
+        }
+
         parameterDefinitionRepository.deleteById(id);
     }
 

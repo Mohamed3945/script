@@ -13,6 +13,7 @@ public class WebCorsConfig implements WebMvcConfigurer {
                 .allowedOrigins("http://localhost:4200")
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
+            .exposedHeaders("X-Business-Code")
                 .maxAge(3600);
     }
 }

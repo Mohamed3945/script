@@ -9,6 +9,21 @@
       <button class="btn" (click)="onCreate()">New definition</button>
     </div>
 
+    <div class="filters">
+      <div class="filters__group">
+        <label>Step type</label>
+        <select [value]="selectedFilter" (change)="onFilterChanged($any($event.target).value)">
+          <option value="ALL">All</option>
+          <option value="STEP">STEP</option>
+          <option value="PRESTEP">PRESTEP</option>
+        </select>
+      </div>
+
+      <div class="filters__actions">
+        <button class="btn btn--secondary" (click)="onFilterChanged('ALL')">Reset</button>
+      </div>
+    </div>
+
     <div class="card" *ngIf="loading$ | async; else tableSection">
       Loading parameter definitions...
     </div>

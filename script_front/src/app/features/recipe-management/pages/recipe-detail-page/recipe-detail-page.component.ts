@@ -277,7 +277,7 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
         ...row,
         cells: row.cells.filter((cell) => stepColumnIds.has(cell.stepId))
       }))
-      .filter((row) => row.cells.length > 0);
+      .filter((row) => row.cells.some((cell) => Boolean(cell.stepParameterId)));
 
     return {
       ...matrix,

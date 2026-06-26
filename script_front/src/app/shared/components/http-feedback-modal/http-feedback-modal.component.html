@@ -1,0 +1,27 @@
+<div class="http-feedback" *ngIf="feedbackService.current$ | async as message">
+  <div class="http-feedback__backdrop" (click)="close()"></div>
+
+  <section class="http-feedback__dialog" role="alertdialog" aria-modal="true">
+    <header class="http-feedback__header" [class.http-feedback__header--error]="message.severity === 'error'" [class.http-feedback__header--success]="message.severity === 'success'">
+      <div class="http-feedback__title-wrap">
+        <i
+          class="http-feedback__icon"
+          [class.ti]="true"
+          [class.ti-circle-check]="message.severity === 'success'"
+          [class.ti-alert-circle]="message.severity === 'error'"
+          [class.http-feedback__icon--success]="message.severity === 'success'"
+          [class.http-feedback__icon--error]="message.severity === 'error'">
+        </i>
+        <h3>{{ message.title }}</h3>
+      </div>
+    </header>
+
+    <div class="http-feedback__body">
+      <p class="http-feedback__description">{{ message.description }}</p>
+    </div>
+
+    <footer class="http-feedback__footer">
+      <button type="button" class="btn" (click)="close()">D'accord</button>
+    </footer>
+  </section>
+</div>

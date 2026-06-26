@@ -26,6 +26,42 @@
   color: var(--text-secondary);
 }
 
+.filters {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  gap: 16px;
+  align-items: end;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filters__group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 180px;
+}
+
+.filters__group label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.filters__group select {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: white;
+}
+
+.filters__actions {
+  display: flex;
+  gap: 10px;
+}
+
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -38,7 +74,13 @@
   color: white;
   border: none;
   border-radius: 10px;
-  padding: 12px 18px;
+  padding: 10px 16px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.btn--secondary {
+  background: white;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
 }

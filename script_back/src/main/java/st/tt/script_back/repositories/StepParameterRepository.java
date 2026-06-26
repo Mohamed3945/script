@@ -10,6 +10,10 @@ import st.tt.script_back.entities.StepParameter;
 
 public interface StepParameterRepository extends JpaRepository<StepParameter, Long> {
 
+    boolean existsByDefinitionId(Long definitionId);
+
+    boolean existsBySelectedOptionDefinitionId(Long definitionId);
+
     List<StepParameter> findByStepIdOrderByParentOrderScopeAscOrderIndexAsc(Long stepId);
 
     List<StepParameter> findByParentStepParameterIdOrderByOrderIndexAsc(Long parentStepParameterId);
