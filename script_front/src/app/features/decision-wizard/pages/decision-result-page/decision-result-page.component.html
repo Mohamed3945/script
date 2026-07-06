@@ -1,0 +1,57 @@
+<section class="result-page" *ngIf="result$ | async as result">
+  <div class="result-page__container">
+    <div class="result-page__hero">
+      <div class="result-page__icon">
+        <i class="ti ti-check"></i>
+      </div>
+      <h1>Recipe profile identified</h1>
+      <p>
+        {{ result.description || 'Based on your selections, here is the recommended configuration.' }}
+      </p>
+    </div>
+
+    <div class="result-page__grid">
+      <app-result-info-card
+        title="Golden Recipe"
+        icon="ti ti-file-check"
+        theme="blue"
+        [value]="result.code || '—'"
+        [subValue]="result.goldenRecipeId ? 'ID: ' + result.goldenRecipeId : '—'">
+      </app-result-info-card>
+
+      <app-result-info-card
+        title="Compatible Machines"
+        icon="ti ti-cpu"
+        theme="gold"
+        [value]="machineChoices.length ? machineChoices.length + (machineChoices.length > 1 ? ' matches' : ' match') : '—'"
+        [subValue]="machineChoices.length ? machineChoices[0].label : 'No machine provided by wizard result'">
+      </app-result-info-card>
+    </div>
+
+    <div class="result-page__selection-grid">
+      <app-result-golden-selection-card
+        [goldenRecipeId]="result.goldenRecipeId"
+        [goldenCode]="result.code"
+        [selected]="goldenValidated"
+        (selectedChange)="onGoldenValidatedChange($event)">
+      </app-result-golden-selection-card>
+
+      <app-result-info-card
+        title="Customization flow"
+        icon="ti ti-layout-sidebar-right-expand"
+        theme="blue"
+        value="Save and customize"
+        subValue="The derived recipe opens directly. Compatible machines stay visible on the right drawer.">
+      </app-result-info-card>
+    </div>
+
+    <app-result-summary [selections]="(selections$ | async) ?? []"></app-result-summary>
+
+    <app-result-final-actions
+      [canSubmit]="canSubmit"
+      [loading]="(loading$ | async) ?? false"
+      (restartClicked)="restart()"
+      (saveAndCustomizeClicked)="saveAndCustomize()">
+    </app-result-final-actions>
+  </div>
+</section>

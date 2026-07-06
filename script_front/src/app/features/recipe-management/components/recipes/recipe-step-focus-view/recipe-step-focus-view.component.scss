@@ -1,0 +1,120 @@
+.focus-layout {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 14px;
+  max-height: calc(100vh - 250px);
+  min-height: 0;
+}
+
+.focus-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--border-soft);
+  background: #eef3f7;
+  padding: 10px 12px;
+}
+
+.focus-header h3 {
+  margin: 0;
+  font-size: 12px;
+  color: #2b3f52;
+  margin-bottom: 2px;
+  font-family: Consolas, 'Courier New', monospace;
+}
+
+.focus-header p {
+  font-size: 11px;
+  color: #607488;
+  margin: 0;
+}
+
+.parameter-list-card {
+  background: #fff;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 0;
+  overflow: auto;
+  max-height: calc(100vh - 330px);
+}
+
+.parameter-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.parameter-row:last-child {
+  border-bottom: none;
+}
+
+.parameter-row__title {
+  font-weight: 600;
+  color: #2b3f52;
+  margin-bottom: 2px;
+  font-family: Consolas, 'Courier New', monospace;
+}
+
+.parameter-row__meta {
+  font-size: 11px;
+  color: #607488;
+  margin-bottom: 4px;
+}
+
+.parameter-row__value {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.parameter-row__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-end;
+}
+
+.link-btn {
+  background: transparent;
+  border: 1px solid var(--border-soft);
+  color: var(--accent-slate);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+.link-btn:hover {
+  background: #edf3f8;
+}
+
+.link-btn--danger {
+  color: var(--danger);
+}
+
+.link-btn--danger:hover {
+  background: var(--danger-bg);
+}
+
+.empty-state {
+  color: var(--text-muted);
+}
+
+.btn {
+  padding: 8px 12px;
+}
+
+@media (max-width: 1180px) {
+  .focus-layout {
+    grid-template-columns: 1fr;
+    max-height: none;
+  }
+
+  .parameter-list-card {
+    max-height: none;
+  }
+}

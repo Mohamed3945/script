@@ -1,0 +1,53 @@
+﻿<app-derived-recipe-banner
+  *ngIf="recipe.recipeKind === 'DERIVED'"
+  [parentRecipeId]="recipe.parentRecipeId">
+</app-derived-recipe-banner>
+
+<div class="summary-card">
+  <div class="summary-grid">
+    <div class="summary-item">
+      <span class="label">Name</span>
+      <span class="value">{{ recipe.name }}</span>
+    </div>
+
+    <div class="summary-item">
+      <span class="label">Kind</span>
+      <span class="value">{{ recipe.recipeKind }}</span>
+    </div>
+
+    <div class="summary-item">
+      <span class="label">Status</span>
+      <span class="value">{{ recipe.status }}</span>
+    </div>
+
+    <div class="summary-item">
+      <span class="label">Version</span>
+      <span class="value">{{ recipe.version ?? '—' }}</span>
+    </div>
+
+    <div class="summary-item">
+      <span class="label">Creator ID</span>
+      <span class="value">{{ recipe.creatorId }}</span>
+    </div>
+
+    <div class="summary-item">
+      <span class="label">Revisor ID</span>
+      <span class="value">{{ recipe.revisorId ?? '—' }}</span>
+    </div>
+
+    <div class="summary-item">
+      <span class="label">Process family</span>
+      <span class="value">{{ recipe.processFamily || '—' }}</span>
+    </div>
+
+    <div class="summary-item">
+      <span class="label">Frozen</span>
+      <span class="value">{{ recipe.frozen ? 'Yes' : 'No' }}</span>
+    </div>
+
+    <div class="summary-item summary-item--full">
+      <span class="label">Description</span>
+      <span class="value">{{ recipe.description || '—' }}</span>
+    </div>
+  </div>
+</div>

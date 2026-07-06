@@ -1,0 +1,1 @@
+export type ParameterValueType = 'STRING' | 'NUMBER' | 'BOOLEAN' | 'ENUM' | 'JSON';

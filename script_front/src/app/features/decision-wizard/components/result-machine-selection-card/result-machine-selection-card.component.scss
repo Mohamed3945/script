@@ -1,0 +1,55 @@
+.selection-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.selection-card__header {
+  margin-bottom: 14px;
+}
+
+.selection-card__title {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.selection-card__value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.machine-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.machine-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color .2s ease, background .2s ease;
+}
+
+.machine-item--selected {
+  border-color: var(--gold);
+  background: #fbf6e8;
+}
+
+.machine-item__code {
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.machine-item__label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}

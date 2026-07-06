@@ -1,0 +1,49 @@
+.recap-list {
+  padding: 14px 18px;
+  min-height: 80px;
+}
+
+.recap-list__empty {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-style: italic;
+}
+
+.recap-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--off-white);
+}
+
+.recap-item:last-child {
+  border-bottom: none;
+}
+
+.recap-item__index {
+  width: 20px;
+  height: 20px;
+  background: var(--blue);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.recap-item__question {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.recap-item__answer {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--navy);
+}

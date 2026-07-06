@@ -1,0 +1,25 @@
+﻿<div class="step-list-card">
+  <div class="step-list-card__header">
+    <h3>Steps</h3>
+  </div>
+
+  <div *ngIf="steps.length === 0" class="empty">
+    No steps yet.
+  </div>
+
+  <button
+    *ngFor="let step of steps"
+    type="button"
+    class="step-item"
+    [class.step-item--selected]="selectedStepId === step.id"
+    (click)="stepSelected.emit(step)">
+    <div class="step-item__meta">
+      <span class="step-item__kind">{{ step.stepKind }}</span>
+      <span class="step-item__order">#{{ step.orderIndex }}</span>
+    </div>
+    <div class="step-item__meta">
+      <span class="step-item__kind">{{ step.code || '—' }}</span>
+    </div>
+    <div class="step-item__name">{{ step.name }}</div>
+  </button>
+</div>

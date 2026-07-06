@@ -1,0 +1,14 @@
+<section class="page" *ngIf="machine$ | async as machine">
+  <div class="page__container">
+    <div class="page__header">
+      <h1>Edit machine</h1>
+      <p>Update machine metadata.</p>
+    </div>
+
+    <app-machine-form
+      [initialValue]="machine"
+      mode="edit"
+      (submitted)="onSubmit($event)">
+    </app-machine-form>
+  </div>
+</section>

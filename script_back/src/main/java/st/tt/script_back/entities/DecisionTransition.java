@@ -20,6 +20,11 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 
 
+/**
+ * DecisionTransition class for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 @Entity
 @Getter
 @Setter
@@ -56,6 +61,9 @@ public class DecisionTransition {
     @JsonBackReference("result-profile-transitions")
     private DecisionResultProfile resultProfile;
 
+    /**
+     * Executes onCreate.
+     */
     @PrePersist
     protected void onCreate() {
         Instant now = Instant.now();
@@ -65,6 +73,9 @@ public class DecisionTransition {
         }
     }
 
+    /**
+     * Executes onUpdate.
+     */
     @PreUpdate
     protected void onUpdate() {
         this.reviseTime = Instant.now();

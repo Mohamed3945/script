@@ -1,0 +1,77 @@
+<div class="info-card">
+  <div class="prestep-header">
+    <h3>Prestep</h3>
+
+    <button class="btn" *ngIf="prestepStep" (click)="addParameterClicked.emit()">
+      Add parameter
+    </button>
+  </div>
+
+  <table *ngIf="rows as prestepRows; else noPrestepParameters" class="prestep-table">
+    <thead>
+      <tr>
+        <th>Parameter</th>
+        <th>Value</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of prestepRows">
+        <td class="prestep-table__param">
+          {{ row.parameterAlias || row.parameterName }}
+        </td>
+        <td
+          [class.cell-locked]="row.cell.lockedByGolden"
+          [class.cell-readonly]="!isEditable(row.cell)">
+          <ng-container *ngIf="isEditable(row.cell); else readonlyCell">
+            <ng-container [ngSwitch]="row.valueType">
+              <select
+                *ngSwitchCase="enumValueType"
+                class="cell-input"
+                [ngModel]="row.cell.selectedOptionId"
+                (ngModelChange)="onEnumChanged(row.cell, $event)">
+                <option [ngValue]="null">-</option>
+                <option *ngFor="let option of row.cell.availableOptions" [ngValue]="option.id">
+                  {{ option.label }}
+                </option>
+              </select>
+
+              <input
+                *ngSwitchCase="numberValueType"
+                class="cell-input"
+                type="number"
+                [value]="row.cell.valueJson || ''"
+                (change)="onNumberCommitted(row.cell, $any($event.target).value)" />
+
+              <input
+                *ngSwitchDefault
+                class="cell-input"
+                type="text"
+                [value]="row.cell.valueJson || ''"
+                (change)="onValueCommitted(row.cell, $any($event.target).value)" />
+            </ng-container>
+          </ng-container>
+
+          <ng-template #readonlyCell>
+            <div class="cell-display">{{ row.cell.displayValue || '-' }}</div>
+          </ng-template>
+        </td>
+        <td class="prestep-table__actions">
+          <button
+            class="link-btn link-btn--danger"
+            [disabled]="!row.cell.stepParameterId"
+            (click)="deleteParameterClicked.emit(row.cell)">
+            Delete
+          </button>
+        </td>
+      </tr>
+      <tr *ngIf="prestepRows.length === 0">
+        <td colspan="3">No PRESTEP parameters found.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ng-template #noPrestepParameters>
+    <p>No PRESTEP parameters found.</p>
+  </ng-template>
+</div>

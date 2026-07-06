@@ -1,0 +1,40 @@
+﻿<div class="table-card">
+  <table *ngIf="definitions.length > 0; else emptyState" class="table">
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Alias</th>
+        <th>Type</th>
+        <th>Unit</th>
+        <th>Required</th>
+        <th>Impacts configuration</th>
+        <th>Default JSON</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let definition of definitions">
+        <td>{{ definition.code || '—' }}</td>
+        <td>{{ definition.name }}</td>
+        <td>{{ definition.alias }}</td>
+        <td>{{ definition.valueType }}</td>
+        <td>{{ definition.unit || '—' }}</td>
+        <td>{{ definition.requiredOnStep ? 'Yes' : 'No' }}</td>
+        <td>{{ definition.configurationDefinitionCode || definition.configurationDefinitionName || '—' }}</td>
+        <td class="json-cell">{{ definition.defaultValueJson || '—' }}</td>
+        <td class="actions">
+          <button class="link-btn" (click)="viewDefinition.emit(definition)">View</button>
+          <button class="link-btn" (click)="editDefinition.emit(definition)">Edit</button>
+          <button class="link-btn link-btn--danger" (click)="deleteDefinition.emit(definition)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ng-template #emptyState>
+    <div class="empty-state">
+      No parameter definitions found.
+    </div>
+  </ng-template>
+</div>

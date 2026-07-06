@@ -1,0 +1,32 @@
+﻿<section class="page">
+  <div class="page__container">
+    <div class="page__header">
+      <div>
+        <h1>Recipes</h1>
+        <p>Browse golden and derived recipes, inspect their steps and parameter grid.</p>
+      </div>
+
+      <div class="page__actions">
+        <button class="btn btn--secondary" (click)="onCreateDerived()">New derived recipe</button>
+        <button class="btn" (click)="onCreateGolden()">New golden recipe</button>
+      </div>
+    </div>
+
+    <app-recipe-list-filters
+      (filtersChanged)="onFiltersChanged($event)">
+    </app-recipe-list-filters>
+
+    <div class="card" *ngIf="loading$ | async; else recipeTable">
+      <p>Loading recipes...</p>
+    </div>
+
+    <ng-template #recipeTable>
+      <app-recipe-list-table
+        [recipes]="(recipes$ | async) || []"
+        (viewRecipe)="onViewRecipe($event)"
+        (editRecipe)="onEditRecipe($event)"
+        (deleteRecipe)="onDeleteRecipe($event)">
+      </app-recipe-list-table>
+    </ng-template>
+  </div>
+</section>

@@ -1,1 +1,42 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --navy: #0D1B2A;
+  --blue: #1565C0;
+  --blue-mid: #2979CC;
+  --blue-soft: #4A90D9;
+  --gold: #C9A84C;
+  --gold-light: #EDD99A;
+  --off-white: #F4F7FB;
+  --surface: #FFFFFF;
+  --text-primary: #0D1B2A;
+  --text-secondary: #445A6F;
+  --text-muted: #7A92A8;
+  --border: #D9E4EF;
+  --border-strong: #B8CCE0;
+  --success: #1B7A4C;
+  --success-bg: #E8F5EE;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --transition: cubic-bezier(.4,0,.2,1);
+}
+
+html, body {
+  min-height: 100%;
+}
+
+body {
+  background: var(--off-white);
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.6;
+}

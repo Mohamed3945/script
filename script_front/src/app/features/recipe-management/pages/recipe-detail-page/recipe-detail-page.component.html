@@ -1,0 +1,143 @@
+﻿<section class="page" *ngIf="recipe$ | async as recipe">
+  <div class="page__container">
+    <app-recipe-detail-header [recipe]="recipe"></app-recipe-detail-header>
+
+    <div class="workspace" [class.workspace--drawer-open]="showRightDrawer">
+      <main class="workspace__main">
+        <section class="workspace__main-topbar">
+          <app-recipe-tab-nav
+            [activeTab]="activeTab"
+            (tabChanged)="activeTab = $event">
+          </app-recipe-tab-nav>
+
+          <div class="workspace__main-topbar-child" *ngIf="activeTab === 'steps'">
+            <span class="steps-shell__toolbar-label">View mode</span>
+            <app-recipe-view-switch
+              [mode]="viewMode"
+              (modeChanged)="viewMode = $event">
+            </app-recipe-view-switch>
+          </div>
+        </section>
+
+        <button
+          type="button"
+          class="drawer__toggle-tab drawer__toggle-tab--floating"
+          (click)="toggleRightDrawer()"
+          [attr.aria-label]="showRightDrawer ? 'Close tools panel' : 'Open tools panel'">
+          <span class="drawer__toggle-glyph">{{ showRightDrawer ? '>' : '<' }}</span>
+        </button>
+
+        <ng-container *ngIf="activeTab === 'summary'">
+          <app-summary-view
+            [recipe]="recipe"
+            [savingField]="savingSummaryField"
+            [recipeKindOptions]="recipeKindOptions"
+            [recipeStatusOptions]="recipeStatusOptions"
+            (fieldCommitted)="onSummaryFieldCommitted($event)">
+          </app-summary-view>
+        </ng-container>
+
+        <app-recipe-prestep-view
+          *ngIf="activeTab === 'prestep'"
+          [prestepStep]="prestepStep"
+          [rows]="(prestepRows$ | async)"
+          (addParameterClicked)="openPrestepParameterModal()"
+          (deleteParameterClicked)="onDeletePrestepParameter($event)"
+          (cellUpdated)="onPrestepCellUpdated($event)">
+        </app-recipe-prestep-view>
+
+        <ng-container *ngIf="activeTab === 'steps'">
+          <section class="steps-shell">
+            <div class="steps-shell__content">
+              <app-recipe-matrix-view
+                *ngIf="viewMode === 'matrix'"
+                [matrix]="(stepsViewMatrix$ | async)"
+                (addStepClicked)="openStepModal()"
+                (cellUpdated)="onMatrixCellUpdated($event)">
+              </app-recipe-matrix-view>
+
+              <app-recipe-step-focus-view
+                *ngIf="viewMode === 'focus'"
+                [steps]="(stepsViewSteps$ | async) ?? []"
+                [selectedStepId]="(stepsViewSelectedStep$ | async)?.id"
+                [selectedStep]="(stepsViewSelectedStep$ | async)"
+                [parameters]="(stepParameters$ | async) ?? []"
+                (stepSelected)="onStepSelected($event)"
+                (addParameterClicked)="openStepParameterModal()"
+                (deleteParameterClicked)="onDeleteStepParameter($event)">
+              </app-recipe-step-focus-view>
+            </div>
+          </section>
+        </ng-container>
+      </main>
+
+      <aside class="workspace__drawer" [class.workspace__drawer--open]="showRightDrawer">
+        <button
+          type="button"
+          class="drawer__toggle-tab"
+          (click)="toggleRightDrawer()"
+          [attr.aria-label]="showRightDrawer ? 'Close tools panel' : 'Open tools panel'">
+          <span class="drawer__toggle-glyph">{{ showRightDrawer ? '>' : '<' }}</span>
+        </button>
+
+        <div class="drawer__body" *ngIf="showRightDrawer">
+          <section class="drawer-section">
+            <h4 class="drawer-section__title">Structure</h4>
+            <button type="button" class="drawer-action" (click)="openStepModal()">
+              <span class="drawer-action__icon">[+]</span>
+              <span class="drawer-action__label">Add step</span>
+            </button>
+            <button
+              type="button"
+              class="drawer-action"
+              [disabled]="!canAddParameter"
+              (click)="openContextualParameterModal()">
+              <span class="drawer-action__icon">[+]</span>
+              <span class="drawer-action__label">Add parameter</span>
+            </button>
+            <button type="button" class="drawer-action" [disabled]="true">
+              <span class="drawer-action__icon">[LOCK]</span>
+              <span class="drawer-action__label">Delete parameter</span>
+            </button>
+          </section>
+
+          <section class="drawer-section">
+            <h4 class="drawer-section__title">Requirements</h4>
+            <app-recipe-requirements-panel
+              [requirements]="(requirements$ | async)"
+              [availableCapabilities]="(availableCapabilities$ | async) ?? []"
+              [availableConfigurationDefinitions]="(availableConfigurationDefinitions$ | async) ?? []"
+              [readOnly]="isDerivedWorkspace"
+              [sourceHint]="isDerivedWorkspace ? 'Inherited from parent golden recipe. Edit requirements on golden only.' : 'Managed directly on this golden recipe.'"
+              (addCapability)="onAddRequiredCapability($event)"
+              (removeCapability)="onRemoveRequiredCapability($event)"
+              (addConfiguration)="onAddRequiredConfiguration($event)"
+              (removeConfiguration)="onRemoveRequiredConfiguration($event)">
+            </app-recipe-requirements-panel>
+          </section>
+
+          <section class="drawer-section" *ngIf="isDerivedWorkspace">
+            <h4 class="drawer-section__title">Compatible machines</h4>
+            <app-recipe-compatible-machines-panel
+              [compatibility]="(compatibility$ | async)">
+            </app-recipe-compatible-machines-panel>
+          </section>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <app-step-modal
+    [visible]="showStepModal"
+    (closed)="closeStepModal()"
+    (submitted)="onCreateStep($event)">
+  </app-step-modal>
+
+  <app-step-parameter-modal
+    [visible]="showStepParameterModal"
+    [stepKind]="modalStepKind"
+    [parentCandidates]="modalParentCandidates"
+    (closed)="closeStepParameterModal()"
+    (submitted)="onCreateStepParameter($event)">
+  </app-step-parameter-modal>
+</section>

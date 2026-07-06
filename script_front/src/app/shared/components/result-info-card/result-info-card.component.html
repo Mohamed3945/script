@@ -1,0 +1,16 @@
+<div class="result-card" [class.result-card--gold]="theme === 'gold'">
+  <div class="result-card__header">
+    <div class="result-card__icon">
+      <i [class]="icon"></i>
+    </div>
+    <div>
+      <div class="result-card__title">{{ title }}</div>
+      <div class="result-card__value">{{ value }}</div>
+    </div>
+  </div>
+
+  <div class="result-card__meta">
+    <div class="result-card__meta-label">Identifier</div>
+    <div class="result-card__meta-value">{{ subValue }}</div>
+  </div>
+</div>

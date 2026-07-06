@@ -1,0 +1,50 @@
+.option-btn {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-primary);
+  transition: border-color .15s, background .15s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+
+  &:hover {
+    border-color: var(--blue-mid);
+    background: #f5f9ff;
+  }
+
+  &.selected {
+    border-color: var(--blue);
+    background: #ebf2fb;
+  }
+}
+
+.opt-radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.option-btn.selected .opt-radio {
+  border-color: var(--blue);
+  background: var(--blue);
+}
+
+.option-btn.selected .opt-radio::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fff;
+}

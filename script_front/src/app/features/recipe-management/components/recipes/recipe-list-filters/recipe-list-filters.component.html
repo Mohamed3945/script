@@ -1,0 +1,25 @@
+﻿<div class="filters">
+  <div class="filters__group">
+    <label>Recipe kind</label>
+    <select [(ngModel)]="recipeKind">
+      <option value="">All</option>
+      <option value="GOLDEN">GOLDEN</option>
+      <option value="DERIVED">DERIVED</option>
+      <option value="IMPORTED">IMPORTED</option>
+    </select>
+  </div>
+
+  <div class="filters__group">
+    <label>Golden filter</label>
+    <select [(ngModel)]="goldenValue">
+      <option value="">All</option>
+      <option value="true">Golden only</option>
+      <option value="false">Non-golden only</option>
+    </select>
+  </div>
+
+  <div class="filters__actions">
+    <button class="btn btn--secondary" (click)="resetFilters()">Reset</button>
+    <button class="btn" (click)="applyFilters()">Apply</button>
+  </div>
+</div>

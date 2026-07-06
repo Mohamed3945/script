@@ -1,0 +1,38 @@
+﻿<div class="table-card">
+  <div class="table-card__header">
+    <h3>Recipe step parameter grid</h3>
+  </div>
+
+  <table *ngIf="rows.length > 0; else emptyState" class="table">
+    <thead>
+      <tr>
+        <th>Step</th>
+        <th>Step kind</th>
+        <th>Parameter</th>
+        <th>Type</th>
+        <th>Option</th>
+        <th>Value JSON</th>
+        <th>Activation</th>
+        <th>Locked</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of rows">
+        <td>{{ row.stepName }} (#{{ row.stepOrderIndex }})</td>
+        <td>{{ row.stepKind }}</td>
+        <td>{{ row.parameterDefinitionName }}</td>
+        <td>{{ row.parameterValueType }}</td>
+        <td>{{ row.selectedOptionLabel || '—' }}</td>
+        <td>{{ row.valueJson || '—' }}</td>
+        <td>{{ row.activationState }}</td>
+        <td>{{ row.lockedByGolden ? 'Yes' : 'No' }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ng-template #emptyState>
+    <div class="empty-state">
+      No grid rows available.
+    </div>
+  </ng-template>
+</div>

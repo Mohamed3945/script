@@ -1,0 +1,1 @@
+export type RecipeKind = 'GOLDEN' | 'DERIVED' | 'IMPORTED';

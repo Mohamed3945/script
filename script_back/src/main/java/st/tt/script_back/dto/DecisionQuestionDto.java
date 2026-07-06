@@ -6,6 +6,11 @@ import lombok.Getter;
 import lombok.Setter;
 import java.util.List;
 
+/**
+ * DecisionQuestionDto class for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

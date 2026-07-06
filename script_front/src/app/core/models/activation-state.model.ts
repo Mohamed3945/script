@@ -1,0 +1,1 @@
+export type ActivationState = 'ENABLED' | 'DISABLED';

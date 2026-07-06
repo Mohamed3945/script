@@ -1,0 +1,14 @@
+﻿<section class="page" *ngIf="recipe$ | async as recipe">
+  <div class="page__container">
+    <div class="page__header">
+      <h1>Edit recipe</h1>
+      <p>Update recipe metadata.</p>
+    </div>
+
+    <app-recipe-form
+      [initialValue]="recipe"
+      mode="edit"
+      (submitted)="onSubmit($event)">
+    </app-recipe-form>
+  </div>
+</section>

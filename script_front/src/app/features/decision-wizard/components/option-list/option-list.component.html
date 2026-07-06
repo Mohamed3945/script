@@ -1,0 +1,8 @@
+<div class="option-list">
+  <app-option-item
+    *ngFor="let option of sortedOptions"
+    [option]="option"
+    [selected]="selectedOptionId === option.id"
+    (selectedChange)="optionSelected.emit(option.id)">
+  </app-option-item>
+</div>

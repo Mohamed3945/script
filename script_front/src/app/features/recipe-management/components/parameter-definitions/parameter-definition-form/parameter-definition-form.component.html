@@ -1,0 +1,65 @@
+﻿<form [formGroup]="form" class="form-card" (ngSubmit)="onSubmit()">
+  <div class="form-grid">
+    <div class="field">
+      <label>Name</label>
+      <input type="text" formControlName="name" />
+    </div>
+
+    <div class="field">
+      <label>Alias</label>
+      <input type="text" formControlName="alias" />
+    </div>
+
+    <div class="field">
+      <label>Value type</label>
+      <select formControlName="valueType">
+        <option *ngFor="let type of valueTypes" [value]="type">{{ type }}</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Unit</label>
+      <input type="text" formControlName="unit" />
+    </div>
+
+    <div class="field field--full">
+      <label>Description</label>
+      <textarea rows="4" formControlName="description"></textarea>
+    </div>
+
+    <div class="field field--full">
+      <label>Default value JSON</label>
+      <textarea rows="4" formControlName="defaultValueJson"></textarea>
+    </div>
+
+    <div class="field checkbox-field">
+      <label>
+        <input type="checkbox" formControlName="requiredOnStep" />
+        Required on step
+      </label>
+    </div>
+
+    <div class="field">
+      <label>Step type</label>
+      <select formControlName="stepType">
+        <option *ngFor="let type of stepTypes" [value]="type">{{ type }}</option>
+      </select>
+    </div>
+
+    <div class="field field--full">
+      <label>Impacted configuration</label>
+      <select formControlName="configurationDefinitionId">
+        <option [ngValue]="null">None</option>
+        <option *ngFor="let definition of configurationDefinitions" [ngValue]="definition.id ?? null">
+          {{ definition.code }} - {{ definition.name }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn" type="submit">
+      {{ mode === 'create' ? 'Create definition' : 'Save changes' }}
+    </button>
+  </div>
+</form>

@@ -1,0 +1,68 @@
+<div class="matrix-card">
+  <div class="matrix-card__header">
+    <h3>Recipe matrix view</h3>
+    <button class="btn" (click)="addStepClicked.emit()">Add step</button>
+  </div>
+
+  <div class="matrix-wrapper" *ngIf="stepColumns.length > 0 && parameterRows.length > 0; else emptyState">
+    <table class="matrix-table">
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th *ngFor="let step of stepColumns">
+            <div class="step-header">
+              <span class="step-header__code">{{ step.stepCode }}</span>
+              <span>{{ step.stepName }}</span>
+            </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of parameterRows">
+          <td class="matrix-table__param">
+            <div class="param-name">{{ row.parameterName }}</div>
+          </td>
+          <td
+            *ngFor="let cell of row.cells"
+            [class.cell-locked]="cell.lockedByGolden"
+            [class.cell-readonly]="!isEditable(cell)">
+            <ng-container *ngIf="isEditable(cell); else readonlyCell">
+              <ng-container [ngSwitch]="row.valueType">
+                <select
+                  *ngSwitchCase="enumValueType"
+                  class="cell-input"
+                  [ngModel]="cell.selectedOptionId"
+                  (ngModelChange)="onEnumChanged(cell, $event)">
+                  <option [ngValue]="null">-</option>
+                  <option *ngFor="let option of cell.availableOptions" [ngValue]="option.id">{{ option.label }}</option>
+                </select>
+
+                <input
+                  *ngSwitchCase="numberValueType"
+                  class="cell-input"
+                  type="number"
+                  [value]="cell.valueJson || ''"
+                  (change)="onNumberCommitted(cell, $any($event.target).value)" />
+
+                <input
+                  *ngSwitchDefault
+                  class="cell-input"
+                  type="text"
+                  [value]="cell.valueJson || ''"
+                  (change)="onValueCommitted(cell, $any($event.target).value)" />
+              </ng-container>
+            </ng-container>
+
+            <ng-template #readonlyCell>
+              <div class="cell-display">{{ cell.displayValue || '-' }}</div>
+            </ng-template>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ng-template #emptyState>
+    <div class="empty-state">No matrix data available.</div>
+  </ng-template>
+</div>

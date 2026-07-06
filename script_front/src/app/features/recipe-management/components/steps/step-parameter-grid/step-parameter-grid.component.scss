@@ -1,0 +1,41 @@
+﻿.table-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.table-card__header {
+  padding: 16px;
+  border-bottom: 1px solid var(--off-white);
+}
+
+.table-card__header h3 {
+  font-size: 16px;
+  color: var(--navy);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--off-white);
+  text-align: left;
+  font-size: 13px;
+  vertical-align: top;
+}
+
+.table th {
+  background: #f8fbff;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.empty-state {
+  padding: 20px;
+  color: var(--text-muted);
+}

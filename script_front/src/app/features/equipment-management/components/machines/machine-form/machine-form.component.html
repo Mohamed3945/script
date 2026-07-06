@@ -1,0 +1,26 @@
+<form [formGroup]="form" class="form-card" (ngSubmit)="onSubmit()">
+  <div class="form-grid">
+    <div class="field">
+      <label>Code</label>
+      <input type="text" formControlName="code" />
+    </div>
+
+    <div class="field">
+      <label>Name</label>
+      <input type="text" formControlName="name" />
+    </div>
+
+    <div class="field">
+      <label>Platform type</label>
+      <select formControlName="platformType">
+        <option *ngFor="let platform of platformTypes" [value]="platform">{{ platform }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn" type="submit">
+      {{ mode === 'create' ? 'Create machine' : 'Save changes' }}
+    </button>
+  </div>
+</form>

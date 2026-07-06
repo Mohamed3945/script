@@ -1,0 +1,37 @@
+<div class="table-card">
+  <table *ngIf="configurations.length > 0; else emptyState" class="table">
+    <thead>
+      <tr>
+        <th>Definition</th>
+        <th>Variant</th>
+        <th>Nominal</th>
+        <th>Min</th>
+        <th>Max</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let cfg of configurations">
+        <td>
+          <div class="main">{{ cfg.configurationDefinitionCode }}</div>
+          <div class="sub">{{ cfg.configurationDefinitionName }}</div>
+        </td>
+        <td>
+          <div class="main">{{ cfg.chamberConfigurationCode }}</div>
+          <div class="sub">{{ cfg.chamberConfigurationName }}</div>
+        </td>
+        <td>{{ cfg.nominalValue ?? '—' }}</td>
+        <td>{{ cfg.minValue ?? '—' }}</td>
+        <td>{{ cfg.maxValue ?? '—' }}</td>
+        <td class="actions">
+          <button class="link-btn" (click)="edit.emit(cfg)">Edit</button>
+          <button class="link-btn link-btn--danger" (click)="delete.emit(cfg)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ng-template #emptyState>
+    <div class="empty-state">No chamber configurations found.</div>
+  </ng-template>
+</div>

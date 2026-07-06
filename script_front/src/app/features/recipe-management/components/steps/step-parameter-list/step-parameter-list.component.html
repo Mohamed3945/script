@@ -1,0 +1,30 @@
+﻿<div class="card">
+  <h3>Step parameters</h3>
+
+  <div *ngIf="parameters.length === 0" class="empty">
+    No step parameters for this step yet.
+  </div>
+
+  <div *ngFor="let parameter of parameters" class="parameter-item">
+    <div class="row">
+      <span class="label">Definition ID</span>
+      <span class="value">{{ parameter.definitionId }}</span>
+    </div>
+    <div class="row">
+      <span class="label">Order index</span>
+      <span class="value">{{ parameter.orderIndex ?? '—' }}</span>
+    </div>
+    <div class="row">
+      <span class="label">Selected option ID</span>
+      <span class="value">{{ parameter.selectedOptionId ?? '—' }}</span>
+    </div>
+    <div class="row">
+      <span class="label">Activation</span>
+      <span class="value">{{ parameter.activationState || '—' }}</span>
+    </div>
+    <div class="row">
+      <span class="label">Locked by golden</span>
+      <span class="value">{{ parameter.lockedByGolden ? 'Yes' : 'No' }}</span>
+    </div>
+  </div>
+</div>

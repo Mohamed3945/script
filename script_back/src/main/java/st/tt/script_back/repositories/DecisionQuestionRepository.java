@@ -6,6 +6,11 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
+/**
+ * DecisionQuestionRepository interface for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 public interface DecisionQuestionRepository extends JpaRepository<DecisionQuestion, Long> {
 
     @Query("""

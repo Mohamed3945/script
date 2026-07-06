@@ -1,0 +1,9 @@
+<button
+  type="button"
+  class="btn"
+  [class.btn--secondary]="variant === 'secondary'"
+  [disabled]="disabled"
+  (click)="onClick()">
+  <i *ngIf="icon" [class]="icon"></i>
+  <span>{{ label }}</span>
+</button>

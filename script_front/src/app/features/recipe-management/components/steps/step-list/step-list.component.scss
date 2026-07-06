@@ -1,0 +1,60 @@
+﻿.step-list-card {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  max-height: calc(100vh - 330px);
+  overflow: auto;
+}
+
+.step-list-card__header {
+  margin-bottom: 12px;
+}
+
+.step-list-card__header h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.empty {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.step-item {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--border-soft);
+  background: white;
+  border-radius: 9px;
+  padding: 10px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 130ms var(--transition);
+}
+
+.step-item:hover {
+  border-color: var(--border-strong);
+  background: #fbfcfd;
+}
+
+.step-item--selected {
+  border-color: var(--accent-gold-soft);
+  background: var(--accent-gold-bg);
+}
+
+.step-item__meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.step-item__name {
+  font-weight: 600;
+  color: var(--text-main);
+}

@@ -1,0 +1,10 @@
+<div class="modal-backdrop" *ngIf="visible">
+  <div class="modal-card">
+    <div class="modal-card__header">
+      <h3>Add step</h3>
+      <button class="close-btn" (click)="closed.emit()">x</button>
+    </div>
+
+    <app-step-form (submitted)="submitted.emit($event)"></app-step-form>
+  </div>
+</div>

@@ -1,0 +1,13 @@
+<div class="recap-list">
+  <p *ngIf="selections.length === 0" class="recap-list__empty">
+    No selections yet.
+  </p>
+
+  <div *ngFor="let selection of selections; let i = index" class="recap-item">
+    <div class="recap-item__index">{{ i + 1 }}</div>
+    <div>
+      <div class="recap-item__question">{{ selection.questionLabel }}</div>
+      <div class="recap-item__answer">{{ selection.optionLabel }}</div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,75 @@
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.panel__header {
+  margin-bottom: 16px;
+}
+
+.panel__header h3 {
+  font-size: 18px;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+
+.panel__header p {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.machine-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.machine-card {
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.machine-code {
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.machine-name,
+.machine-platform {
+  margin-top: 4px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.chamber-list {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chamber-item {
+  border: 1px solid var(--off-white);
+  background: #f8fbff;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.chamber-code {
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.chamber-name {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.empty-state {
+  color: var(--text-muted);
+}

@@ -1,0 +1,11 @@
+﻿<div class="panel">
+  <app-step-form (submitted)="stepCreated.emit($event)"></app-step-form>
+
+  <div class="panel__spacer"></div>
+
+  <app-step-list
+    [steps]="steps"
+    [selectedStepId]="selectedStepId"
+    (stepSelected)="stepSelected.emit($event)">
+  </app-step-list>
+</div>
