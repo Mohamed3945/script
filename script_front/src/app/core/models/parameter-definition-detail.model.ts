@@ -13,5 +13,8 @@ export interface ParameterDefinitionDetail {
   requiredOnStep: boolean;
   stepType: StepType;
   defaultValueJson?: string | null;
+  configurationDefinitionId?: number | null;
+  configurationDefinitionCode?: string | null;
+  configurationDefinitionName?: string | null;
   options: ParameterOption[];
 }

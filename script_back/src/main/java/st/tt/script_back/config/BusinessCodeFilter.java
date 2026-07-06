@@ -11,9 +11,24 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import st.tt.script_back.exceptions.BusinessCodeResolver;
 
+/**
+ * HTTP filter that adds a business-code response header for API calls.
+ * <p>
+ * After downstream processing, the filter computes a success code from request metadata and response status,
+ * unless another component has already set the header.
+ */
 @Component
 public class BusinessCodeFilter extends OncePerRequestFilter {
 
+    /**
+     * Applies the filter chain and conditionally sets {@code X-Business-Code} on API responses.
+     *
+     * @param request current HTTP request.
+     * @param response current HTTP response.
+     * @param filterChain downstream filter chain.
+     * @throws ServletException when the servlet container reports a filter failure.
+     * @throws IOException when input or output processing fails.
+     */
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,

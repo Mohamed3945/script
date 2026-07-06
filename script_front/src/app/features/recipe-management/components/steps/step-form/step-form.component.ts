@@ -1,4 +1,4 @@
-﻿import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Step } from '../../../../../core/models/step.model';
 
@@ -9,6 +9,9 @@ import { Step } from '../../../../../core/models/step.model';
   templateUrl: './step-form.component.html',
   styleUrl: './step-form.component.scss'
 })
+/**
+ * StepFormComponent coordinates UI logic for this feature.
+ */
 export class StepFormComponent {
   @Output() submitted = new EventEmitter<Step>();
 
@@ -22,6 +25,9 @@ export class StepFormComponent {
     });
   }
 
+  /**
+   * Handles the onSubmit workflow.
+   */
   onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();

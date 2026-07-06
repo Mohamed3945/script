@@ -1,4 +1,4 @@
-﻿import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Step } from '../../../../../core/models/step.model';
 import { StepListComponent } from '../../steps/step-list/step-list.component';
 import { StepFormComponent } from '../../steps/step-form/step-form.component';
@@ -10,6 +10,9 @@ import { StepFormComponent } from '../../steps/step-form/step-form.component';
   templateUrl: './recipe-steps-panel.component.html',
   styleUrl: './recipe-steps-panel.component.scss'
 })
+/**
+ * RecipeStepsPanelComponent coordinates UI logic for this feature.
+ */
 export class RecipeStepsPanelComponent {
   @Input() steps: Step[] = [];
   @Input() selectedStepId?: number | null;

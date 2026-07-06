@@ -5,6 +5,7 @@ export interface ParameterDependencyRule {
   id?: number;
   sourceDefinitionId: number;
   triggerOptionId: number;
+  requiredSourceActivationOptionId?: number | null;
   targetDefinitionId: number;
   effect: RuleEffect;
   scope: RuleScope;

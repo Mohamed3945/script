@@ -1,4 +1,4 @@
-﻿import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgFor, NgIf } from '@angular/common';
 import { StepParameter } from '../../../../../core/models/step-parameter.model';
@@ -15,6 +15,9 @@ import { ParameterOptionApiService } from '../../../../../core/services/paramete
   templateUrl: './step-parameter-form.component.html',
   styleUrl: './step-parameter-form.component.scss'
 })
+/**
+ * StepParameterFormComponent coordinates UI logic for this feature.
+ */
 export class StepParameterFormComponent implements OnChanges {
   @Input() visible = false;
   @Input() stepKind: StepKind | null = null;
@@ -51,6 +54,9 @@ export class StepParameterFormComponent implements OnChanges {
     });
   }
 
+  /**
+   * Handles the ngOnChanges workflow.
+   */
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['visible']?.currentValue === true || changes['stepKind']) {
       this.loadDefinitions();
@@ -61,6 +67,9 @@ export class StepParameterFormComponent implements OnChanges {
     return this.selectedDefinition?.valueType === 'ENUM';
   }
 
+  /**
+   * Handles the loadDefinitions workflow.
+   */
   loadDefinitions(): void {
     this.loadingDefinitions = true;
     this.definitionLoadError = false;
@@ -85,6 +94,9 @@ export class StepParameterFormComponent implements OnChanges {
     });
   }
 
+  /**
+   * Handles the onDefinitionChanged workflow.
+   */
   onDefinitionChanged(definitionId: number | null): void {
     this.selectedDefinition = this.definitions.find(d => d.id === definitionId);
 
@@ -108,6 +120,9 @@ export class StepParameterFormComponent implements OnChanges {
     }
   }
 
+  /**
+   * Handles the onSubmit workflow.
+   */
   onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();

@@ -7,6 +7,9 @@ import { Recipe } from '../../../../../core/models/recipe.model';
   templateUrl: './recipe-summary-sidecard.component.html',
   styleUrl: './recipe-summary-sidecard.component.scss'
 })
+/**
+ * RecipeSummarySidecardComponent coordinates UI logic for this feature.
+ */
 export class RecipeSummarySidecardComponent {
   @Input() recipe!: Recipe;
 }

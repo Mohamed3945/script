@@ -1,7 +1,8 @@
-﻿import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Recipe } from '../../../../core/models/recipe.model';
 import { RecipeApiService } from '../../../../core/services/recipe-api.service';
+import { buildRecipeDetailRouteByKind } from '../../../../core/utils/recipe-route.util';
 import { RecipeFormComponent } from '../../components/recipes/recipe-form/recipe-form.component';
 
 @Component({
@@ -11,6 +12,9 @@ import { RecipeFormComponent } from '../../components/recipes/recipe-form/recipe
   templateUrl: './recipe-derived-create-page.component.html',
   styleUrl: './recipe-derived-create-page.component.scss'
 })
+/**
+ * RecipeDerivedCreatePageComponent coordinates UI logic for this feature.
+ */
 export class RecipeDerivedCreatePageComponent implements OnInit {
   initialRecipe: Recipe = {
     recipeKind: 'DERIVED',
@@ -33,6 +37,9 @@ export class RecipeDerivedCreatePageComponent implements OnInit {
     private router: Router
   ) {}
 
+  /**
+   * Handles the ngOnInit workflow.
+   */
   ngOnInit(): void {
     const resultProfileId = this.route.snapshot.queryParamMap.get('resultProfileId');
     const parentRecipeId = this.route.snapshot.queryParamMap.get('parentRecipeId');
@@ -53,7 +60,7 @@ export class RecipeDerivedCreatePageComponent implements OnInit {
     ).subscribe({
       next: (recipe) => {
         if (recipe.id) {
-          this.router.navigate(['/recipes', recipe.id]);
+          this.router.navigate(buildRecipeDetailRouteByKind(recipe.id, 'DERIVED'));
         } else {
           this.router.navigate(['/recipes']);
         }

@@ -1,1 +1,1 @@
-export type RuleEffect = 'ENABLE' | 'DISABLE' | 'WAIT';
+export type RuleEffect = 'ENABLE' | 'DISABLE';

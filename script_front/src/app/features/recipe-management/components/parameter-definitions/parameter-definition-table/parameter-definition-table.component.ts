@@ -1,4 +1,4 @@
-﻿import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { ParameterDefinition } from '../../../../../core/models/parameter-definition.model';
 
@@ -9,6 +9,9 @@ import { ParameterDefinition } from '../../../../../core/models/parameter-defini
   templateUrl: './parameter-definition-table.component.html',
   styleUrl: './parameter-definition-table.component.scss'
 })
+/**
+ * ParameterDefinitionTableComponent coordinates UI logic for this feature.
+ */
 export class ParameterDefinitionTableComponent {
   @Input() definitions: ParameterDefinition[] = [];
 

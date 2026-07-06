@@ -10,6 +10,9 @@ export type RecipeWorkspaceTab = 'summary' | 'prestep' | 'steps';
   templateUrl: './recipe-tab-nav.component.html',
   styleUrl: './recipe-tab-nav.component.scss'
 })
+/**
+ * RecipeTabNavComponent coordinates UI logic for this feature.
+ */
 export class RecipeTabNavComponent {
   @Input() activeTab: RecipeWorkspaceTab = 'steps';
   @Output() tabChanged = new EventEmitter<RecipeWorkspaceTab>();

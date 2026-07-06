@@ -22,6 +22,11 @@ import lombok.NoArgsConstructor;
 
 
 
+/**
+ * DecisionResultProfile class for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 @Entity
 @Getter
 @Setter
@@ -49,6 +54,9 @@ public class DecisionResultProfile {
     @OneToMany(mappedBy = "resultProfile", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DecisionTransition> transitions = new ArrayList<>();
 
+    /**
+     * Executes onCreate.
+     */
     @PrePersist
     protected void onCreate() {
         Instant now = Instant.now();
@@ -58,6 +66,9 @@ public class DecisionResultProfile {
         }
     }
 
+    /**
+     * Executes onUpdate.
+     */
     @PreUpdate
     protected void onUpdate() {
         this.reviseTime = Instant.now();

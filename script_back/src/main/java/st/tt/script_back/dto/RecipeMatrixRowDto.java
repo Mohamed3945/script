@@ -8,6 +8,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import st.tt.script_back.enums.ParameterValueType;
 
+/**
+ * RecipeMatrixRowDto class for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

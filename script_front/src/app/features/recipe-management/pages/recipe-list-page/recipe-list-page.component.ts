@@ -1,10 +1,11 @@
-﻿import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { Recipe } from '../../../../core/models/recipe.model';
 import { RecipeKind } from '../../../../core/models/recipe-kind.model';
 import { RecipeApiService } from '../../../../core/services/recipe-api.service';
+import { buildRecipeDetailRouteByKind } from '../../../../core/utils/recipe-route.util';
 import { RecipeListTableComponent } from '../../components/recipes/recipe-list-table/recipe-list-table.component';
 import { RecipeListFiltersComponent } from '../../components/recipes/recipe-list-filters/recipe-list-filters.component';
 
@@ -15,6 +16,9 @@ import { RecipeListFiltersComponent } from '../../components/recipes/recipe-list
   templateUrl: './recipe-list-page.component.html',
   styleUrl: './recipe-list-page.component.scss'
 })
+/**
+ * RecipeListPageComponent coordinates UI logic for this feature.
+ */
 export class RecipeListPageComponent implements OnInit {
   recipes$ = new BehaviorSubject<Recipe[]>([]);
   loading$ = new BehaviorSubject<boolean>(false);
@@ -27,10 +31,16 @@ export class RecipeListPageComponent implements OnInit {
     private router: Router
   ) {}
 
+  /**
+   * Handles the ngOnInit workflow.
+   */
   ngOnInit(): void {
     this.loadRecipes();
   }
 
+  /**
+   * Handles the loadRecipes workflow.
+   */
   loadRecipes(): void {
     this.loading$.next(true);
 
@@ -56,24 +66,39 @@ export class RecipeListPageComponent implements OnInit {
     this.loadRecipes();
   }
 
+  /**
+   * Handles the onCreateGolden workflow.
+   */
   onCreateGolden(): void {
     this.router.navigate(['/recipes/new']);
   }
 
+  /**
+   * Handles the onCreateDerived workflow.
+   */
   onCreateDerived(): void {
     this.router.navigate(['/recipes/new-derived']);
   }
 
+  /**
+   * Handles the onViewRecipe workflow.
+   */
   onViewRecipe(recipe: Recipe): void {
     if (!recipe.id) return;
-    this.router.navigate(['/recipes', recipe.id]);
+    this.router.navigate(buildRecipeDetailRouteByKind(recipe.id, recipe.recipeKind));
   }
 
+  /**
+   * Handles the onEditRecipe workflow.
+   */
   onEditRecipe(recipe: Recipe): void {
     if (!recipe.id) return;
     this.router.navigate(['/recipes', recipe.id, 'edit']);
   }
 
+  /**
+   * Handles the onDeleteRecipe workflow.
+   */
   onDeleteRecipe(recipe: Recipe): void {
     if (!recipe.id) return;
 

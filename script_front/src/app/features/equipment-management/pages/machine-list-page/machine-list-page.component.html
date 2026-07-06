@@ -1,0 +1,28 @@
+<section class="page">
+  <div class="page__container">
+    <div class="page__header">
+      <div>
+        <h1>Machines</h1>
+        <p>Manage machine catalog and access their chambers.</p>
+      </div>
+      <div class="page__actions">
+        <button class="btn" (click)="onCreate()">New machine</button>
+      </div>
+    </div>
+    
+    <div class="card" *ngIf="loading$ | async; else content">
+      Loading machines...
+    </div>
+
+    <ng-template #content>
+      <ng-container *ngIf="machines$ | async as machines">
+        <app-machine-table
+          [machines]="machines"
+          (view)="onView($event)"
+          (edit)="onEdit($event)"
+          (delete)="onDelete($event)">
+        </app-machine-table>
+      </ng-container>
+    </ng-template>
+  </div>
+</section>

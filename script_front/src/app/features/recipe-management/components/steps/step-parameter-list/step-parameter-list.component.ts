@@ -1,4 +1,4 @@
-﻿import { Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { StepParameter } from '../../../../../core/models/step-parameter.model';
 
@@ -9,6 +9,9 @@ import { StepParameter } from '../../../../../core/models/step-parameter.model';
   templateUrl: './step-parameter-list.component.html',
   styleUrl: './step-parameter-list.component.scss'
 })
+/**
+ * StepParameterListComponent coordinates UI logic for this feature.
+ */
 export class StepParameterListComponent {
   @Input() parameters: StepParameter[] = [];
 }

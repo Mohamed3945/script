@@ -1,4 +1,4 @@
-﻿import { Component } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-step-card',
@@ -6,5 +6,8 @@
   templateUrl: './step-card.component.html',
   styleUrl: './step-card.component.scss'
 })
+/**
+ * StepCardComponent coordinates UI logic for this feature.
+ */
 export class StepCardComponent {}
 

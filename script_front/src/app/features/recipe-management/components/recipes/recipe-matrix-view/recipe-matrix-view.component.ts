@@ -19,6 +19,9 @@ export interface RecipeMatrixCellUpdate {
   templateUrl: './recipe-matrix-view.component.html',
   styleUrl: './recipe-matrix-view.component.scss'
 })
+/**
+ * RecipeMatrixViewComponent coordinates UI logic for this feature.
+ */
 export class RecipeMatrixViewComponent {
   @Input() matrix: RecipeMatrix | null = null;
 
@@ -36,10 +39,17 @@ export class RecipeMatrixViewComponent {
     return this.matrix?.rows ?? [];
   }
 
+  /**
+   * Handles the isEditable workflow.
+   */
   isEditable(cell: RecipeMatrixCell): boolean {
-    return Boolean(cell.editable) && !cell.lockedByGolden && Boolean(cell.stepParameterId);
+    const isActive = !cell.activationState || cell.activationState === 'ENABLED';
+    return Boolean(cell.editable) && !cell.lockedByGolden && Boolean(cell.stepParameterId) && isActive;
   }
 
+  /**
+   * Handles the onEnumChanged workflow.
+   */
   onEnumChanged(cell: RecipeMatrixCell, selectedValue: string): void {
     if (!this.isEditable(cell)) {
       return;
@@ -54,6 +64,9 @@ export class RecipeMatrixViewComponent {
     });
   }
 
+  /**
+   * Handles the onValueCommitted workflow.
+   */
   onValueCommitted(cell: RecipeMatrixCell, rawValue: string): void {
     if (!this.isEditable(cell)) {
       return;
@@ -67,6 +80,9 @@ export class RecipeMatrixViewComponent {
     });
   }
 
+  /**
+   * Handles the onNumberCommitted workflow.
+   */
   onNumberCommitted(cell: RecipeMatrixCell, rawValue: string): void {
     if (!this.isEditable(cell)) {
       return;

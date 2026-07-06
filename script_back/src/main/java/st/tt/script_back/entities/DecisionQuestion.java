@@ -25,6 +25,11 @@ import jakarta.persistence.CascadeType;
 import lombok.NoArgsConstructor;
 
 
+/**
+ * DecisionQuestion class for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 @Entity
 @Getter
 @Setter
@@ -65,6 +70,9 @@ public class DecisionQuestion {
     @OneToMany(mappedBy = "nextQuestion", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DecisionTransition> transitionFromThisQuestion = new ArrayList<>();
 
+    /**
+     * Executes onCreate.
+     */
     @PrePersist
     protected void onCreate() {
         Instant now = Instant.now();
@@ -77,6 +85,9 @@ public class DecisionQuestion {
         }
     }
 
+    /**
+     * Executes onUpdate.
+     */
     @PreUpdate
     protected void onUpdate() {
         this.reviseTime = Instant.now();

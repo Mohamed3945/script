@@ -1,1 +1,1 @@
-export type ActivationState = 'WAIT' | 'ENABLED' | 'DISABLED';
+export type ActivationState = 'ENABLED' | 'DISABLED';

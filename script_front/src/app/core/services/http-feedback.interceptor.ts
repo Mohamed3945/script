@@ -61,7 +61,7 @@ function buildSuccessMessage(method: string, endpoint: string, response: HttpRes
 
   return {
     severity: 'success',
-    title: 'Succes',
+    title: 'Success',
     description,
     backendCode: code ?? undefined,
     timestamp: new Date().toISOString()
@@ -73,11 +73,11 @@ function buildErrorMessage(method: string, endpoint: string, error: HttpErrorRes
   const code = error.headers?.get(BUSINESS_CODE_HEADER) ?? info.code ?? null;
   const status = Number.isFinite(error.status) ? error.status : 0;
 
-  const codedMessage = mapErrorCodeToMessage(code);
+  const codedMessage = mapErrorCodeToMessage(code, info.description);
   if (codedMessage) {
     return {
       severity: 'error',
-      title: 'Operation impossible',
+      title: 'Action failed',
       description: codedMessage,
       backendCode: code ?? undefined,
       timestamp: new Date().toISOString()
@@ -87,8 +87,8 @@ function buildErrorMessage(method: string, endpoint: string, error: HttpErrorRes
   if (status === 0) {
     return {
       severity: 'error',
-      title: 'Connexion impossible',
-      description: 'Le serveur est injoignable. Verifiez votre connexion ou reessayez dans quelques instants.',
+      title: 'Connection failed',
+      description: 'The server is unreachable. Check your connection and try again in a moment.',
       timestamp: new Date().toISOString()
     };
   }
@@ -96,8 +96,8 @@ function buildErrorMessage(method: string, endpoint: string, error: HttpErrorRes
   if (status === 400) {
     return {
       severity: 'error',
-      title: 'Demande invalide',
-      description: 'Certaines informations saisies sont invalides. Verifiez les champs et reessayez.',
+      title: 'Invalid request',
+      description: 'Some provided values are invalid. Please review the form and try again.',
       timestamp: new Date().toISOString()
     };
   }
@@ -105,8 +105,8 @@ function buildErrorMessage(method: string, endpoint: string, error: HttpErrorRes
   if (status === 401 || status === 403) {
     return {
       severity: 'error',
-      title: 'Acces refuse',
-      description: 'Vous n\'avez pas les droits necessaires pour effectuer cette action.',
+      title: 'Access denied',
+      description: 'You do not have permission to perform this action.',
       timestamp: new Date().toISOString()
     };
   }
@@ -114,8 +114,8 @@ function buildErrorMessage(method: string, endpoint: string, error: HttpErrorRes
   if (status === 404) {
     return {
       severity: 'error',
-      title: 'Element introuvable',
-      description: 'L\'element demande n\'a pas ete trouve ou a deja ete supprime.',
+      title: 'Item not found',
+      description: 'The requested item was not found or has already been deleted.',
       timestamp: new Date().toISOString()
     };
   }
@@ -123,16 +123,16 @@ function buildErrorMessage(method: string, endpoint: string, error: HttpErrorRes
   if (status >= 500) {
     return {
       severity: 'error',
-      title: 'Erreur serveur',
-      description: 'Une erreur interne est survenue. Veuillez reessayer plus tard.',
+      title: 'Server error',
+      description: 'An internal error occurred. Please try again later.',
       timestamp: new Date().toISOString()
     };
   }
 
   return {
     severity: 'error',
-    title: 'Operation impossible',
-    description: 'L\'operation n\'a pas pu etre effectuee. Veuillez verifier vos donnees puis reessayer.',
+    title: 'Action failed',
+    description: 'The action could not be completed. Please review your data and try again.',
     backendCode: code ?? undefined,
     timestamp: new Date().toISOString()
   };
@@ -141,21 +141,21 @@ function buildErrorMessage(method: string, endpoint: string, error: HttpErrorRes
 function fallbackSuccessMessage(method: string): string {
   const action = methodToAction(method);
   if (action) {
-    return `${action} effectuee avec succes.`;
+    return `${action} completed successfully.`;
   }
-  return 'Operation effectuee avec succes.';
+  return 'Action completed successfully.';
 }
 
 function methodToAction(method: string): string | null {
   const normalized = method.toUpperCase();
   if (normalized === 'POST') {
-    return 'Creation';
+    return 'Create';
   }
   if (normalized === 'PUT' || normalized === 'PATCH') {
-    return 'Mise a jour';
+    return 'Update';
   }
   if (normalized === 'DELETE') {
-    return 'Suppression';
+    return 'Deletion';
   }
   return null;
 }
@@ -166,43 +166,47 @@ function mapSuccessCodeToMessage(code: string | null): string | null {
   }
 
   const messages: Record<string, string> = {
-    RECIPE_CREATED: 'Recette creee avec succes.',
-    RECIPE_UPDATED: 'Recette mise a jour avec succes.',
-    RECIPE_DELETED: 'Recette supprimee avec succes.',
-    STEP_CREATED: 'Etape creee avec succes.',
-    STEP_UPDATED: 'Etape mise a jour avec succes.',
-    STEP_DELETED: 'Etape supprimee avec succes.',
-    STEP_PARAMETER_CREATED: 'Parametre d\'etape ajoute avec succes.',
-    STEP_PARAMETER_UPDATED: 'Parametre d\'etape mis a jour avec succes.',
-    STEP_PARAMETER_DELETED: 'Parametre d\'etape supprime avec succes.',
-    PARAMETER_DEFINITION_CREATED: 'Definition de parametre creee avec succes.',
-    PARAMETER_DEFINITION_UPDATED: 'Definition de parametre mise a jour avec succes.',
-    PARAMETER_DEFINITION_DELETED: 'Definition de parametre supprimee avec succes.',
-    PARAMETER_OPTION_CREATED: 'Option de parametre creee avec succes.',
-    PARAMETER_OPTION_UPDATED: 'Option de parametre mise a jour avec succes.',
-    PARAMETER_OPTION_DELETED: 'Option de parametre supprimee avec succes.',
-    RESOURCE_CREATED: 'Element cree avec succes.',
-    RESOURCE_UPDATED: 'Element mis a jour avec succes.',
-    RESOURCE_DELETED: 'Element supprime avec succes.',
-    REQUEST_SUCCEEDED: 'Operation effectuee avec succes.'
+    RECIPE_CREATED: 'Recipe created successfully.',
+    RECIPE_UPDATED: 'Recipe updated successfully.',
+    RECIPE_DELETED: 'Recipe deleted successfully.',
+    STEP_CREATED: 'Step created successfully.',
+    STEP_UPDATED: 'Step updated successfully.',
+    STEP_DELETED: 'Step deleted successfully.',
+    STEP_PARAMETER_CREATED: 'Step parameter added successfully.',
+    STEP_PARAMETER_UPDATED: 'Step parameter updated successfully.',
+    STEP_PARAMETER_DELETED: 'Step parameter deleted successfully.',
+    PARAMETER_DEFINITION_CREATED: 'Parameter definition created successfully.',
+    PARAMETER_DEFINITION_UPDATED: 'Parameter definition updated successfully.',
+    PARAMETER_DEFINITION_DELETED: 'Parameter definition deleted successfully.',
+    PARAMETER_OPTION_CREATED: 'Parameter option created successfully.',
+    PARAMETER_OPTION_UPDATED: 'Parameter option updated successfully.',
+    PARAMETER_OPTION_DELETED: 'Parameter option deleted successfully.',
+    PARAMETER_DEPENDENCY_RULE_CREATED: 'Dependency rule created successfully.',
+    PARAMETER_DEPENDENCY_RULE_UPDATED: 'Dependency rule updated successfully.',
+    PARAMETER_DEPENDENCY_RULE_DELETED: 'Dependency rule deleted successfully.',
+    RESOURCE_CREATED: 'Item created successfully.',
+    RESOURCE_UPDATED: 'Item updated successfully.',
+    RESOURCE_DELETED: 'Item deleted successfully.',
+    REQUEST_SUCCEEDED: 'Action completed successfully.'
   };
 
   return messages[code] ?? null;
 }
 
-function mapErrorCodeToMessage(code: string | null): string | null {
+function mapErrorCodeToMessage(code: string | null, backendDescription?: string): string | null {
   if (!code) {
     return null;
   }
 
   const messages: Record<string, string> = {
-    RECIPE_HAS_DERIVATIVES: 'Cette recette est utilisee par d\'autres recettes derivees. Supprimez d\'abord les derivees puis reessayez.',
-    PARAMETER_OPTION_IN_USE: 'Cette option est deja utilisee dans une recette. Modifiez d\'abord les valeurs qui l\'utilisent puis reessayez.',
-    PARAMETER_DEFINITION_IN_USE: 'Ce parametre est deja utilise dans une recette. Retirez d\'abord son utilisation puis reessayez.',
-    RESOURCE_NOT_FOUND: 'L\'element demande est introuvable ou a deja ete supprime.',
-    VALIDATION_ERROR: 'Certaines informations saisies sont invalides. Verifiez les champs et reessayez.',
-    BUSINESS_CONFLICT: 'Cette action est impossible dans l\'etat actuel des donnees.',
-    INTERNAL_ERROR: 'Une erreur interne est survenue. Veuillez reessayer plus tard.'
+    RECIPE_HAS_DERIVATIVES: 'This recipe is used by derived recipes. Remove derived recipes first, then try again.',
+    PARAMETER_OPTION_IN_USE: 'This option is already used in a recipe. Update dependent values first, then try again.',
+    PARAMETER_DEFINITION_IN_USE: 'This parameter is already used in a recipe. Remove its usage first, then try again.',
+    PARAMETER_DEPENDENCY_RULE_CONFLICT: 'This dependency rule is invalid or already exists. Check source, trigger option, and target, then try again.',
+    RESOURCE_NOT_FOUND: 'The requested item was not found or has already been deleted.',
+    VALIDATION_ERROR: 'Some provided values are invalid. Please review the form and try again.',
+    BUSINESS_CONFLICT: backendDescription?.trim() || 'This action is not allowed with the current data state.',
+    INTERNAL_ERROR: 'An internal error occurred. Please try again later.'
   };
 
   return messages[code] ?? null;

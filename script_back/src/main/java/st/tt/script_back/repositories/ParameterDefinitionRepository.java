@@ -8,9 +8,16 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import st.tt.script_back.entities.ParameterDefinition;
 
+/**
+ * ParameterDefinitionRepository interface for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 public interface ParameterDefinitionRepository extends JpaRepository<ParameterDefinition, Long> {
 
     Optional<ParameterDefinition> findByCode(String code);
+
+    Optional<ParameterDefinition> findByCodeAndStepType(String code, StepType stepType);
 
     boolean existsByCode(String code);
 

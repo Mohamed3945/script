@@ -1,4 +1,4 @@
-﻿import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
@@ -16,6 +16,9 @@ type ParameterDefinitionFilter = 'ALL' | StepType;
   templateUrl: './parameter-definition-list-page.component.html',
   styleUrl: './parameter-definition-list-page.component.scss'
 })
+/**
+ * ParameterDefinitionListPageComponent coordinates UI logic for this feature.
+ */
 export class ParameterDefinitionListPageComponent implements OnInit {
   definitions$ = new BehaviorSubject<ParameterDefinition[]>([]);
   loading$ = new BehaviorSubject<boolean>(false);
@@ -27,10 +30,16 @@ export class ParameterDefinitionListPageComponent implements OnInit {
     private router: Router
   ) {}
 
+  /**
+   * Handles the ngOnInit workflow.
+   */
   ngOnInit(): void {
     this.loadDefinitions();
   }
 
+  /**
+   * Handles the loadDefinitions workflow.
+   */
   loadDefinitions(): void {
     this.loading$.next(true);
     const stepType = this.selectedFilter === 'ALL' ? undefined : this.selectedFilter;
@@ -48,6 +57,9 @@ export class ParameterDefinitionListPageComponent implements OnInit {
     });
   }
 
+  /**
+   * Handles the onFilterChanged workflow.
+   */
   onFilterChanged(rawValue: string): void {
     if (rawValue !== 'ALL' && rawValue !== 'STEP' && rawValue !== 'PRESTEP') {
       return;
@@ -57,20 +69,32 @@ export class ParameterDefinitionListPageComponent implements OnInit {
     this.loadDefinitions();
   }
 
+  /**
+   * Handles the onCreate workflow.
+   */
   onCreate(): void {
     this.router.navigate(['/recipes/parameter/new']);
   }
 
+  /**
+   * Handles the onView workflow.
+   */
   onView(definition: ParameterDefinition): void {
     if (!definition.id) return;
     this.router.navigate(['/recipes/parameter', definition.id]);
   }
 
+  /**
+   * Handles the onEdit workflow.
+   */
   onEdit(definition: ParameterDefinition): void {
     if (!definition.id) return;
     this.router.navigate(['/recipes/parameter', definition.id, 'edit']);
   }
 
+  /**
+   * Handles the onDelete workflow.
+   */
   onDelete(definition: ParameterDefinition): void {
     if (!definition.id) return;
 

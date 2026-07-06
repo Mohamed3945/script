@@ -1,0 +1,106 @@
+<section class="requirements" *ngIf="requirements as req">
+  <div class="requirements__hint" *ngIf="sourceHint">
+    {{ sourceHint }}
+  </div>
+
+  <div class="two-columns">
+    <div class="panel">
+      <div class="panel__header">
+        <h2>Required capabilities</h2>
+        <button class="btn" type="button" *ngIf="!readOnly" (click)="openCapabilityModal()">Add capability</button>
+      </div>
+
+      <div *ngIf="req.requiredCapabilities.length === 0" class="empty-state">
+        No required capabilities yet.
+      </div>
+
+      <div class="chip-list">
+        <div class="chip" *ngFor="let capability of req.requiredCapabilities">
+          <div class="chip__main">{{ capability.capabilityCode }}</div>
+          <div class="chip__sub">{{ capability.capabilityLabel }}</div>
+          <button
+            class="chip__remove"
+            type="button"
+            *ngIf="!readOnly"
+            (click)="removeCapability.emit(capability.capabilityId)">
+            ×
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel__header">
+        <h2>Required configurations</h2>
+        <button class="btn" type="button" *ngIf="!readOnly" (click)="openConfigurationModal()">Add config</button>
+      </div>
+
+      <div *ngIf="req.requiredConfigurations.length === 0" class="empty-state">
+        No required configurations yet.
+      </div>
+
+      <div class="chip-list">
+        <div class="chip" *ngFor="let configuration of req.requiredConfigurations">²
+          <div class="chip__main">{{ configuration.configurationDefinitionCode }}</div>
+          <div class="chip__sub">
+            {{ configuration.configurationDefinitionName }}
+            <span *ngIf="configuration.unit">({{ configuration.unit }})</span>
+          </div>
+          <button
+            class="chip__remove"
+            type="button"
+            *ngIf="!readOnly"
+            (click)="removeConfiguration.emit(configuration.configurationDefinitionId)">
+            ×
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" *ngIf="showCapabilityModal && !readOnly" (click)="closeCapabilityModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Available capabilities</h2>
+        <button class="btn btn--secondary" type="button" (click)="closeCapabilityModal()">Close</button>
+      </div>
+
+      <div *ngIf="assignableCapabilities.length === 0" class="empty-state">
+        No additional capabilities available.
+      </div>
+
+      <div class="assign-list" *ngIf="assignableCapabilities.length > 0">
+        <button
+          class="assign-item"
+          *ngFor="let capability of assignableCapabilities"
+          (click)="onAddCapability(capability.id)">
+          <div class="assign-item__code">{{ capability.code }}</div>
+          <div class="assign-item__label">{{ capability.label }}</div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" *ngIf="showConfigurationModal && !readOnly" (click)="closeConfigurationModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Available configurations</h2>
+        <button class="btn btn--secondary" type="button" (click)="closeConfigurationModal()">Close</button>
+      </div>
+
+      <div *ngIf="assignableConfigurations.length === 0" class="empty-state">
+        No additional configurations available.
+      </div>
+
+      <div class="assign-list" *ngIf="assignableConfigurations.length > 0">
+        <button
+          class="assign-item"
+          *ngFor="let configuration of assignableConfigurations"
+          (click)="onAddConfiguration(configuration.id)">
+          <div class="assign-item__code">{{ configuration.code }}</div>
+          <div class="assign-item__label">{{ configuration.name }}</div>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

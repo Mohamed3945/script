@@ -7,6 +7,9 @@ import { Recipe } from '../../../../../core/models/recipe.model';
   templateUrl: './recipe-detail-header.component.html',
   styleUrl: './recipe-detail-header.component.scss'
 })
+/**
+ * RecipeDetailHeaderComponent coordinates UI logic for this feature.
+ */
 export class RecipeDetailHeaderComponent {
   @Input() recipe!: Recipe;
 

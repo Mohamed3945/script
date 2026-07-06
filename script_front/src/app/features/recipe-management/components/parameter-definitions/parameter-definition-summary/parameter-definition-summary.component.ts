@@ -1,4 +1,4 @@
-﻿import { Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { ParameterDefinitionDetail } from '../../../../../core/models/parameter-definition-detail.model';
 
 @Component({
@@ -7,6 +7,9 @@ import { ParameterDefinitionDetail } from '../../../../../core/models/parameter-
   templateUrl: './parameter-definition-summary.component.html',
   styleUrl: './parameter-definition-summary.component.scss'
 })
+/**
+ * ParameterDefinitionSummaryComponent coordinates UI logic for this feature.
+ */
 export class ParameterDefinitionSummaryComponent {
   @Input() definition!: ParameterDefinitionDetail;
 }

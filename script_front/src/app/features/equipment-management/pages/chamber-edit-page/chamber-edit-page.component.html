@@ -1,0 +1,14 @@
+<section class="page" *ngIf="chamber$ | async as chamber">
+  <div class="page__container">
+    <div class="page__header">
+      <h1>Edit chamber</h1>
+      <p>Update chamber metadata.</p>
+    </div>
+
+    <app-chamber-form
+      [initialValue]="chamber"
+      mode="edit"
+      (submitted)="onSubmit($event)">
+    </app-chamber-form>
+  </div>
+</section>

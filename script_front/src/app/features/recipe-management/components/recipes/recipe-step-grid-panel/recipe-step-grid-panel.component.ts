@@ -1,4 +1,4 @@
-﻿import { Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { StepParameterGridRow } from '../../../../../core/models/step-parameter-grid-row.model';
 import { StepParameterGridComponent } from '../../steps/step-parameter-grid/step-parameter-grid.component';
 
@@ -9,6 +9,9 @@ import { StepParameterGridComponent } from '../../steps/step-parameter-grid/step
   templateUrl: './recipe-step-grid-panel.component.html',
   styleUrl: './recipe-step-grid-panel.component.scss'
 })
+/**
+ * RecipeStepGridPanelComponent coordinates UI logic for this feature.
+ */
 export class RecipeStepGridPanelComponent {
   @Input() rows: StepParameterGridRow[] = [];
 }

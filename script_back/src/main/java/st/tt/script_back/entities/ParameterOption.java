@@ -28,6 +28,11 @@ import lombok.Setter;
 @UniqueConstraint(name = "uq_po_definition_label", columnNames = {"definition_id", "label"}),
 @UniqueConstraint(name = "uq_po_definition_code", columnNames = {"definition_id", "code"})
 })
+/**
+ * ParameterOption class for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 public class ParameterOption {
 
     @Id
@@ -53,6 +58,9 @@ public class ParameterOption {
     @Column(name = "revise_time", nullable = false)
     private Instant reviseTime;
 
+    /**
+     * Executes onCreate.
+     */
     @PrePersist
     protected void onCreate() {
         Instant now = Instant.now();
@@ -62,6 +70,9 @@ public class ParameterOption {
         }
     }
 
+    /**
+     * Executes onUpdate.
+     */
     @PreUpdate
     protected void onUpdate() {
         this.reviseTime = Instant.now();

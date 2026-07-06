@@ -9,6 +9,9 @@ import { RecipeApiService } from './recipe-api.service';
 @Injectable({
   providedIn: 'root'
 })
+/**
+ * RecipeBuilderService coordinates UI logic for this feature.
+ */
 export class RecipeBuilderService {
   private recipeSubject = new BehaviorSubject<Recipe | null>(null);
   private stepsSubject = new BehaviorSubject<Step[]>([]);
@@ -30,14 +33,23 @@ export class RecipeBuilderService {
 
   constructor(private recipeApiService: RecipeApiService) {}
 
+  /**
+   * Handles the setRecipe workflow.
+   */
   setRecipe(recipe: Recipe): void {
     this.recipeSubject.next(recipe);
   }
 
+  /**
+   * Handles the setSelectedStep workflow.
+   */
   setSelectedStep(step: Step | null): void {
     this.selectedStepSubject.next(step);
   }
 
+  /**
+   * Handles the loadRecipeWorkspace workflow.
+   */
   loadRecipeWorkspace(recipe: Recipe): void {
     if (!recipe.id) {
       return;
@@ -85,6 +97,9 @@ export class RecipeBuilderService {
     });
   }
 
+  /**
+   * Handles the loadStepParameters workflow.
+   */
   loadStepParameters(stepId: number): void {
     this.loadingSubject.next(true);
     this.recipeApiService.getStepParameters(stepId).subscribe({
@@ -100,6 +115,9 @@ export class RecipeBuilderService {
     });
   }
 
+  /**
+   * Handles the refreshMatrix workflow.
+   */
   refreshMatrix(): void {
     const recipe = this.recipeSubject.value;
     if (!recipe?.id) {
@@ -112,6 +130,9 @@ export class RecipeBuilderService {
     });
   }
 
+  /**
+   * Handles the reset workflow.
+   */
   reset(): void {
     this.recipeSubject.next(null);
     this.stepsSubject.next([]);

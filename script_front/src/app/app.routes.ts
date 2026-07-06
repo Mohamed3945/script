@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { DECISION_WIZARD_ROUTES } from './features/decision-wizard/decision-wizard.routes';
+import { EQUIPMENT_MANAGEMENT_ROUTES } from './features/equipment-management/equipment-management.routes';
 import { RECIPE_MANAGEMENT_ROUTES } from './features/recipe-management/recipe-management.routes';
 
 export const routes: Routes = [
@@ -50,6 +51,10 @@ export const routes: Routes = [
   {
     path: 'recipes',
     children: RECIPE_MANAGEMENT_ROUTES
+  },
+  {
+    path: '',
+    children: EQUIPMENT_MANAGEMENT_ROUTES
   },
   {
     path: '**',

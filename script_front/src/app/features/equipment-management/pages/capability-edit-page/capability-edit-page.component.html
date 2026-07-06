@@ -1,0 +1,10 @@
+<section class="page" *ngIf="capability$ | async as capability">
+  <div class="page__container">
+    <div class="page__header">
+      <h1>Edit capability</h1>
+      <p>Update capability metadata.</p>
+    </div>
+
+    <app-capability-form [initialValue]="capability" mode="edit" (submitted)="onSubmit($event)"></app-capability-form>
+  </div>
+</section>

@@ -9,6 +9,11 @@ import lombok.Setter;
 import st.tt.script_back.enums.RecipeKind;
 import st.tt.script_back.enums.RecipeStatus;
 
+/**
+ * RecipeDeepDetailDto class for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

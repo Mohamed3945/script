@@ -40,6 +40,11 @@ import jakarta.persistence.CascadeType;
         "step_id", "parent_order_scope", "definition_id"
     })
 })
+/**
+ * StepParameter class for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 @Check(constraints = "NOT (value_json IS NOT NULL AND selected_option_id IS NOT NULL)")
 @Check(constraints = "value_json IS NULL OR JSON_VALID(value_json)")
 public class StepParameter {
@@ -78,7 +83,7 @@ public class StepParameter {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "activation_state", nullable = false)
-    private ActivationState activationState = ActivationState.WAIT;
+    private ActivationState activationState = ActivationState.ENABLED;
 
     @Column(name = "locked_by_golden", nullable = false)
     private boolean lockedByGolden = false;
@@ -92,6 +97,9 @@ public class StepParameter {
     @OneToMany(mappedBy = "parentStepParameter", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StepParameter> childStepParameters = new ArrayList<>();
 
+    /**
+     * Executes validateAndTouch.
+     */
     @PrePersist
     @PreUpdate
     protected void validateAndTouch() {

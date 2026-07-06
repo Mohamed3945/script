@@ -35,6 +35,11 @@ import st.tt.script_back.enums.RuleScope;
         "source_definition_id", "trigger_option_id", "target_definition_id"
     })
 })
+/**
+ * ParameterDependencyRule class for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 @Check(constraints = "source_definition_id <> target_definition_id")
 public class ParameterDependencyRule {
 
@@ -49,6 +54,10 @@ public class ParameterDependencyRule {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trigger_option_id", nullable = false)
     private ParameterOption triggerOption;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "required_source_activation_option_id")
+    private ParameterOption requiredSourceActivationOption;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "target_definition_id", nullable = false)
@@ -71,6 +80,9 @@ public class ParameterDependencyRule {
     @Column(name = "revise_time", nullable = false)
     private Instant reviseTime;
 
+    /**
+     * Executes validateAndTouch.
+     */
     @PrePersist
     @PreUpdate
     protected void validateAndTouch() {
@@ -85,6 +97,14 @@ public class ParameterDependencyRule {
                 && sourceDefinition.getId() != null
                 && !triggerOption.getDefinition().getId().equals(sourceDefinition.getId())) {
             throw new IllegalStateException("Trigger option must belong to source definition.");
+        }
+
+        if (requiredSourceActivationOption != null && sourceDefinition != null
+                && requiredSourceActivationOption.getDefinition() != null
+                && requiredSourceActivationOption.getDefinition().getId() != null
+                && sourceDefinition.getId() != null
+                && !requiredSourceActivationOption.getDefinition().getId().equals(sourceDefinition.getId())) {
+            throw new IllegalStateException("Required source activation option must belong to source definition.");
         }
 
         Instant now = Instant.now();

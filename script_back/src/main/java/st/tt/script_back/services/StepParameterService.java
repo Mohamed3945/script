@@ -20,6 +20,12 @@ import st.tt.script_back.repositories.ParameterOptionRepository;
 import st.tt.script_back.repositories.StepParameterRepository;
 import st.tt.script_back.repositories.StepRepository;
 
+/**
+ * Handles lifecycle of step parameters and keeps activation graph consistent after each mutation.
+ * <p>
+ * Every create, update, or delete operation triggers recipe-level activation recalculation so matrix editability
+ * reflects the latest rule configuration immediately.
+ */
 @Service
 public class StepParameterService {
 
@@ -30,6 +36,16 @@ public class StepParameterService {
     private final StepParameterMapper stepParameterMapper;
     private final ParameterActivationService parameterActivationService;
 
+    /**
+     * Creates the service with repositories, mapper, and activation engine collaborators.
+     *
+     * @param stepParameterRepository persistence access for step parameters.
+     * @param stepRepository persistence access for steps.
+     * @param parameterDefinitionRepository persistence access for parameter definitions.
+     * @param parameterOptionRepository persistence access for enum options.
+     * @param stepParameterMapper DTO/entity mapper for step parameters.
+     * @param parameterActivationService activation recalculation orchestrator.
+     */
     public StepParameterService(
             StepParameterRepository stepParameterRepository,
             StepRepository stepRepository,
@@ -45,6 +61,21 @@ public class StepParameterService {
         this.parameterActivationService = parameterActivationService;
     }
 
+    /**
+     * Creates a new step parameter in a step and recalculates activation for the entire recipe.
+     * <p>
+     * Important rules enforced:
+     * <ul>
+     * <li>payload and definition id are mandatory,</li>
+     * <li>parent parameter, when provided, must belong to the same step,</li>
+     * <li>definition scope must match step kind (PRESTEP vs STEP),</li>
+     * <li>new parameters start in {@link ActivationState#ENABLED} before recalculation.</li>
+     * </ul>
+     *
+     * @param stepId target step identifier.
+     * @param request create payload.
+     * @return persisted parameter mapped as DTO.
+     */
     @Transactional
     public StepParameterDto createStepParameter(Long stepId, StepParameterDto request) {
         if (request == null) {
@@ -86,7 +117,7 @@ public class StepParameterService {
         parameter.setDefinition(definition);
         parameter.setParentStepParameter(parent);
         parameter.setSelectedOption(selectedOption);
-        parameter.setActivationState(ActivationState.WAIT);
+        parameter.setActivationState(ActivationState.ENABLED);
 
         if (parameter.getOrderIndex() == null) {
             Long scope = parent == null ? 0L : parent.getId();
@@ -101,6 +132,12 @@ public class StepParameterService {
         return stepParameterMapper.toDto(saved);
     }
 
+    /**
+     * Executes getStepParameter.
+     *
+     * @param stepParameterId input argument consumed by getStepParameter.
+     * @return computed StepParameterDto result returned by getStepParameter.
+     */
     @Transactional(readOnly = true)
     public StepParameterDto getStepParameter(Long stepParameterId) {
         StepParameter parameter = stepParameterRepository.findById(stepParameterId)
@@ -109,6 +146,16 @@ public class StepParameterService {
         return stepParameterMapper.toDto(parameter);
     }
 
+    /**
+     * Updates mutable fields of an existing step parameter and recalculates recipe activation.
+     * <p>
+     * Identity constraints are strict: {@code stepId} and {@code definitionId} cannot be changed through update.
+     * Parent linkage is validated to remain in the same step.
+     *
+     * @param stepParameterId identifier of parameter to update.
+     * @param request update payload.
+     * @return updated parameter mapped as DTO.
+     */
     @Transactional
     public StepParameterDto updateStepParameter(Long stepParameterId, StepParameterDto request) {
         if (request == null) {
@@ -153,7 +200,7 @@ public class StepParameterService {
         stepParameterMapper.updateEntityFromDto(request, existing);
         existing.setParentStepParameter(parent);
         existing.setSelectedOption(selectedOption);
-        existing.setActivationState(ActivationState.WAIT);
+        existing.setActivationState(ActivationState.ENABLED);
         if (existing.getStep() != null && existing.getDefinition() != null) {
             validateDefinitionScope(existing.getStep(), existing.getDefinition());
         }
@@ -164,6 +211,11 @@ public class StepParameterService {
         return stepParameterMapper.toDto(saved);
     }
 
+    /**
+     * Deletes a step parameter and recalculates activation states for remaining parameters in the recipe.
+     *
+     * @param stepParameterId identifier of parameter to delete.
+     */
     @Transactional
     public void deleteStepParameter(Long stepParameterId) {
         StepParameter existing = stepParameterRepository.findById(stepParameterId)
@@ -178,6 +230,14 @@ public class StepParameterService {
         }
     }
 
+    /**
+     * Validates compatibility between step kind and definition scope.
+     * <p>
+     * PRESTEP steps only accept PRESTEP definitions. Normal steps reject PRESTEP definitions.
+     *
+     * @param step owning step.
+     * @param definition requested parameter definition.
+     */
     private void validateDefinitionScope(Step step, ParameterDefinition definition) {
         if (step == null || definition == null || step.getStepKind() == null) {
             return;

@@ -1,4 +1,4 @@
-﻿import { Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { NgIf } from '@angular/common';
 import { Recipe } from '../../../../../core/models/recipe.model';
 import { DerivedRecipeBannerComponent } from '../derived-recipe-banner/derived-recipe-banner.component';
@@ -10,6 +10,9 @@ import { DerivedRecipeBannerComponent } from '../derived-recipe-banner/derived-r
   templateUrl: './recipe-summary-card.component.html',
   styleUrl: './recipe-summary-card.component.scss'
 })
+/**
+ * RecipeSummaryCardComponent coordinates UI logic for this feature.
+ */
 export class RecipeSummaryCardComponent {
   @Input() recipe!: Recipe;
 }

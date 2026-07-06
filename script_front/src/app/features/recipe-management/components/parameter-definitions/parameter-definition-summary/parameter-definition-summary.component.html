@@ -35,6 +35,11 @@
       <span class="value">{{ definition.options.length }}</span>
     </div>
 
+    <div class="summary-item">
+      <span class="label">Impacts configuration</span>
+      <span class="value">{{ definition.configurationDefinitionCode || definition.configurationDefinitionName || '—' }}</span>
+    </div>
+
     <div class="summary-item summary-item--full">
       <span class="label">Description</span>
       <span class="value">{{ definition.description || '—' }}</span>

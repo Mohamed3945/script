@@ -12,6 +12,11 @@ import st.tt.script_back.mappers.StepMapper;
 import st.tt.script_back.repositories.RecipeRepository;
 import st.tt.script_back.repositories.StepRepository;
 
+/**
+ * StepService class for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 @Service
 public class StepService {
 
@@ -20,6 +25,14 @@ public class StepService {
     private final StepMapper stepMapper;
     private final ParameterActivationService parameterActivationService;
 
+    /**
+     * Executes StepService.
+     *
+     * @param stepRepository input argument consumed by StepService.
+     * @param recipeRepository input argument consumed by StepService.
+     * @param stepMapper input argument consumed by StepService.
+     * @param parameterActivationService input argument consumed by StepService.
+     */
     public StepService(
             StepRepository stepRepository,
             RecipeRepository recipeRepository,
@@ -31,6 +44,13 @@ public class StepService {
         this.parameterActivationService = parameterActivationService;
     }
 
+    /**
+     * Executes createStep.
+     *
+     * @param recipeId input argument consumed by createStep.
+     * @param request input argument consumed by createStep.
+     * @return computed StepDto result returned by createStep.
+     */
     @Transactional
     public StepDto createStep(Long recipeId, StepDto request) {
         if (request == null) {
@@ -63,6 +83,12 @@ public class StepService {
         return stepMapper.toDto(saved);
     }
 
+    /**
+     * Executes getStep.
+     *
+     * @param stepId input argument consumed by getStep.
+     * @return computed StepDto result returned by getStep.
+     */
     @Transactional(readOnly = true)
     public StepDto getStep(Long stepId) {
         Step step = stepRepository.findById(stepId)
@@ -70,6 +96,13 @@ public class StepService {
         return stepMapper.toDto(step);
     }
 
+    /**
+     * Executes updateStep.
+     *
+     * @param stepId input argument consumed by updateStep.
+     * @param request input argument consumed by updateStep.
+     * @return computed StepDto result returned by updateStep.
+     */
     @Transactional
     public StepDto updateStep(Long stepId, StepDto request) {
         if (request == null) {
@@ -100,6 +133,11 @@ public class StepService {
         return stepMapper.toDto(saved);
     }
 
+    /**
+     * Executes deleteStep.
+     *
+     * @param stepId input argument consumed by deleteStep.
+     */
     @Transactional
     public void deleteStep(Long stepId) {
         Step existing = stepRepository.findById(stepId)

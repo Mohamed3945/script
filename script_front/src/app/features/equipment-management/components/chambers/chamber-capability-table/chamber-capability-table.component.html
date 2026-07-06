@@ -1,0 +1,35 @@
+<div class="table-card">
+  <table *ngIf="capabilities.length > 0; else emptyState" class="table">
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Label</th>
+        <th>Category</th>
+        <th>Active</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let capability of capabilities">
+        <td>{{ capability.code }}</td>
+        <td>{{ capability.label }}</td>
+        <td>{{ capability.category }}</td>
+        <td>{{ capability.active ? 'Yes' : 'No' }}</td>
+        <td class="actions">
+          <ng-container *ngIf="mode === 'catalog'; else assignedActions">
+            <button class="link-btn" (click)="edit.emit(capability)">Edit</button>
+            <button class="link-btn link-btn--danger" (click)="delete.emit(capability)">Delete</button>
+          </ng-container>
+
+          <ng-template #assignedActions>
+            <button class="link-btn link-btn--danger" (click)="remove.emit(capability)">Remove</button>
+          </ng-template>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ng-template #emptyState>
+    <div class="empty-state">No capabilities found.</div>
+  </ng-template>
+</div>

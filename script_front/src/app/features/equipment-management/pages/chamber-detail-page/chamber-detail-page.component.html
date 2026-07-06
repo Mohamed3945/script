@@ -1,0 +1,84 @@
+<section class="page" *ngIf="chamber$ | async as chamber">
+  <div class="page__container">
+    <div class="page__header">
+      <div>
+        <h1>{{ chamber.code }}</h1>
+        <p>{{ chamber.name }}</p>
+      </div>
+
+      <div class="page__actions">
+        <button class="btn btn--secondary" (click)="goBackToMachine()">Back to machine</button>
+        <button class="btn btn--secondary" (click)="goToEdit()">Edit chamber</button>
+      </div>
+    </div>
+
+    <app-chamber-summary-card [chamber]="chamber"></app-chamber-summary-card>
+
+    <div class="two-columns">
+      <div class="panel">
+        <div class="panel__header">
+          <h2>Assigned capabilities</h2>
+          <button class="btn" (click)="openCapabilityModal()">Add capability</button>
+        </div>
+
+        <app-chamber-capability-table
+          [capabilities]="chamber.capabilities"
+          mode="assigned"
+          (remove)="removeCapability($event)">
+        </app-chamber-capability-table>
+      </div>
+
+      <div class="panel">
+        <div class="panel__header">
+          <h2>Chamber configurations</h2>
+          <button class="btn" (click)="openCreateConfiguration()">Add configuration</button>
+        </div>
+
+        <app-chamber-configuration-table
+          [configurations]="chamber.configurations"
+          (edit)="openEditConfiguration($event)"
+          (delete)="deleteConfiguration($event)">
+        </app-chamber-configuration-table>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" *ngIf="showCapabilityModal" (click)="closeCapabilityModal()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Available capabilities</h2>
+          <button class="btn btn--secondary" type="button" (click)="closeCapabilityModal()">Close</button>
+        </div>
+
+        <div *ngIf="assignableCapabilities.length === 0" class="empty-state">
+          No additional capabilities available.
+        </div>
+
+        <div class="assign-list" *ngIf="assignableCapabilities.length > 0">
+          <button
+            class="assign-item"
+            *ngFor="let capability of assignableCapabilities"
+            (click)="assignCapability(capability)">
+            <div class="assign-item__code">{{ capability.code }}</div>
+            <div class="assign-item__label">{{ capability.label }}</div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" *ngIf="showConfigurationForm" (click)="closeConfigurationForm()">
+      <div class="modal-card modal-card--wide" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>{{ editingConfiguration ? 'Edit configuration' : 'Add configuration' }}</h2>
+          <button class="btn btn--secondary" type="button" (click)="closeConfigurationForm()">Close</button>
+        </div>
+
+        <app-chamber-configuration-form
+          [initialValue]="editingConfiguration"
+          [chamberId]="chamber.id"
+          [mode]="editingConfiguration ? 'edit' : 'create'"
+          (submitted)="saveConfiguration($event)">
+        </app-chamber-configuration-form>
+      </div>
+    </div>
+  </div>
+</section>

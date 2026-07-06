@@ -36,6 +36,11 @@ import jakarta.persistence.CascadeType;
     @UniqueConstraint(name = "uq_step_recipe_order", columnNames = {"recipe_id", "order_index"}),
     @UniqueConstraint(name = "uq_step_recipe_code", columnNames = {"recipe_id", "code"})
 })
+/**
+ * Step class for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 public class Step {
 
     @Id
@@ -68,6 +73,9 @@ public class Step {
     @OneToMany(mappedBy = "step", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StepParameter> parameters = new ArrayList<>();
 
+    /**
+     * Executes validateAndTouch.
+     */
     @PrePersist
     @PreUpdate
     protected void validateAndTouch() {

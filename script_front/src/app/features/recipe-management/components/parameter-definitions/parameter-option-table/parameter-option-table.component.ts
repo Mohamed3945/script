@@ -1,4 +1,4 @@
-﻿import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { ParameterOption } from '../../../../../core/models/parameter-option.model';
 
@@ -9,6 +9,9 @@ import { ParameterOption } from '../../../../../core/models/parameter-option.mod
   templateUrl: './parameter-option-table.component.html',
   styleUrl: './parameter-option-table.component.scss'
 })
+/**
+ * ParameterOptionTableComponent coordinates UI logic for this feature.
+ */
 export class ParameterOptionTableComponent {
   @Input() options: ParameterOption[] = [];
 

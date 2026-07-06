@@ -10,6 +10,9 @@ import { StepFormComponent } from '../step-form/step-form.component';
   templateUrl: './step-modal.component.html',
   styleUrl: './step-modal.component.scss'
 })
+/**
+ * StepModalComponent coordinates UI logic for this feature.
+ */
 export class StepModalComponent {
   @Input() visible = false;
   @Output() closed = new EventEmitter<void>();

@@ -1,0 +1,17 @@
+<div class="result-actions">
+  <button
+    type="button"
+    class="btn btn--secondary"
+    [disabled]="loading"
+    (click)="restartClicked.emit()">
+    Restart
+  </button>
+
+  <button
+    type="button"
+    class="btn"
+    [disabled]="!canSubmit || loading"
+    (click)="saveAndCustomizeClicked.emit()">
+    {{ loading ? 'Saving...' : 'Save and customize' }}
+  </button>
+</div>

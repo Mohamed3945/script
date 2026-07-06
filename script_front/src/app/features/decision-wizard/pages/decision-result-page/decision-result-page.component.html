@@ -20,19 +20,38 @@
       </app-result-info-card>
 
       <app-result-info-card
-        title="Recommended Machine"
+        title="Compatible Machines"
         icon="ti ti-cpu"
         theme="gold"
-        [value]="result.machineId ? 'Machine #' + result.machineId : '—'"
-        [subValue]="result.machineId ? 'ID: ' + result.machineId : '—'">
+        [value]="machineChoices.length ? machineChoices.length + (machineChoices.length > 1 ? ' matches' : ' match') : '—'"
+        [subValue]="machineChoices.length ? machineChoices[0].label : 'No machine provided by wizard result'">
+      </app-result-info-card>
+    </div>
+
+    <div class="result-page__selection-grid">
+      <app-result-golden-selection-card
+        [goldenRecipeId]="result.goldenRecipeId"
+        [goldenCode]="result.code"
+        [selected]="goldenValidated"
+        (selectedChange)="onGoldenValidatedChange($event)">
+      </app-result-golden-selection-card>
+
+      <app-result-info-card
+        title="Customization flow"
+        icon="ti ti-layout-sidebar-right-expand"
+        theme="blue"
+        value="Save and customize"
+        subValue="The derived recipe opens directly. Compatible machines stay visible on the right drawer.">
       </app-result-info-card>
     </div>
 
     <app-result-summary [selections]="(selections$ | async) ?? []"></app-result-summary>
 
-    <app-result-actions
+    <app-result-final-actions
+      [canSubmit]="canSubmit"
+      [loading]="(loading$ | async) ?? false"
       (restartClicked)="restart()"
-      (saveClicked)="save()">
-    </app-result-actions>
+      (saveAndCustomizeClicked)="saveAndCustomize()">
+    </app-result-final-actions>
   </div>
 </section>

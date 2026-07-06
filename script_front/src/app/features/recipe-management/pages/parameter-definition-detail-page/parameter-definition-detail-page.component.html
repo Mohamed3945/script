@@ -16,6 +16,59 @@
 
     <div class="option-section">
       <div class="option-section__header">
+        <h2>Impacted configurations</h2>
+        <button class="btn" (click)="onStartAddImpact()">Add impacted configuration</button>
+      </div>
+
+      <div class="impact-section__form" *ngIf="showImpactForm">
+        <div class="impact-form-card">
+          <div class="field">
+            <label>Configuration definition</label>
+            <select [(ngModel)]="selectedConfigurationDefinitionId">
+              <option [ngValue]="null">None</option>
+              <option
+                *ngFor="let configurationDefinition of (configurationDefinitions$ | async) ?? []"
+                [ngValue]="configurationDefinition.id ?? null">
+                {{ configurationDefinition.code }} - {{ configurationDefinition.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="actions">
+            <button type="button" class="btn btn--secondary" (click)="onCancelAddImpact()">Cancel</button>
+            <button type="button" class="btn" (click)="onSaveImpact()">Save impacted configuration</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-card" *ngIf="detail.configurationDefinitionId; else noImpactedConfigurations">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Name</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{ detail.configurationDefinitionCode || '—' }}</td>
+              <td>{{ detail.configurationDefinitionName || '—' }}</td>
+              <td class="actions">
+                <button class="link-btn link-btn--danger" (click)="onRemoveImpact()">Remove</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #noImpactedConfigurations>
+        <div class="empty-state">No impacted configuration linked.</div>
+      </ng-template>
+    </div>
+
+    <div class="option-section">
+      <div class="option-section__header">
         <h2>Options</h2>
         <button class="btn" (click)="onAddOption()">Add option</button>
       </div>

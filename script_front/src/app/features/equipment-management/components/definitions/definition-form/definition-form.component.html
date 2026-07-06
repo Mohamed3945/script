@@ -1,0 +1,50 @@
+<form [formGroup]="form" class="form-card" (ngSubmit)="onSubmit()">
+  <div class="form-grid">
+    <div class="field">
+      <label>Code</label>
+      <input type="text" formControlName="code" />
+    </div>
+
+    <div class="field">
+      <label>Name</label>
+      <input type="text" formControlName="name" />
+    </div>
+
+    <div class="field">
+      <label>Value type</label>
+      <input type="text" formControlName="valueType" />
+    </div>
+
+    <div class="field">
+      <label>Unit</label>
+      <input type="text" formControlName="unit" />
+    </div>
+
+    <div class="field field--full">
+      <label>Question for form</label>
+      <input type="text" formControlName="questionForForm" />
+    </div>
+
+    <div class="field">
+      <label>Question group</label>
+      <input type="text" formControlName="questionGroup" />
+    </div>
+
+    <div class="field">
+      <label>Display order</label>
+      <input type="number" formControlName="displayOrder" />
+    </div>
+
+    <div class="field field--checkbox">
+      <label>
+        <input type="checkbox" formControlName="active" /> Active
+      </label>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn" type="submit">
+      {{ mode === 'create' ? 'Create definition' : 'Save changes' }}
+    </button>
+  </div>
+</form>

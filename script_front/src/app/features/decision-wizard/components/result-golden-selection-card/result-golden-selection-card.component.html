@@ -1,0 +1,17 @@
+<div class="selection-card" [class.selection-card--selected]="selected">
+  <div class="selection-card__header">
+    <div>
+      <div class="selection-card__title">Proposed Golden Recipe</div>
+      <div class="selection-card__value">{{ goldenCode || ('Recipe #' + (goldenRecipeId ?? '—')) }}</div>
+    </div>
+
+    <label class="checkbox">
+      <input type="checkbox" [checked]="selected" (change)="onToggle()" />
+      <span>Validate</span>
+    </label>
+  </div>
+
+  <div class="selection-card__meta">
+    <span>Recipe ID: {{ goldenRecipeId ?? '—' }}</span>
+  </div>
+</div>

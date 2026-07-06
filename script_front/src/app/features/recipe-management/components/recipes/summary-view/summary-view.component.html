@@ -1,0 +1,69 @@
+<section class="summary-shell">
+  <table class="summary-grid">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let field of (recipe | keyvalue: keepFieldOrder)">
+        <td class="summary-grid__key">{{ summaryLabel(field.key) }}</td>
+        <td>
+          <ng-container [ngSwitch]="editorType(field.key, field.value)">
+            <select
+              *ngSwitchCase="'kind'"
+              class="summary-input"
+              [disabled]="!isFieldEditable(field.key) || savingField === field.key"
+              [value]="field.value"
+              (change)="commitSelect(field.key, $any($event.target).value)">
+              <option *ngFor="let kind of recipeKindOptions" [value]="kind">{{ kind }}</option>
+            </select>
+
+            <select
+              *ngSwitchCase="'status'"
+              class="summary-input"
+              [disabled]="!isFieldEditable(field.key) || savingField === field.key"
+              [value]="field.value"
+              (change)="commitSelect(field.key, $any($event.target).value)">
+              <option *ngFor="let status of recipeStatusOptions" [value]="status">{{ status }}</option>
+            </select>
+
+            <label *ngSwitchCase="'boolean'" class="summary-checkbox">
+              <input
+                type="checkbox"
+                [checked]="field.value"
+                [disabled]="!isFieldEditable(field.key) || savingField === field.key"
+                (change)="commitBoolean(field.key, $any($event.target).checked)" />
+              <span>{{ field.value ? 'Yes' : 'No' }}</span>
+            </label>
+
+            <input
+              *ngSwitchCase="'number'"
+              class="summary-input"
+              type="number"
+              [value]="field.value ?? ''"
+              [disabled]="!isFieldEditable(field.key) || savingField === field.key"
+              (blur)="commitTextOrNumber(field.key, $any($event.target).value)"
+              (keydown.enter)="commitTextOrNumber(field.key, $any($event.target).value)" />
+
+            <textarea
+              *ngSwitchCase="'textarea'"
+              class="summary-input summary-input--textarea"
+              [disabled]="!isFieldEditable(field.key) || savingField === field.key"
+              (blur)="commitTextOrNumber(field.key, $any($event.target).value)">{{ field.value ?? '' }}</textarea>
+
+            <input
+              *ngSwitchDefault
+              class="summary-input"
+              type="text"
+              [value]="field.value ?? ''"
+              [disabled]="!isFieldEditable(field.key) || savingField === field.key"
+              (blur)="commitTextOrNumber(field.key, $any($event.target).value)"
+              (keydown.enter)="commitTextOrNumber(field.key, $any($event.target).value)" />
+          </ng-container>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</section>

@@ -11,26 +11,49 @@ import st.tt.script_back.entities.DecisionResultProfile;
 import st.tt.script_back.entities.Recipe;
 import st.tt.script_back.enums.RecipeKind;
 import st.tt.script_back.enums.RecipeStatus;
+import st.tt.script_back.repositories.DecisionExecutionRepository;
 import st.tt.script_back.mappers.RecipeMapper;
 import st.tt.script_back.repositories.DecisionResultProfileRepository;
 import st.tt.script_back.repositories.RecipeRepository;
 
+/**
+ * RecipeService class for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 @Service
 public class RecipeService {
 
     private final RecipeRepository recipeRepository;
     private final DecisionResultProfileRepository decisionResultProfileRepository;
+    private final DecisionExecutionRepository decisionExecutionRepository;
     private final RecipeMapper recipeMapper;
 
+    /**
+     * Executes RecipeService.
+     *
+     * @param recipeRepository input argument consumed by RecipeService.
+     * @param decisionResultProfileRepository input argument consumed by RecipeService.
+     * @param recipeMapper input argument consumed by RecipeService.
+     */
     public RecipeService(
             RecipeRepository recipeRepository,
             DecisionResultProfileRepository decisionResultProfileRepository,
+            DecisionExecutionRepository decisionExecutionRepository,
             RecipeMapper recipeMapper) {
         this.recipeRepository = recipeRepository;
         this.decisionResultProfileRepository = decisionResultProfileRepository;
+        this.decisionExecutionRepository = decisionExecutionRepository;
         this.recipeMapper = recipeMapper;
     }
 
+    /**
+     * Executes createRecipe.
+     *
+     * @param request input argument consumed by createRecipe.
+     * @param resultProfileId input argument consumed by createRecipe.
+     * @return computed RecipeDto result returned by createRecipe.
+     */
     @Transactional
     public RecipeDto createRecipe(RecipeDto request, Long resultProfileId) {
         if (request == null) {
@@ -67,6 +90,12 @@ public class RecipeService {
         return recipeMapper.toDto(saved);
     }
 
+    /**
+     * Executes getRecipe.
+     *
+     * @param recipeId input argument consumed by getRecipe.
+     * @return computed RecipeDto result returned by getRecipe.
+     */
     @Transactional(readOnly = true)
     public RecipeDto getRecipe(Long recipeId) {
         Recipe recipe = recipeRepository.findById(recipeId)
@@ -74,6 +103,13 @@ public class RecipeService {
         return recipeMapper.toDto(recipe);
     }
 
+    /**
+     * Executes updateRecipe.
+     *
+     * @param recipeId input argument consumed by updateRecipe.
+     * @param request input argument consumed by updateRecipe.
+     * @return computed RecipeDto result returned by updateRecipe.
+     */
     @Transactional
     public RecipeDto updateRecipe(Long recipeId, RecipeDto request) {
         if (request == null) {
@@ -110,14 +146,30 @@ public class RecipeService {
         return recipeMapper.toDto(saved);
     }
 
+    /**
+     * Executes deleteRecipe.
+     *
+     * @param recipeId input argument consumed by deleteRecipe.
+     */
     @Transactional
     public void deleteRecipe(Long recipeId) {
         if (!recipeRepository.existsById(recipeId)) {
             throw new EntityNotFoundException("Recipe with id " + recipeId + " not found");
         }
+
+        // A derived recipe can be linked by historical decision executions.
+        // Clear that optional link before deleting the recipe entity.
+        decisionExecutionRepository.clearCreatedDerivedRecipeReference(recipeId);
+
         recipeRepository.deleteById(recipeId);
     }
 
+    /**
+     * Executes listDerivedVersions.
+     *
+     * @param parentRecipeId input argument consumed by listDerivedVersions.
+     * @return computed List<RecipeDto> result returned by listDerivedVersions.
+     */
     @Transactional(readOnly = true)
     public List<RecipeDto> listDerivedVersions(Long parentRecipeId) {
         return recipeMapper.toDtoList(recipeRepository.findByParentRecipeIdOrderByVersionDesc(parentRecipeId));

@@ -1,0 +1,44 @@
+<form [formGroup]="form" class="form-card" (ngSubmit)="onSubmit()">
+  <div class="form-grid">
+    <div class="field field--full">
+      <label>Configuration definition</label>
+      <select formControlName="configurationDefinitionId">
+        <option [ngValue]="null">Select configuration definition</option>
+        <option *ngFor="let definition of definitions" [ngValue]="definition.id">
+          {{ definition.code }} — {{ definition.name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Variant code</label>
+      <input type="text" formControlName="chamberConfigurationCode" />
+    </div>
+
+    <div class="field">
+      <label>Variant name</label>
+      <input type="text" formControlName="chamberConfigurationName" />
+    </div>
+
+    <div class="field">
+      <label>Nominal value</label>
+      <input type="number" formControlName="nominalValue" />
+    </div>
+
+    <div class="field">
+      <label>Min value</label>
+      <input type="number" formControlName="minValue" />
+    </div>
+
+    <div class="field">
+      <label>Max value</label>
+      <input type="number" formControlName="maxValue" />
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn" type="submit">
+      {{ mode === 'create' ? 'Create chamber configuration' : 'Save changes' }}
+    </button>
+  </div>
+</form>

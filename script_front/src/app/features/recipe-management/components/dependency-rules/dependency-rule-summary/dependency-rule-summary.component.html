@@ -1,4 +1,41 @@
-﻿<section class="placeholder">
-  <h2>Dependency Rule Summary</h2>
-  <p>Component scaffold ready.</p>
-</section>
+﻿<div class="summary-card" *ngIf="rule">
+  <div class="summary-grid">
+    <div class="summary-item">
+      <span class="label">Source definition</span>
+      <span class="value">{{ rule.sourceDefinitionCode || '-' }} - {{ rule.sourceDefinitionName || '-' }}</span>
+    </div>
+
+    <div class="summary-item">
+      <span class="label">Trigger option</span>
+      <span class="value">{{ rule.triggerOptionCode || '-' }} - {{ rule.triggerOptionLabel || '-' }}</span>
+    </div>
+
+    <div class="summary-item">
+      <span class="label">Source activation context</span>
+      <span class="value">
+        {{ rule.requiredSourceActivationOptionCode || '-' }}
+        <span *ngIf="rule.requiredSourceActivationOptionLabel"> - {{ rule.requiredSourceActivationOptionLabel }}</span>
+      </span>
+    </div>
+
+    <div class="summary-item">
+      <span class="label">Target definition</span>
+      <span class="value">{{ rule.targetDefinitionCode || '-' }} - {{ rule.targetDefinitionName || '-' }}</span>
+    </div>
+
+    <div class="summary-item">
+      <span class="label">Effect</span>
+      <span class="value">{{ rule.effect }}</span>
+    </div>
+
+    <div class="summary-item">
+      <span class="label">Scope</span>
+      <span class="value">{{ rule.scope }}</span>
+    </div>
+
+    <div class="summary-item">
+      <span class="label">Priority</span>
+      <span class="value">{{ rule.priority }}</span>
+    </div>
+  </div>
+</div>

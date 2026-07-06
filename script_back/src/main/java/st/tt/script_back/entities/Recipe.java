@@ -3,6 +3,8 @@ package st.tt.script_back.entities;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -14,6 +16,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
@@ -26,6 +30,11 @@ import lombok.Setter;
 import st.tt.script_back.enums.RecipeKind;
 import st.tt.script_back.enums.RecipeStatus;
 
+/**
+ * Recipe class for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 @Entity
 @Getter
 @Setter
@@ -80,6 +89,25 @@ public class Recipe {
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Step> steps = new ArrayList<>();
 
+        @ManyToMany
+        @JoinTable(
+            name = "recipe_required_capability",
+            joinColumns = @JoinColumn(name = "recipe_id"),
+            inverseJoinColumns = @JoinColumn(name = "capability_id")
+        )
+        private Set<ChamberCapability> requiredCapabilities = new HashSet<>();
+
+        @ManyToMany
+        @JoinTable(
+            name = "recipe_required_configuration",
+            joinColumns = @JoinColumn(name = "recipe_id"),
+            inverseJoinColumns = @JoinColumn(name = "configuration_definition_id")
+        )
+        private Set<ConfigurationDefinition> requiredConfigurationDefinitions = new HashSet<>();
+
+    /**
+     * Executes onCreate.
+     */
     @PrePersist
     protected void onCreate() {
         Instant now = Instant.now();
@@ -92,6 +120,9 @@ public class Recipe {
         }
     }
 
+    /**
+     * Executes onUpdate.
+     */
     @PreUpdate
     protected void onUpdate() {
         this.reviseTime = Instant.now();

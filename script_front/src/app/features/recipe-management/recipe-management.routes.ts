@@ -63,7 +63,18 @@ export const RECIPE_MANAGEMENT_ROUTES: Routes = [
     component: RecipeEditPageComponent
   },
   {
+    path: 'golden/:id',
+    component: RecipeDetailPageComponent,
+    data: { workspaceMode: 'golden' }
+  },
+  {
+    path: 'derived/:id',
+    component: RecipeDetailPageComponent,
+    data: { workspaceMode: 'derived' }
+  },
+  {
     path: ':id',
-    component: RecipeDetailPageComponent
+    component: RecipeDetailPageComponent,
+    data: { workspaceMode: 'auto' }
   }
 ];

@@ -14,6 +14,11 @@ import st.tt.script_back.mappers.ParameterOptionMapper;
 import st.tt.script_back.repositories.ParameterDefinitionRepository;
 import st.tt.script_back.repositories.ParameterOptionRepository;
 
+/**
+ * ParameterOptionService class for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 @Service
 public class ParameterOptionService {
 
@@ -21,6 +26,13 @@ public class ParameterOptionService {
     private final ParameterDefinitionRepository parameterDefinitionRepository;
     private final ParameterOptionMapper parameterOptionMapper;
 
+    /**
+     * Executes ParameterOptionService.
+     *
+     * @param parameterOptionRepository input argument consumed by ParameterOptionService.
+     * @param parameterDefinitionRepository input argument consumed by ParameterOptionService.
+     * @param parameterOptionMapper input argument consumed by ParameterOptionService.
+     */
     public ParameterOptionService(
             ParameterOptionRepository parameterOptionRepository,
             ParameterDefinitionRepository parameterDefinitionRepository,
@@ -30,6 +42,12 @@ public class ParameterOptionService {
         this.parameterOptionMapper = parameterOptionMapper;
     }
 
+    /**
+     * Executes getOptionsByDefinitionId.
+     *
+     * @param definitionId input argument consumed by getOptionsByDefinitionId.
+     * @return computed List<ParameterOptionDto> result returned by getOptionsByDefinitionId.
+     */
     @Transactional(readOnly = true)
     public List<ParameterOptionDto> getOptionsByDefinitionId(Long definitionId) {
         if (!parameterDefinitionRepository.existsById(definitionId)) {
@@ -38,6 +56,12 @@ public class ParameterOptionService {
         return parameterOptionMapper.toDtoList(parameterOptionRepository.findByDefinitionIdOrderByOrderIndexAsc(definitionId));
     }
 
+    /**
+     * Executes createParameterOption.
+     *
+     * @param request input argument consumed by createParameterOption.
+     * @return computed ParameterOptionDto result returned by createParameterOption.
+     */
     @Transactional
     public ParameterOptionDto createParameterOption(ParameterOptionDto request) {
         if (request == null) {
@@ -68,6 +92,13 @@ public class ParameterOptionService {
         return parameterOptionMapper.toDto(saved);
     }
 
+    /**
+     * Executes updateParameterOption.
+     *
+     * @param id input argument consumed by updateParameterOption.
+     * @param request input argument consumed by updateParameterOption.
+     * @return computed ParameterOptionDto result returned by updateParameterOption.
+     */
     @Transactional
     public ParameterOptionDto updateParameterOption(Long id, ParameterOptionDto request) {
         if (request == null) {
@@ -101,6 +132,11 @@ public class ParameterOptionService {
         return parameterOptionMapper.toDto(saved);
     }
 
+    /**
+     * Executes deleteParameterOption.
+     *
+     * @param id input argument consumed by deleteParameterOption.
+     */
     @Transactional
     public void deleteParameterOption(Long id) {
         if (!parameterOptionRepository.existsById(id)) {

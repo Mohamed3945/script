@@ -1,7 +1,8 @@
-﻿import { Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { Recipe } from '../../../../core/models/recipe.model';
 import { RecipeApiService } from '../../../../core/services/recipe-api.service';
+import { buildRecipeDetailRouteByKind } from '../../../../core/utils/recipe-route.util';
 import { RecipeFormComponent } from '../../components/recipes/recipe-form/recipe-form.component';
 
 @Component({
@@ -11,6 +12,9 @@ import { RecipeFormComponent } from '../../components/recipes/recipe-form/recipe
   templateUrl: './recipe-create-page.component.html',
   styleUrl: './recipe-create-page.component.scss'
 })
+/**
+ * RecipeCreatePageComponent coordinates UI logic for this feature.
+ */
 export class RecipeCreatePageComponent {
   constructor(
     private recipeApiService: RecipeApiService,
@@ -21,7 +25,7 @@ export class RecipeCreatePageComponent {
     this.recipeApiService.createRecipe(payload.recipe, payload.resultProfileId).subscribe({
       next: (recipe) => {
         if (recipe.id) {
-          this.router.navigate(['/recipes', recipe.id]);
+          this.router.navigate(buildRecipeDetailRouteByKind(recipe.id, recipe.recipeKind));
         } else {
           this.router.navigate(['/recipes']);
         }

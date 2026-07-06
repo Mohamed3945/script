@@ -1,0 +1,45 @@
+.selection-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.selection-card--selected {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(184, 138, 27, 0.12);
+}
+
+.selection-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.selection-card__title {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.selection-card__value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.selection-card__meta {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}

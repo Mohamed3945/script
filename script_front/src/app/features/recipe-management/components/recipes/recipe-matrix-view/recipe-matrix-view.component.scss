@@ -1,25 +1,28 @@
 .matrix-card {
-  background: var(--surface);
+  background: #fff;
   border: 1px solid var(--border-soft);
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 280px);
+  max-height: calc(100vh - 250px);
 }
 
 .matrix-card__header {
-  padding: 12px 14px;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--border-soft);
-  background: linear-gradient(180deg, #ffffff 0%, #fafbfd 100%);
+  background: #eef3f7;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .matrix-card__header h3 {
-  font-size: 14px;
-  color: var(--text-main);
+  margin: 0;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #607488;
 }
 
 .matrix-wrapper {
@@ -36,8 +39,8 @@
 .matrix-table th,
 .matrix-table td {
   padding: 12px 14px;
-  border-bottom: 1px solid #e8edf3;
-  border-right: 1px solid #e8edf3;
+  border-bottom: 1px solid var(--border-soft);
+  border-right: 1px solid var(--border-soft);
   text-align: left;
   vertical-align: top;
   font-size: 13px;
@@ -47,10 +50,12 @@
   position: sticky;
   top: 0;
   z-index: 3;
-  background: #f4f7fa;
-  color: var(--text-muted);
-  font-weight: 600;
-  box-shadow: inset 0 -1px 0 #dce3ea;
+  background: #eef3f7;
+  color: #607488;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
 }
 
 .step-header {
@@ -61,19 +66,21 @@
 
 .step-header__code {
   font-size: 11px;
-  color: var(--text-muted);
+  color: #607488;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.06em;
+  font-family: Consolas, 'Courier New', monospace;
 }
 
 .matrix-table__param {
   position: sticky;
   left: 0;
   z-index: 2;
-  background: #fbfcfd;
+  background: #f8fbfe;
   font-weight: 600;
-  color: var(--text-main);
+  color: #2b3f52;
   min-width: 250px;
+  font-family: Consolas, 'Courier New', monospace;
 }
 
 .param-name {
@@ -89,17 +96,19 @@
 .cell-input {
   width: 100%;
   min-width: 120px;
-  border: 1px solid #d7e0e9;
-  border-radius: 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
   padding: 6px 8px;
   background: #fff;
   color: var(--text-main);
+  font-family: Consolas, 'Courier New', monospace;
+  font-size: 13px;
 }
 
 .cell-input:focus {
   outline: none;
-  border-color: #9fb0c1;
-  box-shadow: 0 0 0 3px rgba(79, 101, 125, 0.12);
+  border-color: #86a9ca;
+  box-shadow: 0 0 0 2px rgba(134, 169, 202, 0.2);
 }
 
 .cell-display {

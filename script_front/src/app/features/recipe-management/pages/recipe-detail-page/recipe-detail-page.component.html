@@ -1,63 +1,50 @@
 ﻿<section class="page" *ngIf="recipe$ | async as recipe">
   <div class="page__container">
-    <app-recipe-detail-header
-      [recipe]="recipe"
-      (editClicked)="onEditRecipe()"
-      (deleteClicked)="onDeleteRecipe()">
-    </app-recipe-detail-header>
+    <app-recipe-detail-header [recipe]="recipe"></app-recipe-detail-header>
 
-    <div class="workspace">
-      <aside class="workspace__sidebar">
-        <app-recipe-summary-sidecard [recipe]="recipe"></app-recipe-summary-sidecard>
-
-        <div class="workspace__sidebar-section">
+    <div class="workspace" [class.workspace--drawer-open]="showRightDrawer">
+      <main class="workspace__main">
+        <section class="workspace__main-topbar">
           <app-recipe-tab-nav
             [activeTab]="activeTab"
             (tabChanged)="activeTab = $event">
           </app-recipe-tab-nav>
-        </div>
-      </aside>
 
-      <main class="workspace__main">
-        <div *ngIf="activeTab === 'summary'" class="info-card">
-          <h3>Recipe Summary</h3>
-          <p>
-            Use this recipe workspace to inspect structure, browse steps, compare parameter values
-            in matrix view, or focus on one step at a time.
-          </p>
-        </div>
-
-        <div *ngIf="activeTab === 'prestep'" class="info-card">
-          <div class="prestep-header">
-            <h3>Prestep</h3>
-
-            <button class="btn" *ngIf="prestepStep" (click)="openPrestepParameterModal()">
-              Add parameter
-            </button>
+          <div class="workspace__main-topbar-child" *ngIf="activeTab === 'steps'">
+            <span class="steps-shell__toolbar-label">View mode</span>
+            <app-recipe-view-switch
+              [mode]="viewMode"
+              (modeChanged)="viewMode = $event">
+            </app-recipe-view-switch>
           </div>
+        </section>
 
-          <table *ngIf="(prestepRows$ | async) as prestepRows; else noPrestepParameters" class="prestep-table">
-            <thead>
-              <tr>
-                <th>Parameter</th>
-                <th>Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let row of prestepRows">
-                <td>{{ row.parameter }}</td>
-                <td>{{ row.value }}</td>
-              </tr>
-              <tr *ngIf="prestepRows.length === 0">
-                <td colspan="2">No PRESTEP parameters found.</td>
-              </tr>
-            </tbody>
-          </table>
+        <button
+          type="button"
+          class="drawer__toggle-tab drawer__toggle-tab--floating"
+          (click)="toggleRightDrawer()"
+          [attr.aria-label]="showRightDrawer ? 'Close tools panel' : 'Open tools panel'">
+          <span class="drawer__toggle-glyph">{{ showRightDrawer ? '>' : '<' }}</span>
+        </button>
 
-          <ng-template #noPrestepParameters>
-            <p>No PRESTEP parameters found.</p>
-          </ng-template>
-        </div>
+        <ng-container *ngIf="activeTab === 'summary'">
+          <app-summary-view
+            [recipe]="recipe"
+            [savingField]="savingSummaryField"
+            [recipeKindOptions]="recipeKindOptions"
+            [recipeStatusOptions]="recipeStatusOptions"
+            (fieldCommitted)="onSummaryFieldCommitted($event)">
+          </app-summary-view>
+        </ng-container>
+
+        <app-recipe-prestep-view
+          *ngIf="activeTab === 'prestep'"
+          [prestepStep]="prestepStep"
+          [rows]="(prestepRows$ | async)"
+          (addParameterClicked)="openPrestepParameterModal()"
+          (deleteParameterClicked)="onDeletePrestepParameter($event)"
+          (cellUpdated)="onPrestepCellUpdated($event)">
+        </app-recipe-prestep-view>
 
         <ng-container *ngIf="activeTab === 'steps'">
           <section class="steps-shell">
@@ -80,16 +67,63 @@
                 (deleteParameterClicked)="onDeleteStepParameter($event)">
               </app-recipe-step-focus-view>
             </div>
-
-            <div class="steps-shell__subnav">
-              <app-recipe-view-switch
-                [mode]="viewMode"
-                (modeChanged)="viewMode = $event">
-              </app-recipe-view-switch>
-            </div>
           </section>
         </ng-container>
       </main>
+
+      <aside class="workspace__drawer" [class.workspace__drawer--open]="showRightDrawer">
+        <button
+          type="button"
+          class="drawer__toggle-tab"
+          (click)="toggleRightDrawer()"
+          [attr.aria-label]="showRightDrawer ? 'Close tools panel' : 'Open tools panel'">
+          <span class="drawer__toggle-glyph">{{ showRightDrawer ? '>' : '<' }}</span>
+        </button>
+
+        <div class="drawer__body" *ngIf="showRightDrawer">
+          <section class="drawer-section">
+            <h4 class="drawer-section__title">Structure</h4>
+            <button type="button" class="drawer-action" (click)="openStepModal()">
+              <span class="drawer-action__icon">[+]</span>
+              <span class="drawer-action__label">Add step</span>
+            </button>
+            <button
+              type="button"
+              class="drawer-action"
+              [disabled]="!canAddParameter"
+              (click)="openContextualParameterModal()">
+              <span class="drawer-action__icon">[+]</span>
+              <span class="drawer-action__label">Add parameter</span>
+            </button>
+            <button type="button" class="drawer-action" [disabled]="true">
+              <span class="drawer-action__icon">[LOCK]</span>
+              <span class="drawer-action__label">Delete parameter</span>
+            </button>
+          </section>
+
+          <section class="drawer-section">
+            <h4 class="drawer-section__title">Requirements</h4>
+            <app-recipe-requirements-panel
+              [requirements]="(requirements$ | async)"
+              [availableCapabilities]="(availableCapabilities$ | async) ?? []"
+              [availableConfigurationDefinitions]="(availableConfigurationDefinitions$ | async) ?? []"
+              [readOnly]="isDerivedWorkspace"
+              [sourceHint]="isDerivedWorkspace ? 'Inherited from parent golden recipe. Edit requirements on golden only.' : 'Managed directly on this golden recipe.'"
+              (addCapability)="onAddRequiredCapability($event)"
+              (removeCapability)="onRemoveRequiredCapability($event)"
+              (addConfiguration)="onAddRequiredConfiguration($event)"
+              (removeConfiguration)="onRemoveRequiredConfiguration($event)">
+            </app-recipe-requirements-panel>
+          </section>
+
+          <section class="drawer-section" *ngIf="isDerivedWorkspace">
+            <h4 class="drawer-section__title">Compatible machines</h4>
+            <app-recipe-compatible-machines-panel
+              [compatibility]="(compatibility$ | async)">
+            </app-recipe-compatible-machines-panel>
+          </section>
+        </div>
+      </aside>
     </div>
   </div>
 

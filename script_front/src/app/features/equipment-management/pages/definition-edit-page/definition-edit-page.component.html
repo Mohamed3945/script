@@ -1,0 +1,10 @@
+<section class="page" *ngIf="definition$ | async as definition">
+  <div class="page__container">
+    <div class="page__header">
+      <h1>Edit definition</h1>
+      <p>Update configuration definition metadata.</p>
+    </div>
+
+    <app-definition-form [initialValue]="definition" mode="edit" (submitted)="onSubmit($event)"></app-definition-form>
+  </div>
+</section>

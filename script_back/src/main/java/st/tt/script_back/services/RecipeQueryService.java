@@ -26,6 +26,7 @@ import st.tt.script_back.entities.ParameterOption;
 import st.tt.script_back.entities.Recipe;
 import st.tt.script_back.entities.Step;
 import st.tt.script_back.entities.StepParameter;
+import st.tt.script_back.enums.ActivationState;
 import st.tt.script_back.enums.ParameterValueType;
 import st.tt.script_back.enums.RecipeKind;
 import st.tt.script_back.enums.StepKind;
@@ -38,6 +39,12 @@ import st.tt.script_back.repositories.RecipeRepository;
 import st.tt.script_back.repositories.StepParameterRepository;
 import st.tt.script_back.repositories.StepRepository;
 
+/**
+ * Read-only query service for recipes, steps, parameters, and matrix projections.
+ * <p>
+ * This service centralizes UI-facing aggregation logic and enforces consistent projections for list, grid,
+ * and matrix endpoints.
+ */
 @Service
 public class RecipeQueryService {
 
@@ -50,6 +57,18 @@ public class RecipeQueryService {
     private final StepMapper stepMapper;
     private final StepParameterMapper stepParameterMapper;
 
+    /**
+     * Executes RecipeQueryService.
+     *
+     * @param recipeRepository input argument consumed by RecipeQueryService.
+     * @param stepRepository input argument consumed by RecipeQueryService.
+     * @param stepParameterRepository input argument consumed by RecipeQueryService.
+     * @param recipeMapper input argument consumed by RecipeQueryService.
+     * @param parameterOptionRepository input argument consumed by RecipeQueryService.
+     * @param parameterOptionMapper input argument consumed by RecipeQueryService.
+     * @param stepMapper input argument consumed by RecipeQueryService.
+     * @param stepParameterMapper input argument consumed by RecipeQueryService.
+     */
     public RecipeQueryService(
             RecipeRepository recipeRepository,
             StepRepository stepRepository,
@@ -69,6 +88,13 @@ public class RecipeQueryService {
         this.stepParameterMapper = stepParameterMapper;
     }
 
+    /**
+     * Executes getRecipes.
+     *
+     * @param recipeKind input argument consumed by getRecipes.
+     * @param golden input argument consumed by getRecipes.
+     * @return computed List<RecipeDto> result returned by getRecipes.
+     */
     @Transactional(readOnly = true)
     public List<RecipeDto> getRecipes(RecipeKind recipeKind, Boolean golden) {
         List<Recipe> recipes;
@@ -86,6 +112,12 @@ public class RecipeQueryService {
         return recipeMapper.toDtoList(recipes);
     }
 
+    /**
+     * Executes getRecipe.
+     *
+     * @param recipeId input argument consumed by getRecipe.
+     * @return computed RecipeDto result returned by getRecipe.
+     */
     @Transactional(readOnly = true)
     public RecipeDto getRecipe(Long recipeId) {
         Recipe recipe = recipeRepository.findById(recipeId)
@@ -93,6 +125,13 @@ public class RecipeQueryService {
         return recipeMapper.toDto(recipe);
     }
 
+    /**
+     * Executes getRecipeSteps.
+     *
+     * @param recipeId input argument consumed by getRecipeSteps.
+     * @param stepKind input argument consumed by getRecipeSteps.
+     * @return computed List<StepDto> result returned by getRecipeSteps.
+     */
     @Transactional(readOnly = true)
     public List<StepDto> getRecipeSteps(Long recipeId, StepKind stepKind) {
         ensureRecipeExists(recipeId);
@@ -104,6 +143,12 @@ public class RecipeQueryService {
         return stepMapper.toDtoList(steps);
     }
 
+    /**
+     * Executes getStep.
+     *
+     * @param stepId input argument consumed by getStep.
+     * @return computed StepDto result returned by getStep.
+     */
     @Transactional(readOnly = true)
     public StepDto getStep(Long stepId) {
         Step step = stepRepository.findById(stepId)
@@ -111,6 +156,12 @@ public class RecipeQueryService {
         return stepMapper.toDto(step);
     }
 
+    /**
+     * Executes getStepParameters.
+     *
+     * @param stepId input argument consumed by getStepParameters.
+     * @return computed List<StepParameterDto> result returned by getStepParameters.
+     */
     @Transactional(readOnly = true)
     public List<StepParameterDto> getStepParameters(Long stepId) {
         ensureStepExists(stepId);
@@ -119,6 +170,12 @@ public class RecipeQueryService {
         return stepParameterMapper.toDtoList(parameters);
     }
 
+    /**
+     * Executes getStepParameter.
+     *
+     * @param stepParameterId input argument consumed by getStepParameter.
+     * @return computed StepParameterDto result returned by getStepParameter.
+     */
     @Transactional(readOnly = true)
     public StepParameterDto getStepParameter(Long stepParameterId) {
         StepParameter parameter = stepParameterRepository.findById(stepParameterId)
@@ -127,6 +184,12 @@ public class RecipeQueryService {
         return stepParameterMapper.toDto(parameter);
     }
 
+    /**
+     * Executes getRecipeStepParameterGrid.
+     *
+     * @param recipeId input argument consumed by getRecipeStepParameterGrid.
+     * @return computed List<StepParameterGridRowDto> result returned by getRecipeStepParameterGrid.
+     */
     @Transactional(readOnly = true)
     public List<StepParameterGridRowDto> getRecipeStepParameterGrid(Long recipeId) {
         ensureRecipeExists(recipeId);
@@ -147,6 +210,21 @@ public class RecipeQueryService {
         return parameters.stream().map(parameter -> toGridRow(recipeId, stepById, parameter)).toList();
     }
 
+    /**
+     * Builds the matrix view used by the frontend recipe editor.
+     * <p>
+     * Rows represent parameter definitions, columns represent ordered steps, and each cell represents one
+     * step-parameter instance if present.
+     * <p>
+     * Editability rule in each non-empty cell:
+     * <ul>
+     * <li>locked golden values are never editable,</li>
+     * <li>otherwise the cell is editable only when activation state is ENABLED.</li>
+     * </ul>
+     *
+     * @param recipeId recipe identifier.
+     * @return matrix DTO containing columns and rows ready for UI rendering.
+     */
     @Transactional(readOnly = true)
     public RecipeMatrixDto getRecipeMatrix(Long recipeId) {
         ensureRecipeExists(recipeId);
@@ -233,6 +311,9 @@ public class RecipeQueryService {
                                         ? cellParameter.getSelectedOption().getLabel()
                                         : (cellParameter.getValueJson() != null ? cellParameter.getValueJson() : "-");
 
+                    boolean editable = !cellParameter.isLockedByGolden()
+                        && cellParameter.getActivationState() == ActivationState.ENABLED;
+
                                 return new RecipeMatrixCellDto(
                                         step.getId(),
                                         cellParameter.getId(),
@@ -245,7 +326,7 @@ public class RecipeQueryService {
                                         optionsByDefinitionId.getOrDefault(definitionId, List.of()),
                                         cellParameter.getActivationState(),
                                         cellParameter.isLockedByGolden(),
-                                        !cellParameter.isLockedByGolden());
+                        editable);
                             })
                             .toList();
 
@@ -261,6 +342,14 @@ public class RecipeQueryService {
         return new RecipeMatrixDto(recipeId, columns, rows);
     }
 
+    /**
+     * Maps a single step-parameter entity to the flattened grid row projection.
+     *
+     * @param recipeId recipe identifier owning the row.
+     * @param stepById step lookup to enrich row with step metadata.
+     * @param parameter source step-parameter entity.
+     * @return flattened row DTO for tabular rendering.
+     */
     private StepParameterGridRowDto toGridRow(Long recipeId, Map<Long, Step> stepById, StepParameter parameter) {
         Long stepId = parameter.getStep() != null ? parameter.getStep().getId() : null;
         Step step = stepById.get(stepId);
@@ -289,12 +378,22 @@ public class RecipeQueryService {
         );
     }
 
+    /**
+     * Ensures a recipe exists before executing read projections that depend on it.
+     *
+     * @param recipeId recipe identifier.
+     */
     private void ensureRecipeExists(Long recipeId) {
         if (!recipeRepository.existsById(recipeId)) {
             throw new EntityNotFoundException("Recipe with id " + recipeId + " not found");
         }
     }
 
+    /**
+     * Ensures a step exists before loading its parameters.
+     *
+     * @param stepId step identifier.
+     */
     private void ensureStepExists(Long stepId) {
         if (!stepRepository.existsById(stepId)) {
             throw new EntityNotFoundException("Step with id " + stepId + " not found");

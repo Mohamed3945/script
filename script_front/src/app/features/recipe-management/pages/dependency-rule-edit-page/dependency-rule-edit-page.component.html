@@ -1,4 +1,14 @@
-﻿<section class="placeholder">
-  <h2>Dependency Rule Edit Page</h2>
-  <p>Component scaffold ready.</p>
+﻿<section class="page" *ngIf="formValue$ | async as formValue">
+  <div class="page__container">
+    <div class="page__header">
+      <h1>Edit Dependency Rule</h1>
+      <p>Update context, target, effect, or priority.</p>
+    </div>
+
+    <app-dependency-rule-form
+      [initialValue]="formValue"
+      mode="edit"
+      (submitted)="onSubmit($event)">
+    </app-dependency-rule-form>
+  </div>
 </section>

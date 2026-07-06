@@ -1,4 +1,48 @@
-﻿<section class="placeholder">
-  <h2>Dependency Rule Table</h2>
-  <p>Component scaffold ready.</p>
-</section>
+﻿<div class="table-card">
+  <table *ngIf="rules.length > 0; else emptyState" class="table">
+    <thead>
+      <tr>
+        <th>Source</th>
+        <th>Trigger option</th>
+        <th>Activation context</th>
+        <th>Target</th>
+        <th>Effect</th>
+        <th>Scope</th>
+        <th>Priority</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let rule of rules">
+        <td>
+          <div class="main">{{ rule.sourceDefinitionCode || '-' }}</div>
+          <div class="sub">{{ rule.sourceDefinitionName || '-' }}</div>
+        </td>
+        <td>
+          <div class="main">{{ rule.triggerOptionCode || '-' }}</div>
+          <div class="sub">{{ rule.triggerOptionLabel || '-' }}</div>
+        </td>
+        <td>
+          <div class="main">{{ rule.requiredSourceActivationOptionCode || '-' }}</div>
+          <div class="sub">{{ rule.requiredSourceActivationOptionLabel || 'No contextual filter' }}</div>
+        </td>
+        <td>
+          <div class="main">{{ rule.targetDefinitionCode || '-' }}</div>
+          <div class="sub">{{ rule.targetDefinitionName || '-' }}</div>
+        </td>
+        <td>{{ rule.effect }}</td>
+        <td>{{ rule.scope }}</td>
+        <td>{{ rule.priority }}</td>
+        <td class="actions">
+          <button class="link-btn" (click)="viewRule.emit(rule)">View</button>
+          <button class="link-btn" (click)="editRule.emit(rule)">Edit</button>
+          <button class="link-btn link-btn--danger" (click)="deleteRule.emit(rule)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ng-template #emptyState>
+    <div class="empty-state">No dependency rules found.</div>
+  </ng-template>
+</div>

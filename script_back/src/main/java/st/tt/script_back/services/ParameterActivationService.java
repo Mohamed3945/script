@@ -22,6 +22,19 @@ import st.tt.script_back.repositories.ParameterDependencyRuleRepository;
 import st.tt.script_back.repositories.StepParameterRepository;
 import st.tt.script_back.repositories.StepRepository;
 
+/**
+ * Recomputes parameter activation states for a recipe from dependency rules.
+ * <p>
+ * The service evaluates every selected source option, finds matching rules, resolves targets according to
+ * the configured scope, then applies a single winning effect on each target parameter.
+ * <p>
+ * Conflict resolution is deterministic:
+ * <ul>
+ * <li>higher priority wins first,</li>
+ * <li>for equal priority, {@link RuleEffect#DISABLE} wins over {@link RuleEffect#ENABLE}.</li>
+ * </ul>
+ * If no rule matches a parameter, the fallback state is {@link ActivationState#ENABLED}.
+ */
 @Service
 public class ParameterActivationService {
 
@@ -33,6 +46,13 @@ public class ParameterActivationService {
     private final StepParameterRepository stepParameterRepository;
     private final ParameterDependencyRuleRepository parameterDependencyRuleRepository;
 
+    /**
+     * Creates the activation service with repositories needed for graph traversal and rule evaluation.
+     *
+     * @param stepRepository reads ordered steps for a recipe.
+     * @param stepParameterRepository reads and stores step parameters with required associations.
+     * @param parameterDependencyRuleRepository reads dependency rules grouped by source definition.
+     */
     public ParameterActivationService(
             StepRepository stepRepository,
             StepParameterRepository stepParameterRepository,
@@ -42,6 +62,21 @@ public class ParameterActivationService {
         this.parameterDependencyRuleRepository = parameterDependencyRuleRepository;
     }
 
+    /**
+     * Recalculates activation state for all parameters of a recipe in one transactional pass.
+     * <p>
+     * Processing steps:
+     * <ol>
+     * <li>load steps and their parameters (with definitions and selected options),</li>
+     * <li>index parameters for fast target lookup by definition and by step,</li>
+     * <li>collect rule matches for each target parameter from selected source options,</li>
+     * <li>pick one winner per target using priority and effect ranking,</li>
+     * <li>persist final activation states in batch.</li>
+     * </ol>
+     * This method is idempotent for unchanged recipe data.
+     *
+     * @param recipeId recipe identifier whose activation graph must be recomputed.
+     */
     @Transactional
     public void recalculateRecipeActivationStates(Long recipeId) {
         List<Step> steps = stepRepository.findByRecipeIdOrderByOrderIndexAsc(recipeId);
@@ -73,13 +108,8 @@ public class ParameterActivationService {
             }
         }
 
-        Map<Long, Boolean> hasIncomingRulesByDefinitionId = new HashMap<>();
         Map<Long, List<ParameterDependencyRule>> rulesBySourceDefinitionId = new HashMap<>();
         for (Long definitionId : definitionIds) {
-            List<ParameterDependencyRule> incomingRules = parameterDependencyRuleRepository
-                    .findByTargetDefinitionIdOrderByPriorityAscIdAsc(definitionId);
-            hasIncomingRulesByDefinitionId.put(definitionId, !incomingRules.isEmpty());
-
             List<ParameterDependencyRule> sourceRules = parameterDependencyRuleRepository
                     .findBySourceDefinitionIdOrderByPriorityAscIdAsc(definitionId);
             rulesBySourceDefinitionId.put(definitionId, sourceRules);
@@ -103,6 +133,9 @@ public class ParameterActivationService {
                 if (!selectedOptionId.equals(rule.getTriggerOption().getId())) {
                     continue;
                 }
+                if (!matchesRequiredSourceActivationContext(rule, sourceParameter)) {
+                    continue;
+                }
 
                 List<StepParameter> targetParameters = resolveTargets(rule, sourceParameter, parametersByDefinitionId,
                         parametersByStepAndDefinition);
@@ -115,19 +148,18 @@ public class ParameterActivationService {
         }
 
         for (StepParameter parameter : parameters) {
-            Long definitionId = parameter.getDefinition() != null ? parameter.getDefinition().getId() : null;
-            boolean hasIncomingRules = definitionId != null && Boolean.TRUE.equals(hasIncomingRulesByDefinitionId.get(definitionId));
             List<RuleMatch> matches = matchesByTargetParameterId.getOrDefault(parameter.getId(), List.of());
 
             ActivationState newState;
             if (matches.isEmpty()) {
-                newState = hasIncomingRules ? ActivationState.WAIT : ActivationState.ENABLED;
+                // No matching rule means this parameter must stay editable by default.
+                newState = ActivationState.ENABLED;
             } else {
                 RuleMatch winningMatch = matches.stream()
                         .sorted(RULE_MATCH_COMPARATOR.reversed())
                         .findFirst()
                         .orElse(null);
-                newState = winningMatch == null ? ActivationState.WAIT : toActivationState(winningMatch.effect());
+                newState = winningMatch == null ? ActivationState.ENABLED : toActivationState(winningMatch.effect());
             }
 
             parameter.setActivationState(newState);
@@ -136,6 +168,22 @@ public class ParameterActivationService {
         stepParameterRepository.saveAll(parameters);
     }
 
+    /**
+     * Resolves target parameters affected by a matching rule for a given source parameter.
+     * <p>
+     * Scope behavior:
+     * <ul>
+     * <li>{@link RuleScope#STEP}: only the parameter with the target definition in the same step is eligible,</li>
+     * <li>recipe-level scope: all parameters with the target definition in the same recipe are eligible.</li>
+     * </ul>
+     *
+     * @param rule matching dependency rule.
+     * @param sourceParameter source parameter that triggered the rule.
+     * @param parametersByDefinitionId parameters indexed by definition id.
+     * @param parametersByStepAndDefinition parameters indexed by step id then definition id.
+     * @return target parameters that should receive this rule effect.
+     * @throws EntityNotFoundException when recipe context is missing for a recipe-scoped resolution.
+     */
     private List<StepParameter> resolveTargets(
             ParameterDependencyRule rule,
             StepParameter sourceParameter,
@@ -172,29 +220,73 @@ public class ParameterActivationService {
                 .toList();
     }
 
+    /**
+     * Converts a rule effect to the persisted activation state.
+     *
+     * @param effect winning rule effect.
+     * @return {@link ActivationState#ENABLED} for null or ENABLE, {@link ActivationState#DISABLED} for DISABLE.
+     */
     private static ActivationState toActivationState(RuleEffect effect) {
         if (effect == null) {
-            return ActivationState.WAIT;
+            return ActivationState.ENABLED;
         }
         return switch (effect) {
             case ENABLE -> ActivationState.ENABLED;
             case DISABLE -> ActivationState.DISABLED;
-            case WAIT -> ActivationState.WAIT;
         };
     }
 
+    /**
+     * Checks whether the optional source-activation context required by a rule is satisfied.
+     * <p>
+     * A rule without required source activation option always matches.
+     * Otherwise, the source parameter must have a parent parameter with a selected option equal to the required one.
+     *
+     * @param rule candidate dependency rule.
+     * @param sourceParameter source parameter being evaluated.
+     * @return {@code true} when contextual source activation requirements are satisfied.
+     */
+    private static boolean matchesRequiredSourceActivationContext(
+            ParameterDependencyRule rule,
+            StepParameter sourceParameter) {
+        if (rule.getRequiredSourceActivationOption() == null
+                || rule.getRequiredSourceActivationOption().getId() == null) {
+            return true;
+        }
+
+        if (sourceParameter.getParentStepParameter() == null
+                || sourceParameter.getParentStepParameter().getSelectedOption() == null
+                || sourceParameter.getParentStepParameter().getSelectedOption().getId() == null) {
+            return false;
+        }
+
+        Long requiredId = rule.getRequiredSourceActivationOption().getId();
+        Long parentSelectedOptionId = sourceParameter.getParentStepParameter().getSelectedOption().getId();
+        return requiredId.equals(parentSelectedOptionId);
+    }
+
+    /**
+     * Provides a rank used as tie-breaker when two matches have the same priority.
+     *
+     * @param effect rule effect to rank.
+     * @return rank where DISABLE is stronger than ENABLE.
+     */
     private static int effectRank(RuleEffect effect) {
         if (effect == null) {
             return 0;
         }
         return switch (effect) {
-            case WAIT -> 1;
-            case ENABLE -> 2;
-            case DISABLE -> 3;
+            case ENABLE -> 1;
+            case DISABLE -> 2;
         };
     }
 
     private record RuleMatch(RuleEffect effect, Integer priority) {
+        /**
+         * Returns normalized priority, defaulting null to 0 for deterministic ordering.
+         *
+         * @return non-null priority value.
+         */
         public Integer priority() {
             return priority == null ? 0 : priority;
         }

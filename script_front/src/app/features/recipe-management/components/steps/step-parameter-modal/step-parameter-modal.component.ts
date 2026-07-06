@@ -11,6 +11,9 @@ import { StepParameterFormComponent } from '../step-parameter-form/step-paramete
   templateUrl: './step-parameter-modal.component.html',
   styleUrl: './step-parameter-modal.component.scss'
 })
+/**
+ * StepParameterModalComponent coordinates UI logic for this feature.
+ */
 export class StepParameterModalComponent {
   @Input() visible = false;
   @Input() stepKind: StepKind | null = null;

@@ -8,6 +8,12 @@ import org.springframework.data.repository.query.Param;
 
 import st.tt.script_back.entities.StepParameter;
 
+/**
+ * Repository for step parameter persistence and projection-oriented fetch queries.
+ * <p>
+ * Custom queries eagerly fetch definition, selected option, and parent selected option to avoid N+1 lookups
+ * in activation and matrix computation workflows.
+ */
 public interface StepParameterRepository extends JpaRepository<StepParameter, Long> {
 
     boolean existsByDefinitionId(Long definitionId);
@@ -20,31 +26,53 @@ public interface StepParameterRepository extends JpaRepository<StepParameter, Lo
 
     List<StepParameter> findByStepIdAndParentOrderScopeOrderByOrderIndexAsc(Long stepId, Long parentOrderScope);
 
-        @Query("""
+    /**
+     * Loads all parameters of one step with associations required by activation and UI mapping.
+     *
+     * @param stepId step identifier.
+     * @return ordered parameters with definition, selected option, parent parameter, and parent selected option.
+     */
+    @Query("""
             select sp
             from StepParameter sp
             join fetch sp.definition d
             left join fetch sp.selectedOption so
+            left join fetch sp.parentStepParameter psp
+            left join fetch psp.selectedOption pso
             where sp.step.id = :stepId
             order by sp.parentOrderScope asc, sp.orderIndex asc
             """)
-        List<StepParameter> findByStepIdWithDefinitionAndSelectedOption(@Param("stepId") Long stepId);
+    List<StepParameter> findByStepIdWithDefinitionAndSelectedOption(@Param("stepId") Long stepId);
 
-        @Query("""
+    /**
+     * Loads parameters for a set of steps with all associations needed by activation and matrix builders.
+     *
+     * @param stepIds ordered or unordered step identifiers.
+     * @return step parameters sorted by step and within-step order.
+     */
+    @Query("""
             select sp
             from StepParameter sp
             join fetch sp.definition d
             left join fetch sp.selectedOption so
+            left join fetch sp.parentStepParameter psp
+            left join fetch psp.selectedOption pso
             where sp.step.id in :stepIds
             order by sp.step.id asc, sp.parentOrderScope asc, sp.orderIndex asc
             """)
-        List<StepParameter> findByStepIdsWithDefinitionAndSelectedOption(@Param("stepIds") List<Long> stepIds);
+    List<StepParameter> findByStepIdsWithDefinitionAndSelectedOption(@Param("stepIds") List<Long> stepIds);
 
-            @Query("""
+    /**
+     * Finds all recipes containing at least one parameter linked to any of the provided definitions.
+     *
+     * @param definitionIds parameter definition identifiers.
+     * @return distinct recipe identifiers.
+     */
+    @Query("""
                 select distinct sp.step.recipe.id
                 from StepParameter sp
                 where sp.definition.id in :definitionIds
                 """)
-            List<Long> findDistinctRecipeIdsByDefinitionIds(@Param("definitionIds") List<Long> definitionIds);
+    List<Long> findDistinctRecipeIdsByDefinitionIds(@Param("definitionIds") List<Long> definitionIds);
 
 }

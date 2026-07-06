@@ -1,4 +1,10 @@
-﻿<section class="placeholder">
-  <h2>Dependency Rule Create Page</h2>
-  <p>Component scaffold ready.</p>
+﻿<section class="page">
+  <div class="page__container">
+    <div class="page__header">
+      <h1>Create Dependency Rule</h1>
+      <p>Define source, trigger option, target, and activation effect.</p>
+    </div>
+
+    <app-dependency-rule-form mode="create" (submitted)="onSubmit($event)"></app-dependency-rule-form>
+  </div>
 </section>

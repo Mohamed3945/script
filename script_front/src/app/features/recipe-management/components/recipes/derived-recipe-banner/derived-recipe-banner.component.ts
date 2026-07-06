@@ -1,4 +1,4 @@
-﻿import { Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { NgIf } from '@angular/common';
 
 @Component({
@@ -8,6 +8,9 @@ import { NgIf } from '@angular/common';
   templateUrl: './derived-recipe-banner.component.html',
   styleUrl: './derived-recipe-banner.component.scss'
 })
+/**
+ * DerivedRecipeBannerComponent coordinates UI logic for this feature.
+ */
 export class DerivedRecipeBannerComponent {
   @Input() parentRecipeId?: number | null;
 }

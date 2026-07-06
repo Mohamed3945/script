@@ -1,0 +1,28 @@
+<div class="table-card">
+  <table *ngIf="machines.length > 0; else emptyState" class="table">
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Platform</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let machine of machines">
+        <td>{{ machine.code }}</td>
+        <td>{{ machine.name }}</td>
+        <td>{{ machine.platformType }}</td>
+        <td class="actions">
+          <button class="link-btn" (click)="view.emit(machine)">Open</button>
+          <button class="link-btn" (click)="edit.emit(machine)">Edit</button>
+          <button class="link-btn link-btn--danger" (click)="delete.emit(machine)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ng-template #emptyState>
+    <div class="empty-state">No machines found.</div>
+  </ng-template>
+</div>

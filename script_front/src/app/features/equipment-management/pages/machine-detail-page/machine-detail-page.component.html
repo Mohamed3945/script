@@ -1,0 +1,37 @@
+<section class="page" *ngIf="machine$ | async as machine">
+  <div class="page__container">
+    <div class="page__header">
+      <div>
+        <h1>{{ machine.code }}</h1>
+        <p>{{ machine.name }}</p>
+      </div>
+
+      <div class="page__actions">
+        <button class="btn btn--secondary" (click)="goToEdit()">Edit</button>
+        <button class="btn" (click)="goToCreateChamber()">Add chamber</button>
+      </div>
+    </div>
+
+    <app-machine-summary-card [machine]="machine"></app-machine-summary-card>
+
+    <div class="panel">
+      <div class="panel__header">
+        <h2>Chambers</h2>
+      </div>
+
+      <div *ngIf="machine.chambers.length === 0" class="empty-state">
+        No chambers found for this machine.
+      </div>
+
+      <div class="chamber-list">
+        <button
+          class="chamber-card"
+          *ngFor="let chamber of machine.chambers"
+          (click)="openChamber(chamber.id)">
+          <div class="chamber-card__code">{{ chamber.code }}</div>
+          <div class="chamber-card__name">{{ chamber.name }}</div>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

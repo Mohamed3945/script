@@ -17,6 +17,11 @@ import st.tt.script_back.dto.DecisionNextResponseDto;
 import st.tt.script_back.dto.DecisionResultProfileDto;
 import st.tt.script_back.entities.DecisionResultProfile;
 
+/**
+ * DecisionTransitionService class for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 @Service
 public class DecisionTransitionService {
     private final DecisionTransitionRepository decisionTransitionRepository;
@@ -24,6 +29,14 @@ public class DecisionTransitionService {
     private final DecisionQuestionMapper decisionQuestionMapper;
     private final DecisionResultProfileMapper decisionResultProfileMapper;
 
+    /**
+     * Executes DecisionTransitionService.
+     *
+     * @param decisionTransitionRepository input argument consumed by DecisionTransitionService.
+     * @param decisionQuestionRepository input argument consumed by DecisionTransitionService.
+     * @param decisionQuestionMapper input argument consumed by DecisionTransitionService.
+     * @param decisionResultProfileMapper input argument consumed by DecisionTransitionService.
+     */
     public DecisionTransitionService(
         DecisionTransitionRepository decisionTransitionRepository,
         DecisionQuestionRepository decisionQuestionRepository, 
@@ -35,6 +48,12 @@ public class DecisionTransitionService {
         this.decisionResultProfileMapper = decisionResultProfileMapper;
     }
 
+    /**
+     * Executes getNextTransition.
+     *
+     * @param request input argument consumed by getNextTransition.
+     * @return computed DecisionNextResponseDto result returned by getNextTransition.
+     */
     @Transactional(readOnly = true )
     public DecisionNextResponseDto getNextTransition(DecisionNextRequestDto request) {
         if (request.getCurrentQuestionId()== null || request.getSelectedOptionId() == null){

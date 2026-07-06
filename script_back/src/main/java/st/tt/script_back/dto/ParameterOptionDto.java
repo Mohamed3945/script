@@ -5,6 +5,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * ParameterOptionDto class for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

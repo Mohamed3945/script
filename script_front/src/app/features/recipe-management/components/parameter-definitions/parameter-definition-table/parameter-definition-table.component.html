@@ -8,6 +8,7 @@
         <th>Type</th>
         <th>Unit</th>
         <th>Required</th>
+        <th>Impacts configuration</th>
         <th>Default JSON</th>
         <th></th>
       </tr>
@@ -20,6 +21,7 @@
         <td>{{ definition.valueType }}</td>
         <td>{{ definition.unit || '—' }}</td>
         <td>{{ definition.requiredOnStep ? 'Yes' : 'No' }}</td>
+        <td>{{ definition.configurationDefinitionCode || definition.configurationDefinitionName || '—' }}</td>
         <td class="json-cell">{{ definition.defaultValueJson || '—' }}</td>
         <td class="actions">
           <button class="link-btn" (click)="viewDefinition.emit(definition)">View</button>

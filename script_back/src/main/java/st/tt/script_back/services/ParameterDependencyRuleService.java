@@ -18,6 +18,11 @@ import st.tt.script_back.repositories.ParameterDependencyRuleRepository;
 import st.tt.script_back.repositories.ParameterOptionRepository;
 import st.tt.script_back.repositories.StepParameterRepository;
 
+/**
+ * ParameterDependencyRuleService class for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 @Service
 public class ParameterDependencyRuleService {
 
@@ -28,6 +33,16 @@ public class ParameterDependencyRuleService {
     private final ParameterActivationService parameterActivationService;
     private final StepParameterRepository stepParameterRepository;
 
+    /**
+     * Executes ParameterDependencyRuleService.
+     *
+     * @param parameterDependencyRuleRepository input argument consumed by ParameterDependencyRuleService.
+     * @param parameterDefinitionRepository input argument consumed by ParameterDependencyRuleService.
+     * @param parameterOptionRepository input argument consumed by ParameterDependencyRuleService.
+     * @param parameterDependencyRuleMapper input argument consumed by ParameterDependencyRuleService.
+     * @param parameterActivationService input argument consumed by ParameterDependencyRuleService.
+     * @param stepParameterRepository input argument consumed by ParameterDependencyRuleService.
+     */
     public ParameterDependencyRuleService(
             ParameterDependencyRuleRepository parameterDependencyRuleRepository,
             ParameterDefinitionRepository parameterDefinitionRepository,
@@ -43,6 +58,12 @@ public class ParameterDependencyRuleService {
         this.stepParameterRepository = stepParameterRepository;
     }
 
+    /**
+     * Executes createParameterDependencyRule.
+     *
+     * @param request input argument consumed by createParameterDependencyRule.
+     * @return computed ParameterDependencyRuleDto result returned by createParameterDependencyRule.
+     */
     @Transactional
     public ParameterDependencyRuleDto createParameterDependencyRule(ParameterDependencyRuleDto request) {
         if (request == null) {
@@ -63,11 +84,19 @@ public class ParameterDependencyRuleService {
         ParameterOption triggerOption = parameterOptionRepository.findById(request.getTriggerOptionId())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Trigger ParameterOption with id " + request.getTriggerOptionId() + " not found"));
+        ParameterOption requiredSourceActivationOption = null;
+        if (request.getRequiredSourceActivationOptionId() != null) {
+            requiredSourceActivationOption = parameterOptionRepository.findById(request.getRequiredSourceActivationOptionId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                    "Required source activation ParameterOption with id "
+                        + request.getRequiredSourceActivationOptionId() + " not found"));
+        }
 
         ParameterDependencyRule rule = parameterDependencyRuleMapper.toEntity(request);
         rule.setSourceDefinition(source);
         rule.setTargetDefinition(target);
         rule.setTriggerOption(triggerOption);
+        rule.setRequiredSourceActivationOption(requiredSourceActivationOption);
 
         if (rule.getPriority() == null) {
             rule.setPriority(0);
@@ -78,6 +107,10 @@ public class ParameterDependencyRuleService {
         return parameterDependencyRuleMapper.toDto(saved);
     }
 
+    /**
+     * Executes getParameterDependencyRules.
+     * @return computed List<ParameterDependencyRuleDto> result returned by getParameterDependencyRules.
+     */
     @Transactional(readOnly = true)
     public List<ParameterDependencyRuleDto> getParameterDependencyRules() {
         return parameterDependencyRuleMapper.toDtoList(
@@ -85,6 +118,12 @@ public class ParameterDependencyRuleService {
                         .and(Sort.by(Sort.Direction.ASC, "id"))));
     }
 
+    /**
+     * Executes getParameterDependencyRule.
+     *
+     * @param id input argument consumed by getParameterDependencyRule.
+     * @return computed ParameterDependencyRuleDto result returned by getParameterDependencyRule.
+     */
     @Transactional(readOnly = true)
     public ParameterDependencyRuleDto getParameterDependencyRule(Long id) {
         ParameterDependencyRule rule = parameterDependencyRuleRepository.findById(id)
@@ -93,6 +132,13 @@ public class ParameterDependencyRuleService {
         return parameterDependencyRuleMapper.toDto(rule);
     }
 
+    /**
+     * Executes updateParameterDependencyRule.
+     *
+     * @param id input argument consumed by updateParameterDependencyRule.
+     * @param request input argument consumed by updateParameterDependencyRule.
+     * @return computed ParameterDependencyRuleDto result returned by updateParameterDependencyRule.
+     */
     @Transactional
     public ParameterDependencyRuleDto updateParameterDependencyRule(Long id, ParameterDependencyRuleDto request) {
         if (request == null) {
@@ -121,16 +167,29 @@ public class ParameterDependencyRuleService {
         ParameterOption triggerOption = parameterOptionRepository.findById(request.getTriggerOptionId())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Trigger ParameterOption with id " + request.getTriggerOptionId() + " not found"));
+        ParameterOption requiredSourceActivationOption = null;
+        if (request.getRequiredSourceActivationOptionId() != null) {
+            requiredSourceActivationOption = parameterOptionRepository.findById(request.getRequiredSourceActivationOptionId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                    "Required source activation ParameterOption with id "
+                        + request.getRequiredSourceActivationOptionId() + " not found"));
+        }
 
         parameterDependencyRuleMapper.updateEntityFromDto(request, existing);
         existing.setSourceDefinition(source);
         existing.setTargetDefinition(target);
         existing.setTriggerOption(triggerOption);
+        existing.setRequiredSourceActivationOption(requiredSourceActivationOption);
         ParameterDependencyRule saved = parameterDependencyRuleRepository.save(existing);
         recalculateAffectedRecipes(previousSourceDefinitionId, previousTargetDefinitionId, source.getId(), target.getId());
         return parameterDependencyRuleMapper.toDto(saved);
     }
 
+    /**
+     * Executes deleteParameterDependencyRule.
+     *
+     * @param id input argument consumed by deleteParameterDependencyRule.
+     */
     @Transactional
     public void deleteParameterDependencyRule(Long id) {
         ParameterDependencyRule existing = parameterDependencyRuleRepository.findById(id)

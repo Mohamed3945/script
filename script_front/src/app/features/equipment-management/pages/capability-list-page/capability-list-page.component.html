@@ -1,0 +1,20 @@
+<section class="page">
+  <div class="page__container">
+    <div class="page__header">
+      <div>
+        <h1>Capabilities</h1>
+        <p>Manage the chamber capability catalog.</p>
+      </div>
+
+      <button class="btn" (click)="createCapability()">New capability</button>
+    </div>
+
+    <ng-container *ngIf="capabilities$ | async as capabilities">
+      <app-capability-table
+        [capabilities]="capabilities"
+        (edit)="editCapability($event)"
+        (delete)="deleteCapability($event)">
+      </app-capability-table>
+    </ng-container>
+  </div>
+</section>

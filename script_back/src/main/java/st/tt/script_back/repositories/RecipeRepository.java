@@ -10,6 +10,11 @@ import st.tt.script_back.entities.Recipe;
 import st.tt.script_back.enums.RecipeKind;
 import st.tt.script_back.enums.RecipeStatus;
 
+/**
+ * RecipeRepository interface for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 public interface RecipeRepository extends JpaRepository<Recipe, Long> {
 
     @Query("""
@@ -28,6 +33,15 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
             where r.id = :id
             """)
     Optional<Recipe> findByIdWithSteps(Long id);
+
+        @Query("""
+            select distinct r
+            from Recipe r
+            left join fetch r.requiredCapabilities
+            left join fetch r.requiredConfigurationDefinitions
+            where r.id = :recipeId
+            """)
+        Optional<Recipe> findByIdWithRequirements(Long recipeId);
 
     List<Recipe> findByStatusOrderByReviseTimeDesc(RecipeStatus status);
 

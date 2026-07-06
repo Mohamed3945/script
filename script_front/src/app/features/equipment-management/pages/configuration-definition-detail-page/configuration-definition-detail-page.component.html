@@ -1,0 +1,24 @@
+<section class="page" *ngIf="definition$ | async as definition">
+  <div class="page__container">
+    <div class="page__header">
+      <div>
+        <h1>{{ definition.code }}</h1>
+        <p>{{ definition.name }}</p>
+      </div>
+
+      <div class="page__actions">
+        <button class="btn btn--secondary" (click)="goBack()">Back</button>
+        <button class="btn" (click)="editDefinition()">Edit</button>
+      </div>
+    </div>
+
+    <div class="detail-card">
+      <div class="detail-row"><span>Value type</span><strong>{{ definition.valueType }}</strong></div>
+      <div class="detail-row"><span>Unit</span><strong>{{ definition.unit ?? '—' }}</strong></div>
+      <div class="detail-row"><span>Question</span><strong>{{ definition.questionForForm }}</strong></div>
+      <div class="detail-row"><span>Group</span><strong>{{ definition.questionGroup ?? '—' }}</strong></div>
+      <div class="detail-row"><span>Display order</span><strong>{{ definition.displayOrder }}</strong></div>
+      <div class="detail-row"><span>Active</span><strong>{{ definition.active ? 'Yes' : 'No' }}</strong></div>
+    </div>
+  </div>
+</section>

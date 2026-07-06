@@ -1,4 +1,4 @@
-﻿import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ParameterOption } from '../../../../../core/models/parameter-option.model';
 
@@ -9,6 +9,9 @@ import { ParameterOption } from '../../../../../core/models/parameter-option.mod
   templateUrl: './parameter-option-form.component.html',
   styleUrl: './parameter-option-form.component.scss'
 })
+/**
+ * ParameterOptionFormComponent coordinates UI logic for this feature.
+ */
 export class ParameterOptionFormComponent implements OnChanges {
   @Input() definitionId!: number;
   @Input() initialValue: ParameterOption | null = null;
@@ -25,6 +28,9 @@ export class ParameterOptionFormComponent implements OnChanges {
     });
   }
 
+  /**
+   * Handles the ngOnChanges workflow.
+   */
   ngOnChanges(changes: SimpleChanges): void {
     if (this.initialValue) {
       this.form.patchValue({
@@ -39,6 +45,9 @@ export class ParameterOptionFormComponent implements OnChanges {
     }
   }
 
+  /**
+   * Handles the onSubmit workflow.
+   */
   onSubmit(): void {
     if (this.form.invalid || !this.definitionId) {
       this.form.markAllAsTouched();

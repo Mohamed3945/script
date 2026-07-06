@@ -8,8 +8,19 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Collections;
 
+/**
+ * DecisionQuestionMapper class for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 @Component
 public class DecisionQuestionMapper {
+    /**
+     * Executes toOptionDto.
+     *
+     * @param option input argument consumed by toOptionDto.
+     * @return computed DecisionOptionDto result returned by toOptionDto.
+     */
     public DecisionOptionDto toOptionDto(DecisionOption option) {
         if (option == null) {
             return null;
@@ -22,6 +33,12 @@ public class DecisionQuestionMapper {
         );
     }
 
+    /**
+     * Executes toOptionDtoList.
+     *
+     * @param options input argument consumed by toOptionDtoList.
+     * @return computed List<DecisionOptionDto> result returned by toOptionDtoList.
+     */
     public List<DecisionOptionDto> toOptionDtoList(List<DecisionOption> options) {
         if (options == null) {
             return Collections.emptyList();
@@ -31,6 +48,12 @@ public class DecisionQuestionMapper {
                 .toList();
     }
 
+    /**
+     * Executes toQuestionDto.
+     *
+     * @param question input argument consumed by toQuestionDto.
+     * @return computed DecisionQuestionDto result returned by toQuestionDto.
+     */
     public DecisionQuestionDto toQuestionDto(DecisionQuestion question) {
         if (question == null) {
             return null;

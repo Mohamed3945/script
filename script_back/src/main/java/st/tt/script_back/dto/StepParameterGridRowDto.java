@@ -8,6 +8,11 @@ import st.tt.script_back.enums.ActivationState;
 import st.tt.script_back.enums.ParameterValueType;
 import st.tt.script_back.enums.StepKind;
 
+/**
+ * StepParameterGridRowDto class for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

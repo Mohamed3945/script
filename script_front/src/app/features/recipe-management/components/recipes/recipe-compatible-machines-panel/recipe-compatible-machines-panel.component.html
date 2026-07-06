@@ -1,0 +1,27 @@
+<div class="panel" *ngIf="compatibility as result">
+  <div class="panel__header">
+    <h3>Compatible machines</h3>
+    <p>{{ result.compatibleMachineCount }} machine(s), {{ result.compatibleChamberCount }} chamber(s)</p>
+  </div>
+
+  <div *ngIf="result.machines.length === 0" class="empty-state">
+    No compatible machine found.
+  </div>
+
+  <div class="machine-list" *ngIf="result.machines.length > 0">
+    <div class="machine-card" *ngFor="let machine of result.machines">
+      <div class="machine-card__header">
+        <div class="machine-code">{{ machine.machineCode }}</div>
+        <div class="machine-name">{{ machine.machineName }}</div>
+        <div class="machine-platform">{{ machine.platformType }}</div>
+      </div>
+
+      <div class="chamber-list">
+        <div class="chamber-item" *ngFor="let chamber of machine.compatibleChambers">
+          <div class="chamber-code">{{ chamber.chamberCode }}</div>
+          <div class="chamber-name">{{ chamber.chamberName }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,21 +1,61 @@
-﻿:host {
-  display: block;
+﻿.table-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
 }
 
-.placeholder {
-  border: 1px dashed #c8ced8;
-  border-radius: 12px;
-  padding: 1rem;
-  background: #f8fafc;
+.table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.placeholder h2 {
-  margin: 0 0 0.5rem;
-  font-size: 1rem;
-  color: #1f2937;
+.table th,
+.table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--off-white);
+  text-align: left;
+  font-size: 13px;
+  vertical-align: top;
 }
 
-.placeholder p {
-  margin: 0;
-  color: #4b5563;
+.table th {
+  background: #f8fbff;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.main {
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.sub {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--blue);
+  cursor: pointer;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.link-btn--danger {
+  color: #c62828;
+}
+
+.empty-state {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-muted);
 }

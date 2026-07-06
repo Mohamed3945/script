@@ -1,4 +1,17 @@
-﻿<section class="placeholder">
-  <h2>Dependency Rule Detail Page</h2>
-  <p>Component scaffold ready.</p>
+﻿<section class="page" *ngIf="rule$ | async as rule">
+  <div class="page__container">
+    <div class="page__header">
+      <div>
+        <h1>Dependency Rule Details</h1>
+        <p>{{ rule.sourceDefinitionCode || '-' }} -> {{ rule.targetDefinitionCode || '-' }}</p>
+      </div>
+
+      <div class="page__actions">
+        <button class="btn btn--secondary" (click)="onEdit()">Edit</button>
+        <button class="btn btn--danger" (click)="onDelete()">Delete</button>
+      </div>
+    </div>
+
+    <app-dependency-rule-summary [rule]="rule"></app-dependency-rule-summary>
+  </div>
 </section>

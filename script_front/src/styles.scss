@@ -92,30 +92,25 @@ body {
 
 .btn {
   border: 1px solid transparent;
-  border-radius: 10px;
-  padding: 10px 14px;
+  border-radius: 6px;
+  padding: 7px 10px;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1;
   cursor: pointer;
-  transition: background-color 150ms var(--transition), border-color 150ms var(--transition),
-    color 150ms var(--transition), box-shadow 150ms var(--transition), transform 120ms var(--transition);
-}
-
-.btn:hover {
-  transform: translateY(-1px);
+  transition: background-color 120ms var(--transition), border-color 120ms var(--transition),
+    color 120ms var(--transition), box-shadow 120ms var(--transition);
 }
 
 .btn:disabled {
-  opacity: 0.55;
+  opacity: 0.45;
   cursor: not-allowed;
-  transform: none;
 }
 
 .btn:not(.btn--secondary):not(.btn--ghost):not(.btn--danger) {
   background: var(--accent-slate);
   color: #fff;
-  box-shadow: var(--shadow-1);
+  box-shadow: none;
 }
 
 .btn:not(.btn--secondary):not(.btn--ghost):not(.btn--danger):hover {
@@ -151,4 +146,93 @@ body {
 
 .btn--danger:hover {
   background: #f8ddd8;
+}
+
+/* Workstation UI grammar: compact, structured, panel-oriented (same palette). */
+.card,
+.table-card,
+.form-card,
+.detail-card,
+.summary-card,
+.result-card,
+.start-card,
+.info-card,
+.panel,
+.matrix-card,
+.parameter-list-card {
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  border: 1px solid var(--border-soft) !important;
+}
+
+.card h2,
+.card h3,
+.table-card h2,
+.table-card h3,
+.form-card h2,
+.form-card h3,
+.detail-card h2,
+.detail-card h3,
+.panel h2,
+.panel h3,
+.summary-card h2,
+.summary-card h3,
+.result-card h2,
+.result-card h3,
+.start-card h2,
+.start-card h3,
+.info-card h2,
+.info-card h3 {
+  letter-spacing: 0.02em;
+}
+
+.panel__header,
+.matrix-card__header,
+.modal-header,
+.modal-card__header,
+.focus-header {
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.panel__header h2,
+.panel__header h3,
+.matrix-card__header h2,
+.matrix-card__header h3,
+.modal-header h2,
+.modal-header h3,
+.modal-card__header h2,
+.modal-card__header h3,
+.focus-header h2,
+.focus-header h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-soft);
+}
+
+table th {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-soft);
+}
+
+table td,
+table th {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.link-btn,
+.close-btn,
+.assign-item,
+.chip__remove {
+  border-radius: 4px;
+}
+
+.modal-card,
+.modal-card--large,
+.modal-card--wide {
+  border-radius: 6px !important;
+  box-shadow: var(--shadow-2) !important;
 }

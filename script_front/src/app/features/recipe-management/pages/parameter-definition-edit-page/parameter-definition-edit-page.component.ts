@@ -1,4 +1,4 @@
-﻿import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
@@ -13,6 +13,9 @@ import { ParameterDefinitionFormComponent } from '../../components/parameter-def
   templateUrl: './parameter-definition-edit-page.component.html',
   styleUrl: './parameter-definition-edit-page.component.scss'
 })
+/**
+ * ParameterDefinitionEditPageComponent coordinates UI logic for this feature.
+ */
 export class ParameterDefinitionEditPageComponent implements OnInit {
   definition$ = new BehaviorSubject<ParameterDefinition | null>(null);
 
@@ -22,6 +25,9 @@ export class ParameterDefinitionEditPageComponent implements OnInit {
     private parameterDefinitionApiService: ParameterDefinitionApiService
   ) {}
 
+  /**
+   * Handles the ngOnInit workflow.
+   */
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (!id) return;
@@ -32,6 +38,9 @@ export class ParameterDefinitionEditPageComponent implements OnInit {
     });
   }
 
+  /**
+   * Handles the onSubmit workflow.
+   */
   onSubmit(definition: ParameterDefinition): void {
     const current = this.definition$.value;
     if (!current?.id) return;

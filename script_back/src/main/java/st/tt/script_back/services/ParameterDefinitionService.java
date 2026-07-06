@@ -15,6 +15,11 @@ import st.tt.script_back.mappers.ParameterDefinitionMapper;
 import st.tt.script_back.repositories.ParameterDefinitionRepository;
 import st.tt.script_back.repositories.StepParameterRepository;
 
+/**
+ * ParameterDefinitionService class for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 @Service
 public class ParameterDefinitionService {
 
@@ -22,6 +27,13 @@ public class ParameterDefinitionService {
     private final ParameterDefinitionMapper parameterDefinitionMapper;
     private final StepParameterRepository stepParameterRepository;
 
+    /**
+     * Executes ParameterDefinitionService.
+     *
+     * @param parameterDefinitionRepository input argument consumed by ParameterDefinitionService.
+     * @param parameterDefinitionMapper input argument consumed by ParameterDefinitionService.
+     * @param stepParameterRepository input argument consumed by ParameterDefinitionService.
+     */
     public ParameterDefinitionService(
             ParameterDefinitionRepository parameterDefinitionRepository,
             ParameterDefinitionMapper parameterDefinitionMapper,
@@ -31,6 +43,12 @@ public class ParameterDefinitionService {
         this.stepParameterRepository = stepParameterRepository;
     }
 
+    /**
+     * Executes createParameterDefinition.
+     *
+     * @param request input argument consumed by createParameterDefinition.
+     * @return computed ParameterDefinitionDto result returned by createParameterDefinition.
+     */
     @Transactional
     public ParameterDefinitionDto createParameterDefinition(ParameterDefinitionDto request) {
         if (request == null) {
@@ -45,11 +63,17 @@ public class ParameterDefinitionService {
             definition.setStepType(StepType.STEP);
         }
         String baseCode = toNormalizedCode(request.getName(), "PARAMETER");
-        definition.setCode(ensureUniqueCode(baseCode, null));
+        definition.setCode(ensureUniqueCode(baseCode, null, definition.getStepType()));
         ParameterDefinition saved = parameterDefinitionRepository.save(definition);
         return parameterDefinitionMapper.toDto(saved);
     }
 
+    /**
+     * Executes getParameterDefinitions.
+     *
+     * @param stepType input argument consumed by getParameterDefinitions.
+     * @return computed List<ParameterDefinitionDto> result returned by getParameterDefinitions.
+     */
     @Transactional(readOnly = true)
     public List<ParameterDefinitionDto> getParameterDefinitions(StepType stepType) {
         List<ParameterDefinition> definitions;
@@ -61,6 +85,12 @@ public class ParameterDefinitionService {
         return parameterDefinitionMapper.toDtoList(definitions);
     }
 
+    /**
+     * Executes getParameterDefinition.
+     *
+     * @param id input argument consumed by getParameterDefinition.
+     * @return computed ParameterDefinitionDto result returned by getParameterDefinition.
+     */
     @Transactional(readOnly = true)
     public ParameterDefinitionDto getParameterDefinition(Long id) {
         ParameterDefinition definition = parameterDefinitionRepository.findById(id)
@@ -68,6 +98,13 @@ public class ParameterDefinitionService {
         return parameterDefinitionMapper.toDto(definition);
     }
 
+    /**
+     * Executes updateParameterDefinition.
+     *
+     * @param id input argument consumed by updateParameterDefinition.
+     * @param request input argument consumed by updateParameterDefinition.
+     * @return computed ParameterDefinitionDto result returned by updateParameterDefinition.
+     */
     @Transactional
     public ParameterDefinitionDto updateParameterDefinition(Long id, ParameterDefinitionDto request) {
         if (request == null) {
@@ -86,12 +123,17 @@ public class ParameterDefinitionService {
         if (existing.getStepType() == null) {
             existing.setStepType(StepType.STEP);
         }
-        existing.setCode(ensureUniqueCode(baseCode, existing.getId()));
+        existing.setCode(ensureUniqueCode(baseCode, existing.getId(), existing.getStepType()));
 
         ParameterDefinition saved = parameterDefinitionRepository.save(existing);
         return parameterDefinitionMapper.toDto(saved);
     }
 
+    /**
+     * Executes deleteParameterDefinition.
+     *
+     * @param id input argument consumed by deleteParameterDefinition.
+     */
     @Transactional
     public void deleteParameterDefinition(Long id) {
         if (!parameterDefinitionRepository.existsById(id)) {
@@ -100,12 +142,12 @@ public class ParameterDefinitionService {
 
         if (stepParameterRepository.existsByDefinitionId(id)) {
             throw new IllegalStateException(
-                    "Suppression impossible: ce parametre est utilise dans des recettes.");
+                    "Delete failed: this parameter is used in recipes.");
         }
 
         if (stepParameterRepository.existsBySelectedOptionDefinitionId(id)) {
             throw new IllegalStateException(
-                    "Suppression impossible: une option de ce parametre est deja utilisee dans des recettes.");
+                    "Delete failed: an option of this parameter is already used in recipes.");
         }
 
         parameterDefinitionRepository.deleteById(id);
@@ -123,12 +165,12 @@ public class ParameterDefinitionService {
         return normalized.isBlank() ? fallbackPrefix : normalized;
     }
 
-    private String ensureUniqueCode(String baseCode, Long currentId) {
+    private String ensureUniqueCode(String baseCode, Long currentId, StepType stepType) {
         String candidate = baseCode;
         int suffix = 2;
 
         while (true) {
-            var existing = parameterDefinitionRepository.findByCode(candidate);
+            var existing = parameterDefinitionRepository.findByCodeAndStepType(candidate, stepType);
             if (existing.isEmpty() || (currentId != null && currentId.equals(existing.get().getId()))) {
                 return candidate;
             }

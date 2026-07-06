@@ -1,4 +1,4 @@
-﻿import { Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { StepParameterGridRow } from '../../../../../core/models/step-parameter-grid-row.model';
 
@@ -9,6 +9,9 @@ import { StepParameterGridRow } from '../../../../../core/models/step-parameter-
   templateUrl: './step-parameter-grid.component.html',
   styleUrl: './step-parameter-grid.component.scss'
 })
+/**
+ * StepParameterGridComponent coordinates UI logic for this feature.
+ */
 export class StepParameterGridComponent {
   @Input() rows: StepParameterGridRow[] = [];
 }

@@ -4,10 +4,14 @@ import { DecisionApiService } from './decision-api.service';
 import { DecisionQuestion } from '../models/decision-question.model';
 import { DecisionResultProfile } from '../models/decision-result-profile.model';
 import { WizardSelection } from '../models/wizard-selection.model';
+import { DecisionExecutionAnswer } from '../models/decision-execution-answer.model';
 
 @Injectable({
   providedIn: 'root'
 })
+/**
+ * DecisionWizardService coordinates UI logic for this feature.
+ */
 export class DecisionWizardService {
   private currentQuestionSubject = new BehaviorSubject<DecisionQuestion | null>(null);
   private selectedOptionIdSubject = new BehaviorSubject<number | null>(null);
@@ -21,10 +25,17 @@ export class DecisionWizardService {
   result$ = this.resultSubject.asObservable();
   loading$ = this.loadingSubject.asObservable();
 
+  get resultSnapshot(): DecisionResultProfile | null {
+    return this.resultSubject.value;
+  }
+
   private questionHistory: DecisionQuestion[] = [];
 
   constructor(private api: DecisionApiService) {}
 
+  /**
+   * Handles the reset workflow.
+   */
   reset(): void {
     this.currentQuestionSubject.next(null);
     this.selectedOptionIdSubject.next(null);
@@ -34,6 +45,9 @@ export class DecisionWizardService {
     this.questionHistory = [];
   }
 
+  /**
+   * Handles the loadEntryPoint workflow.
+   */
   loadEntryPoint(onResult: () => void = () => {}): void {
     this.loadingSubject.next(true);
     this.api.getEntryPointQuestion()
@@ -50,10 +64,16 @@ export class DecisionWizardService {
       });
   }
 
+  /**
+   * Handles the selectOption workflow.
+   */
   selectOption(optionId: number): void {
     this.selectedOptionIdSubject.next(optionId);
   }
 
+  /**
+   * Handles the goNext workflow.
+   */
   goNext(onQuestion: () => void = () => {}, onResult: () => void = () => {}): void {
     const currentQuestion = this.currentQuestionSubject.value;
     const selectedOptionId = this.selectedOptionIdSubject.value;
@@ -100,6 +120,9 @@ export class DecisionWizardService {
     });
   }
 
+  /**
+   * Handles the goBack workflow.
+   */
   goBack(): void {
     const selections = [...this.selectionsSubject.value];
     if (selections.length === 0) {
@@ -112,5 +135,16 @@ export class DecisionWizardService {
     const previousQuestion = this.questionHistory.pop() || null;
     this.currentQuestionSubject.next(previousQuestion);
     this.selectedOptionIdSubject.next(null);
+  }
+
+  /**
+   * Builds backend-ready execution answers from current wizard selections.
+   */
+  buildExecutionAnswers(): DecisionExecutionAnswer[] {
+    return this.selectionsSubject.value.map((selection, index) => ({
+      questionId: selection.questionId,
+      optionId: selection.optionId,
+      orderIndex: index
+    }));
   }
 }

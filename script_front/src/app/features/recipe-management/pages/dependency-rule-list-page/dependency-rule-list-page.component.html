@@ -1,4 +1,25 @@
-﻿<section class="placeholder">
-  <h2>Dependency Rule List Page</h2>
-  <p>Component scaffold ready.</p>
+﻿<section class="page">
+  <div class="page__container">
+    <div class="page__header">
+      <div>
+        <h1>Dependency Rules</h1>
+        <p>Manage parameter activation using source-to-target dependency rules.</p>
+      </div>
+
+      <button class="btn" (click)="onCreate()">New rule</button>
+    </div>
+
+    <div class="card" *ngIf="loading$ | async; else tableSection">
+      Loading dependency rules...
+    </div>
+
+    <ng-template #tableSection>
+      <app-dependency-rule-table
+        [rules]="(rules$ | async) || []"
+        (viewRule)="onView($event)"
+        (editRule)="onEdit($event)"
+        (deleteRule)="onDelete($event)">
+      </app-dependency-rule-table>
+    </ng-template>
+  </div>
 </section>

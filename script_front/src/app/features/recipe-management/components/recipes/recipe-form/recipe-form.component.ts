@@ -1,4 +1,4 @@
-﻿import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgFor, NgIf } from '@angular/common';
 import { Recipe } from '../../../../../core/models/recipe.model';
@@ -11,6 +11,9 @@ import { RecipeKind } from '../../../../../core/models/recipe-kind.model';
   templateUrl: './recipe-form.component.html',
   styleUrl: './recipe-form.component.scss'
 })
+/**
+ * RecipeFormComponent coordinates UI logic for this feature.
+ */
 export class RecipeFormComponent implements OnInit {
   @Input() initialValue: Recipe | null = null;
   @Input() mode: 'create' | 'derived' | 'edit' = 'create';
@@ -38,6 +41,9 @@ export class RecipeFormComponent implements OnInit {
     });
   }
 
+  /**
+   * Handles the ngOnInit workflow.
+   */
   ngOnInit(): void {
     if (this.initialValue) {
       this.form.patchValue({
@@ -68,6 +74,9 @@ export class RecipeFormComponent implements OnInit {
     return (this.form.getRawValue().recipeKind as RecipeKind) === 'GOLDEN';
   }
 
+  /**
+   * Handles the onSubmit workflow.
+   */
   onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();

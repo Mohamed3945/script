@@ -18,9 +18,21 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+/**
+ * GlobalExceptionHandler class for the backend domain.
+ * <p>
+ * This type exposes behavior used by the application service layer.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    /**
+     * Executes handleEntityNotFoundException.
+     *
+     * @param ex input argument consumed by handleEntityNotFoundException.
+     * @param request input argument consumed by handleEntityNotFoundException.
+     * @return computed Object>> result returned by handleEntityNotFoundException.
+     */
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<Map<String, Object>> handleEntityNotFoundException(
@@ -29,6 +41,13 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI(), ex);
     }
 
+    /**
+     * Executes handleIllegalArgumentException.
+     *
+     * @param ex input argument consumed by handleIllegalArgumentException.
+     * @param request input argument consumed by handleIllegalArgumentException.
+     * @return computed Object>> result returned by handleIllegalArgumentException.
+     */
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(
@@ -37,6 +56,13 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI(), ex);
     }
 
+    /**
+     * Executes handleIllegalStateException.
+     *
+     * @param ex input argument consumed by handleIllegalStateException.
+     * @param request input argument consumed by handleIllegalStateException.
+     * @return computed Object>> result returned by handleIllegalStateException.
+     */
     @ExceptionHandler(IllegalStateException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ResponseEntity<Map<String, Object>> handleIllegalStateException(
@@ -45,6 +71,13 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI(), ex);
     }
 
+    /**
+     * Executes handleDataIntegrityViolationException.
+     *
+     * @param ex input argument consumed by handleDataIntegrityViolationException.
+     * @param request input argument consumed by handleDataIntegrityViolationException.
+     * @return computed Object>> result returned by handleDataIntegrityViolationException.
+     */
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ResponseEntity<Map<String, Object>> handleDataIntegrityViolationException(
@@ -57,6 +90,13 @@ public class GlobalExceptionHandler {
             ex);
     }
 
+    /**
+     * Executes handleRequestBindingException.
+     *
+     * @param ex input argument consumed by handleRequestBindingException.
+     * @param request input argument consumed by handleRequestBindingException.
+     * @return computed Object>> result returned by handleRequestBindingException.
+     */
     @ExceptionHandler({MethodArgumentTypeMismatchException.class, MethodArgumentNotValidException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<Map<String, Object>> handleRequestBindingException(
@@ -65,6 +105,13 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "Invalid request parameters", request.getRequestURI(), ex);
     }
 
+    /**
+     * Executes handleAllExceptions.
+     *
+     * @param ex input argument consumed by handleAllExceptions.
+     * @param request input argument consumed by handleAllExceptions.
+     * @return computed Object>> result returned by handleAllExceptions.
+     */
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<Map<String, Object>> handleAllExceptions(

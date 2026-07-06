@@ -1,4 +1,4 @@
-﻿import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { Recipe } from '../../../../../core/models/recipe.model';
 
@@ -9,6 +9,9 @@ import { Recipe } from '../../../../../core/models/recipe.model';
   templateUrl: './recipe-list-table.component.html',
   styleUrl: './recipe-list-table.component.scss'
 })
+/**
+ * RecipeListTableComponent coordinates UI logic for this feature.
+ */
 export class RecipeListTableComponent {
   @Input() recipes: Recipe[] = [];
 

@@ -1,0 +1,25 @@
+<div class="selection-card">
+  <div class="selection-card__header">
+    <div>
+      <div class="selection-card__title">Compatible Machine</div>
+      <div class="selection-card__value">Select one machine to continue</div>
+    </div>
+  </div>
+
+  <div class="machine-list">
+    <label
+      *ngFor="let machine of machines"
+      class="machine-item"
+      [class.machine-item--selected]="selectedMachineId === machine.id">
+      <input
+        type="radio"
+        name="machine-choice"
+        [checked]="selectedMachineId === machine.id"
+        (change)="selectMachine(machine.id)" />
+      <div class="machine-item__content">
+        <div class="machine-item__code">{{ machine.code }}</div>
+        <div class="machine-item__label">{{ machine.label }}</div>
+      </div>
+    </label>
+  </div>
+</div>
