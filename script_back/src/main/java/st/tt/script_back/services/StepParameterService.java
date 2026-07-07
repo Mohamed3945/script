@@ -118,6 +118,7 @@ public class StepParameterService {
         parameter.setParentStepParameter(parent);
         parameter.setSelectedOption(selectedOption);
         parameter.setActivationState(ActivationState.ENABLED);
+        parameter.setUserModified(false);
 
         if (parameter.getOrderIndex() == null) {
             Long scope = parent == null ? 0L : parent.getId();
@@ -197,10 +198,20 @@ public class StepParameterService {
                             "ParameterOption with id " + request.getSelectedOptionId() + " not found"));
         }
 
+        String previousValueJson = existing.getValueJson();
+        Long previousSelectedOptionId = existing.getSelectedOption() != null ? existing.getSelectedOption().getId() : null;
+        String requestedValueJson = request.getValueJson();
+        Long requestedSelectedOptionId = request.getSelectedOptionId();
+        boolean valueChanged = !java.util.Objects.equals(previousValueJson, requestedValueJson)
+                || !java.util.Objects.equals(previousSelectedOptionId, requestedSelectedOptionId);
+
         stepParameterMapper.updateEntityFromDto(request, existing);
         existing.setParentStepParameter(parent);
         existing.setSelectedOption(selectedOption);
         existing.setActivationState(ActivationState.ENABLED);
+        if (valueChanged) {
+            existing.setUserModified(true);
+        }
         if (existing.getStep() != null && existing.getDefinition() != null) {
             validateDefinitionScope(existing.getStep(), existing.getDefinition());
         }

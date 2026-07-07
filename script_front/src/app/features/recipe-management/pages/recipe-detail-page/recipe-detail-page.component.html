@@ -39,10 +39,8 @@
 
         <app-recipe-prestep-view
           *ngIf="activeTab === 'prestep'"
-          [prestepStep]="prestepStep"
-          [rows]="(prestepRows$ | async)"
+          [matrix]="(prestepMatrix$ | async)"
           (addParameterClicked)="openPrestepParameterModal()"
-          (deleteParameterClicked)="onDeletePrestepParameter($event)"
           (cellUpdated)="onPrestepCellUpdated($event)">
         </app-recipe-prestep-view>
 

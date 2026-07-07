@@ -1,0 +1,548 @@
+﻿[
+    {
+        "Alias":  "Em_MaxLimit",
+        "Name":  "Emissivity Max Lim",
+        "Unit":  "",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Em_MinLimit",
+        "Name":  "Emissivity Min Lim",
+        "Unit":  "",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "H2HIGH_Flow_Ramp",
+        "Name":  "H2HIGH Flow Ramp",
+        "Unit":  "sccm_s",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "H2HIGH_Flow_Set",
+        "Name":  "H2HIGH Flow Set",
+        "Unit":  "sccm",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Lift_PinPos",
+        "Name":  "Lift Pins Pos",
+        "Unit":  "",
+        "InferredType":  "STRING_OR_ENUM",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "MagLev_Speed",
+        "Name":  "Rotation Speed",
+        "Unit":  "RPM",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "MagLev_SpeedCmd",
+        "Name":  "MagLev Control",
+        "Unit":  "",
+        "InferredType":  "STRING_OR_ENUM",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "N2_Flow_Ramp",
+        "Name":  "N2 Flow Ramp",
+        "Unit":  "sccm_s",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "N2_Flow_Set",
+        "Name":  "N2 Flow Set",
+        "Unit":  "sccm",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "O2An_CtrlMode",
+        "Name":  "O2 Step Ctrl",
+        "Unit":  "",
+        "InferredType":  "STRING_OR_ENUM",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "O2An_FaultLevel",
+        "Name":  "O2 Fault Level",
+        "Unit":  "ppm",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "O2An_WarnLevel",
+        "Name":  "O2 Warning Level",
+        "Unit":  "ppm",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "O2HIGH_Flow_Ramp",
+        "Name":  "O2HIGH Flow Ramp",
+        "Unit":  "sccm_s",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "O2HIGH_Flow_Set",
+        "Name":  "O2HIGH Flow Set",
+        "Unit":  "sccm",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "OffsetTable",
+        "Name":  "Offset Table",
+        "Unit":  "",
+        "InferredType":  "EMPTY_OR_ENUM",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "RPS_PowerSP",
+        "Name":  "RPS Power Setpoint",
+        "Unit":  "W",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "SelOxideDest",
+        "Name":  "Sel Oxide Gas Destination",
+        "Unit":  "",
+        "InferredType":  "STRING_OR_ENUM",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Step_TempOffset01",
+        "Name":  "Temp Offset 1",
+        "Unit":  "degC",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Step_TempOffset02",
+        "Name":  "Temp Offset 2",
+        "Unit":  "degC",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Step_TempOffset03",
+        "Name":  "Temp Offset 3",
+        "Unit":  "degC",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Step_TempOffset04",
+        "Name":  "Temp Offset 4",
+        "Unit":  "degC",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Step_TempOffset05",
+        "Name":  "Temp Offset 5",
+        "Unit":  "degC",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Step_TempOffset06",
+        "Name":  "Temp Offset 6",
+        "Unit":  "degC",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Step_TempOffset07",
+        "Name":  "Temp Offset 7",
+        "Unit":  "degC",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Step_TempOffset08",
+        "Name":  "Temp Offset 8",
+        "Unit":  "degC",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "StepPressOffsetApply",
+        "Name":  "Apply Press Offset",
+        "Unit":  "",
+        "InferredType":  "BOOLEAN/ENUM",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Temp_IncTemp1",
+        "Name":  "Include Temp 1 in Calc",
+        "Unit":  "",
+        "InferredType":  "BOOLEAN/ENUM",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Temp_IncTemp2",
+        "Name":  "Include Temp 2 in Calc",
+        "Unit":  "",
+        "InferredType":  "BOOLEAN/ENUM",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Temp_IncTemp3",
+        "Name":  "Include Temp 3 in Calc",
+        "Unit":  "",
+        "InferredType":  "BOOLEAN/ENUM",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Temp_IncTemp4",
+        "Name":  "Include Temp 4 in Calc",
+        "Unit":  "",
+        "InferredType":  "BOOLEAN/ENUM",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Temp_IncTemp5",
+        "Name":  "Include Temp 5 in Calc",
+        "Unit":  "",
+        "InferredType":  "BOOLEAN/ENUM",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Temp_IncTemp6",
+        "Name":  "Include Temp 6 in Calc",
+        "Unit":  "",
+        "InferredType":  "BOOLEAN/ENUM",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Temp_IncTemp7",
+        "Name":  "Include Temp 7 in Calc",
+        "Unit":  "",
+        "InferredType":  "BOOLEAN/ENUM",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Temp_IncTemp8",
+        "Name":  "Include Temp 8 in Calc",
+        "Unit":  "",
+        "InferredType":  "BOOLEAN/ENUM",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Temp_Mode",
+        "Name":  "RTC Mode",
+        "Unit":  "",
+        "InferredType":  "STRING_OR_ENUM",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Temp_RampRate",
+        "Name":  "Temp Ramp Rate",
+        "Unit":  "degC_s",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Temp_Start",
+        "Name":  "Temp Start",
+        "Unit":  "degC",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Temp_Target",
+        "Name":  "Temp Target",
+        "Unit":  "degC",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "TV_PosRR",
+        "Name":  "Position Ramp Rate",
+        "Unit":  "percent_s",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "TV_PosSP",
+        "Name":  "Position Target",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "TV_PressCmd",
+        "Name":  "Press Mode",
+        "Unit":  "",
+        "InferredType":  "STRING_OR_ENUM",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "TV_PressRR",
+        "Name":  "Press Ramp Rate",
+        "Unit":  "torr_s",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "TV_PressureSP",
+        "Name":  "Press Target",
+        "Unit":  "torr",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Vcmd_GroupMax1",
+        "Name":  "Lamp Group 1 Maximum",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Vcmd_GroupMax2",
+        "Name":  "Lamp Group 2 Maximum",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Vcmd_GroupMax3",
+        "Name":  "Lamp Group 3 Maximum",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Vcmd_GroupMax4",
+        "Name":  "Lamp Group 4 Maximum",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Vcmd_GroupMax5",
+        "Name":  "Lamp Group 5 Maximum",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Vcmd_GroupMax6",
+        "Name":  "Lamp Group 6 Maximum",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Vcmd_GroupMax7",
+        "Name":  "Lamp Group 7 Maximum",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Vcmd_GroupMin1",
+        "Name":  "Lamp Group 1 Minimum",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Vcmd_GroupMin2",
+        "Name":  "Lamp Group 2 Minimum",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Vcmd_GroupMin3",
+        "Name":  "Lamp Group 3 Minimum",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Vcmd_GroupMin4",
+        "Name":  "Lamp Group 4 Minimum",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Vcmd_GroupMin5",
+        "Name":  "Lamp Group 5 Minimum",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Vcmd_GroupMin6",
+        "Name":  "Lamp Group 6 Minimum",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Vcmd_GroupMin7",
+        "Name":  "Lamp Group 7 Minimum",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Vcmd_RangeCheck",
+        "Name":  "Range Check",
+        "Unit":  "",
+        "InferredType":  "STRING_OR_ENUM",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Vcmd_RangeCheckUsage",
+        "Name":  "Range Check Vcmd usage",
+        "Unit":  "",
+        "InferredType":  "STRING_OR_ENUM",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Volt_Ctrl",
+        "Name":  "Voltage Control",
+        "Unit":  "",
+        "InferredType":  "STRING_OR_ENUM",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Volt_RampRate",
+        "Name":  "Voltage Ramp Rate",
+        "Unit":  "percent_s",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Volt_Start",
+        "Name":  "Voltage Start",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Volt_Target",
+        "Name":  "Voltage Target",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Volt_Zone01",
+        "Name":  "Voltage Zone 1",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Volt_Zone02",
+        "Name":  "Voltage Zone 2",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Volt_Zone03",
+        "Name":  "Voltage Zone 3",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Volt_Zone04",
+        "Name":  "Voltage Zone 4",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Volt_Zone05",
+        "Name":  "Voltage Zone 5",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Volt_Zone06",
+        "Name":  "Voltage Zone 6",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Volt_Zone07",
+        "Name":  "Voltage Zone 7",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Volt_Zone08",
+        "Name":  "Voltage Zone 8",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Volt_Zone09",
+        "Name":  "Voltage Zone 9",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Volt_Zone10",
+        "Name":  "Voltage Zone 10",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Volt_Zone11",
+        "Name":  "Voltage Zone 11",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Volt_Zone12",
+        "Name":  "Voltage Zone 12",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Volt_Zone13",
+        "Name":  "Voltage Zone 13",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Volt_Zone14",
+        "Name":  "Voltage Zone 14",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    },
+    {
+        "Alias":  "Volt_Zone15",
+        "Name":  "Voltage Zone 15",
+        "Unit":  "percent",
+        "InferredType":  "NUMBER_INT",
+        "Occurrences":  15
+    }
+]

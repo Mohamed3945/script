@@ -1,17 +1,29 @@
 <div class="table-card">
-  <table *ngIf="configurations.length > 0; else emptyState" class="table">
-    <thead>
-      <tr>
-        <th>Definition</th>
-        <th>Variant</th>
-        <th>Nominal</th>
-        <th>Min</th>
-        <th>Max</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let cfg of configurations">
+  <div class="table-toolbar">
+    <input
+      class="table-filter"
+      type="text"
+      placeholder="Filter chamber configurations..."
+      [value]="filterText"
+      (input)="onFilterChange($any($event.target).value)"
+    />
+    <div class="table-meta">{{ filteredConfigurations.length }} item(s)</div>
+  </div>
+
+  <div class="table-scroll" *ngIf="filteredConfigurations.length > 0; else emptyState">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Definition</th>
+          <th>Variant</th>
+          <th>Nominal</th>
+          <th>Min</th>
+          <th>Max</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let cfg of pagedConfigurations">
         <td>
           <div class="main">{{ cfg.configurationDefinitionCode }}</div>
           <div class="sub">{{ cfg.configurationDefinitionName }}</div>
@@ -27,9 +39,16 @@
           <button class="link-btn" (click)="edit.emit(cfg)">Edit</button>
           <button class="link-btn link-btn--danger" (click)="delete.emit(cfg)">Delete</button>
         </td>
-      </tr>
-    </tbody>
-  </table>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-pagination" *ngIf="filteredConfigurations.length > 0">
+    <button class="pager-btn" (click)="previousPage()" [disabled]="currentPage === 1">Previous</button>
+    <span>Page {{ currentPage }} / {{ totalPages }}</span>
+    <button class="pager-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+  </div>
 
   <ng-template #emptyState>
     <div class="empty-state">No chamber configurations found.</div>

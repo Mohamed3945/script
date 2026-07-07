@@ -88,6 +88,9 @@ public class StepParameter {
     @Column(name = "locked_by_golden", nullable = false)
     private boolean lockedByGolden = false;
 
+    @Column(name = "user_modified", nullable = false)
+    private boolean userModified = false;
+
     @Column(name = "create_time", nullable = false, updatable = false)
     private Instant createTime;
 

@@ -40,6 +40,8 @@ public class ParameterDefinitionMapper {
                 definition.isRequiredOnStep(),
                 definition.getStepType(),
             definition.getDefaultValueJson(),
+            definition.getParameterGroup(),
+            definition.getParameterGroupOrder(),
             definition.getConfigurationDefinition() != null ? definition.getConfigurationDefinition().getId() : null,
             definition.getConfigurationDefinition() != null ? definition.getConfigurationDefinition().getCode() : null,
             definition.getConfigurationDefinition() != null ? definition.getConfigurationDefinition().getName() : null
@@ -68,6 +70,8 @@ public class ParameterDefinitionMapper {
                 definition.isRequiredOnStep(),
                 definition.getStepType(),
                 definition.getDefaultValueJson(),
+            definition.getParameterGroup(),
+            definition.getParameterGroupOrder(),
             definition.getConfigurationDefinition() != null ? definition.getConfigurationDefinition().getId() : null,
             definition.getConfigurationDefinition() != null ? definition.getConfigurationDefinition().getCode() : null,
             definition.getConfigurationDefinition() != null ? definition.getConfigurationDefinition().getName() : null,
@@ -120,6 +124,8 @@ public class ParameterDefinitionMapper {
         entity.setRequiredOnStep(dto.isRequiredOnStep());
         entity.setStepType(dto.getStepType());
         entity.setDefaultValueJson(dto.getDefaultValueJson());
+        entity.setParameterGroup(dto.getParameterGroup());
+        entity.setParameterGroupOrder(dto.getParameterGroupOrder() == null ? 0 : dto.getParameterGroupOrder());
 
         if (dto.getConfigurationDefinitionId() != null) {
             ConfigurationDefinition configurationDefinition = new ConfigurationDefinition();

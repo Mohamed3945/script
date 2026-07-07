@@ -1,16 +1,10 @@
-import { NgFor, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault } from '@angular/common';
+import { NgClass, NgFor, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Step } from '../../../../../core/models/step.model';
 import { RecipeMatrixCell } from '../../../../../core/models/recipe-matrix-cell.model';
 import { ParameterValueType } from '../../../../../core/models/parameter-value-type.model';
-
-export interface PrestepRow {
-  parameterName: string;
-  parameterAlias: string;
-  valueType: ParameterValueType;
-  cell: RecipeMatrixCell;
-}
+import { RecipeMatrix } from '../../../../../core/models/recipe-matrix.model';
+import { RecipeMatrixRow } from '../../../../../core/models/recipe-matrix-row.model';
 
 export interface PrestepCellUpdate {
   cell: RecipeMatrixCell;
@@ -19,10 +13,25 @@ export interface PrestepCellUpdate {
   valueJson?: string | null;
 }
 
+interface PrestepGroup {
+  key: string;
+  title: string;
+  order: number;
+  rows: RecipeMatrixRow[];
+}
+
+type PrestepCellVisualState =
+  | 'golden-active'
+  | 'golden-inactive'
+  | 'editable-default'
+  | 'computed'
+  | 'user-modified'
+  | 'readonly-neutral';
+
 @Component({
   selector: 'app-recipe-prestep-view',
   standalone: true,
-  imports: [NgIf, NgFor, NgSwitch, NgSwitchCase, NgSwitchDefault, FormsModule],
+  imports: [NgIf, NgFor, NgClass, NgSwitch, NgSwitchCase, NgSwitchDefault, FormsModule],
   templateUrl: './recipe-prestep-view.component.html',
   styleUrl: './recipe-prestep-view.component.scss'
 })
@@ -30,22 +39,154 @@ export interface PrestepCellUpdate {
  * RecipePrestepViewComponent coordinates UI logic for this feature.
  */
 export class RecipePrestepViewComponent {
-  @Input() prestepStep: Step | null = null;
-  @Input() rows: PrestepRow[] | null = [];
+  @Input()
+  set matrix(value: RecipeMatrix | null) {
+    this._matrix = value;
+    this.rebuildGroups();
+  }
+
+  get matrix(): RecipeMatrix | null {
+    return this._matrix;
+  }
 
   @Output() addParameterClicked = new EventEmitter<void>();
-  @Output() deleteParameterClicked = new EventEmitter<RecipeMatrixCell>();
   @Output() cellUpdated = new EventEmitter<PrestepCellUpdate>();
 
   readonly enumValueType: ParameterValueType = 'ENUM';
   readonly numberValueType: ParameterValueType = 'NUMBER';
+
+  groupedRows: PrestepGroup[] = [];
+  pinnedRows: RecipeMatrixRow[] = [];
+
+  private _matrix: RecipeMatrix | null = null;
+  private collapsedByGroupKey: Record<string, boolean> = {};
+  private readonly pinnedParameterOrder: string[] = [
+    'name',
+    'chambers',
+    'mode',
+    'max time',
+    'rtc mode'
+  ];
+
+  get stepColumns() {
+    return this.matrix?.columns ?? [];
+  }
+
+  get parameterRows() {
+    return this.matrix?.rows ?? [];
+  }
+
+  private rebuildGroups(): void {
+    const rows = this.parameterRows;
+    if (rows.length === 0) {
+      this.pinnedRows = [];
+      this.groupedRows = [];
+      return;
+    }
+
+    const pinnedNameToRank = new Map<string, number>(
+      this.pinnedParameterOrder.map((name, index) => [name, index])
+    );
+
+    const pinnedRows: RecipeMatrixRow[] = [];
+    const nonPinnedRows: RecipeMatrixRow[] = [];
+
+    for (const row of rows) {
+      const normalizedName = (row.parameterName ?? '').trim().toLowerCase();
+      if (pinnedNameToRank.has(normalizedName)) {
+        pinnedRows.push(row);
+      } else {
+        nonPinnedRows.push(row);
+      }
+    }
+
+    this.pinnedRows = pinnedRows.sort((a, b) => {
+      const aRank = pinnedNameToRank.get((a.parameterName ?? '').trim().toLowerCase()) ?? Number.MAX_SAFE_INTEGER;
+      const bRank = pinnedNameToRank.get((b.parameterName ?? '').trim().toLowerCase()) ?? Number.MAX_SAFE_INTEGER;
+      return aRank - bRank;
+    });
+
+    const groupedMap = new Map<string, PrestepGroup>();
+
+    const ungroupedKey = 'ungrouped';
+    const ungroupedTitle = 'Other Parameters';
+
+    for (const row of nonPinnedRows) {
+      const hasGroup = Boolean(row.parameterGroup && row.parameterGroup.trim().length > 0);
+      const groupTitle = hasGroup ? row.parameterGroup!.trim() : ungroupedTitle;
+      const key = hasGroup ? groupTitle.toLowerCase() : ungroupedKey;
+      const order = hasGroup ? Number(row.parameterGroupOrder ?? 0) : Number.MAX_SAFE_INTEGER;
+
+      if (!groupedMap.has(key)) {
+        groupedMap.set(key, {
+          key,
+          title: groupTitle,
+          order,
+          rows: []
+        });
+      }
+
+      groupedMap.get(key)?.rows.push({
+        ...row,
+        cells: row.cells.filter((cell) => Boolean(cell.stepParameterId))
+      });
+    }
+
+    this.groupedRows = Array.from(groupedMap.values())
+      .filter((group) => group.rows.length > 0 && group.rows.some((row) => row.cells.length > 0))
+      .sort((a, b) => (a.order - b.order) || a.title.localeCompare(b.title));
+
+    const existingKeys = new Set(this.groupedRows.map((group) => group.key));
+    Object.keys(this.collapsedByGroupKey).forEach((key) => {
+      if (!existingKeys.has(key)) {
+        delete this.collapsedByGroupKey[key];
+      }
+    });
+  }
+
+  toggleGroup(groupKey: string): void {
+    this.collapsedByGroupKey[groupKey] = !this.isGroupCollapsed(groupKey);
+  }
+
+  isGroupCollapsed(groupKey: string): boolean {
+    return this.collapsedByGroupKey[groupKey] ?? false;
+  }
 
   /**
    * Handles the isEditable workflow.
    */
   isEditable(cell: RecipeMatrixCell): boolean {
     const isActive = !cell.activationState || cell.activationState === 'ENABLED';
-    return Boolean(cell.editable) && !cell.lockedByGolden && Boolean(cell.stepParameterId) && isActive;
+    return Boolean(cell.editable)
+      && !cell.lockedByGolden
+      && !cell.computed
+      && Boolean(cell.stepParameterId)
+      && isActive;
+  }
+
+  computeCellDisplayState(cell: RecipeMatrixCell): PrestepCellVisualState {
+    if (cell.lockedByGolden) {
+      return cell.activationState === 'DISABLED' ? 'golden-inactive' : 'golden-active';
+    }
+
+    if (cell.computed) {
+      return 'computed';
+    }
+
+    if (cell.editable && cell.userModified) {
+      return 'user-modified';
+    }
+
+    if (cell.editable) {
+      return 'editable-default';
+    }
+
+    return 'readonly-neutral';
+  }
+
+  getCellStateClass(cell: RecipeMatrixCell): string {
+    const visualState = this.computeCellDisplayState(cell);
+    return `cell--${visualState}`;
   }
 
   /**
@@ -73,11 +214,13 @@ export class RecipePrestepViewComponent {
       return;
     }
 
+    const normalizedValueJson = this.toValueJsonPayload(cell.valueType, rawValue);
+
     this.cellUpdated.emit({
       cell,
       valueType: cell.valueType,
       selectedOptionId: null,
-      valueJson: rawValue ?? null
+      valueJson: normalizedValueJson
     });
   }
 
@@ -101,5 +244,50 @@ export class RecipePrestepViewComponent {
     }
 
     this.onValueCommitted(cell, String(asNumber));
+  }
+
+  getInputDisplayValue(cell: RecipeMatrixCell): string {
+    return this.normalizeJsonScalarForDisplay(cell.valueJson);
+  }
+
+  getReadonlyDisplayValue(cell: RecipeMatrixCell): string {
+    if (cell.displayValue != null && cell.displayValue !== '') {
+      return this.normalizeJsonScalarForDisplay(cell.displayValue);
+    }
+    return this.normalizeJsonScalarForDisplay(cell.valueJson);
+  }
+
+  private toValueJsonPayload(valueType: ParameterValueType, rawValue: string | null | undefined): string | null {
+    const value = rawValue ?? '';
+
+    if (valueType === 'STRING') {
+      return JSON.stringify(value);
+    }
+
+    return value;
+  }
+
+  private normalizeJsonScalarForDisplay(rawValue: string | null | undefined): string {
+    if (rawValue == null) {
+      return '';
+    }
+
+    const trimmed = rawValue.trim();
+    if (!trimmed) {
+      return '';
+    }
+
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (parsed == null) {
+        return '';
+      }
+      if (typeof parsed === 'string' || typeof parsed === 'number' || typeof parsed === 'boolean') {
+        return String(parsed);
+      }
+      return rawValue;
+    } catch {
+      return rawValue;
+    }
   }
 }

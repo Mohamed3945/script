@@ -14,4 +14,39 @@ export class ChamberConfigurationTableComponent {
 
   @Output() edit = new EventEmitter<ChamberConfiguration>();
   @Output() delete = new EventEmitter<ChamberConfiguration>();
+
+  readonly pageSize = 15;
+  filterText = '';
+  currentPage = 1;
+
+  onFilterChange(value: string): void {
+    this.filterText = value;
+    this.currentPage = 1;
+  }
+
+  get filteredConfigurations(): ChamberConfiguration[] {
+    const query = this.filterText.trim().toLowerCase();
+    if (!query) {
+      return this.configurations;
+    }
+
+    return this.configurations.filter((configuration) => JSON.stringify(configuration).toLowerCase().includes(query));
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredConfigurations.length / this.pageSize));
+  }
+
+  get pagedConfigurations(): ChamberConfiguration[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredConfigurations.slice(start, start + this.pageSize);
+  }
+
+  previousPage(): void {
+    this.currentPage = Math.max(1, this.currentPage - 1);
+  }
+
+  nextPage(): void {
+    this.currentPage = Math.min(this.totalPages, this.currentPage + 1);
+  }
 }

@@ -1,19 +1,31 @@
 ﻿<div class="table-card">
-  <table *ngIf="rules.length > 0; else emptyState" class="table">
-    <thead>
-      <tr>
-        <th>Source</th>
-        <th>Trigger option</th>
-        <th>Activation context</th>
-        <th>Target</th>
-        <th>Effect</th>
-        <th>Scope</th>
-        <th>Priority</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let rule of rules">
+  <div class="table-toolbar">
+    <input
+      class="table-filter"
+      type="text"
+      placeholder="Filter dependency rules..."
+      [value]="filterText"
+      (input)="onFilterChange($any($event.target).value)"
+    />
+    <div class="table-meta">{{ filteredRules.length }} item(s)</div>
+  </div>
+
+  <div class="table-scroll" *ngIf="filteredRules.length > 0; else emptyState">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Source</th>
+          <th>Trigger option</th>
+          <th>Activation context</th>
+          <th>Target</th>
+          <th>Effect</th>
+          <th>Scope</th>
+          <th>Priority</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let rule of pagedRules">
         <td>
           <div class="main">{{ rule.sourceDefinitionCode || '-' }}</div>
           <div class="sub">{{ rule.sourceDefinitionName || '-' }}</div>
@@ -38,9 +50,16 @@
           <button class="link-btn" (click)="editRule.emit(rule)">Edit</button>
           <button class="link-btn link-btn--danger" (click)="deleteRule.emit(rule)">Delete</button>
         </td>
-      </tr>
-    </tbody>
-  </table>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-pagination" *ngIf="filteredRules.length > 0">
+    <button class="pager-btn" (click)="previousPage()" [disabled]="currentPage === 1">Previous</button>
+    <span>Page {{ currentPage }} / {{ totalPages }}</span>
+    <button class="pager-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+  </div>
 
   <ng-template #emptyState>
     <div class="empty-state">No dependency rules found.</div>

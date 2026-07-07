@@ -31,8 +31,8 @@ import st.tt.script_back.enums.RuleScope;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "parameter_dependency_rule", uniqueConstraints = {
-    @UniqueConstraint(name = "uq_pdr_source_trigger_target", columnNames = {
-        "source_definition_id", "trigger_option_id", "target_definition_id"
+    @UniqueConstraint(name = "uq_pdr_source_trigger_required_target", columnNames = {
+        "source_definition_id", "trigger_option_id", "required_source_activation_option_id", "target_definition_id"
     })
 })
 /**
@@ -99,12 +99,9 @@ public class ParameterDependencyRule {
             throw new IllegalStateException("Trigger option must belong to source definition.");
         }
 
-        if (requiredSourceActivationOption != null && sourceDefinition != null
-                && requiredSourceActivationOption.getDefinition() != null
-                && requiredSourceActivationOption.getDefinition().getId() != null
-                && sourceDefinition.getId() != null
-                && !requiredSourceActivationOption.getDefinition().getId().equals(sourceDefinition.getId())) {
-            throw new IllegalStateException("Required source activation option must belong to source definition.");
+        if (requiredSourceActivationOption != null
+                && requiredSourceActivationOption.getDefinition() == null) {
+            throw new IllegalStateException("Required source activation option must reference a valid definition.");
         }
 
         Instant now = Instant.now();

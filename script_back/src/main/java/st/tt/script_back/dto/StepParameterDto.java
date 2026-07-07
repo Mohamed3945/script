@@ -20,6 +20,8 @@ public class StepParameterDto {
     private Long stepId;
     private Long definitionId;
     private String definitionName;
+    private String parameterGroup;
+    private Integer parameterGroupOrder;
     private Long parentStepParameterId;
     private Long parentOrderScope;
     private Integer orderIndex;
@@ -29,4 +31,6 @@ public class StepParameterDto {
     private String selectedOptionLabel;
     private ActivationState activationState;
     private boolean lockedByGolden;
+    private boolean userModified;
+    private boolean computed;
 }

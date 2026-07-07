@@ -1,0 +1,629 @@
+﻿[
+    {
+        "name":  "RTC Mode",
+        "alias":  "Temp_Mode",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation"
+    },
+    {
+        "name":  "Temp Target",
+        "alias":  "Temp_Target",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "degC"
+    },
+    {
+        "name":  "Temp Start",
+        "alias":  "Temp_Start",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "degC"
+    },
+    {
+        "name":  "Temp Ramp Rate",
+        "alias":  "Temp_RampRate",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "degC_s"
+    },
+    {
+        "name":  "Temp Offset 1",
+        "alias":  "Step_TempOffset01",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "degC"
+    },
+    {
+        "name":  "Temp Offset 2",
+        "alias":  "Step_TempOffset02",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "degC"
+    },
+    {
+        "name":  "Temp Offset 3",
+        "alias":  "Step_TempOffset03",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "degC"
+    },
+    {
+        "name":  "Temp Offset 4",
+        "alias":  "Step_TempOffset04",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "degC"
+    },
+    {
+        "name":  "Temp Offset 5",
+        "alias":  "Step_TempOffset05",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "degC"
+    },
+    {
+        "name":  "Temp Offset 6",
+        "alias":  "Step_TempOffset06",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "degC"
+    },
+    {
+        "name":  "Temp Offset 7",
+        "alias":  "Step_TempOffset07",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "degC"
+    },
+    {
+        "name":  "Temp Offset 8",
+        "alias":  "Step_TempOffset08",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "degC"
+    },
+    {
+        "name":  "Offset Table",
+        "alias":  "OffsetTable",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation"
+    },
+    {
+        "name":  "Voltage Control",
+        "alias":  "Volt_Ctrl",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation"
+    },
+    {
+        "name":  "Voltage Target",
+        "alias":  "Volt_Target",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Voltage Start",
+        "alias":  "Volt_Start",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Voltage Ramp Rate",
+        "alias":  "Volt_RampRate",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent_s"
+    },
+    {
+        "name":  "Voltage Zone 1",
+        "alias":  "Volt_Zone01",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Voltage Zone 2",
+        "alias":  "Volt_Zone02",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Voltage Zone 3",
+        "alias":  "Volt_Zone03",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Voltage Zone 4",
+        "alias":  "Volt_Zone04",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Voltage Zone 5",
+        "alias":  "Volt_Zone05",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Voltage Zone 6",
+        "alias":  "Volt_Zone06",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Voltage Zone 7",
+        "alias":  "Volt_Zone07",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Voltage Zone 8",
+        "alias":  "Volt_Zone08",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Voltage Zone 9",
+        "alias":  "Volt_Zone09",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Voltage Zone 10",
+        "alias":  "Volt_Zone10",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Voltage Zone 11",
+        "alias":  "Volt_Zone11",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Voltage Zone 12",
+        "alias":  "Volt_Zone12",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Voltage Zone 13",
+        "alias":  "Volt_Zone13",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Voltage Zone 14",
+        "alias":  "Volt_Zone14",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Voltage Zone 15",
+        "alias":  "Volt_Zone15",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Range Check",
+        "alias":  "Vcmd_RangeCheck",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation"
+    },
+    {
+        "name":  "Lamp Group 1 Minimum",
+        "alias":  "Vcmd_GroupMin1",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Lamp Group 1 Maximum",
+        "alias":  "Vcmd_GroupMax1",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Lamp Group 2 Minimum",
+        "alias":  "Vcmd_GroupMin2",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Lamp Group 2 Maximum",
+        "alias":  "Vcmd_GroupMax2",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Lamp Group 3 Minimum",
+        "alias":  "Vcmd_GroupMin3",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Lamp Group 3 Maximum",
+        "alias":  "Vcmd_GroupMax3",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Lamp Group 4 Minimum",
+        "alias":  "Vcmd_GroupMin4",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Lamp Group 4 Maximum",
+        "alias":  "Vcmd_GroupMax4",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Lamp Group 5 Minimum",
+        "alias":  "Vcmd_GroupMin5",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Lamp Group 5 Maximum",
+        "alias":  "Vcmd_GroupMax5",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Lamp Group 6 Minimum",
+        "alias":  "Vcmd_GroupMin6",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Lamp Group 6 Maximum",
+        "alias":  "Vcmd_GroupMax6",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Lamp Group 7 Minimum",
+        "alias":  "Vcmd_GroupMin7",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Lamp Group 7 Maximum",
+        "alias":  "Vcmd_GroupMax7",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Range Check Vcmd usage",
+        "alias":  "Vcmd_RangeCheckUsage",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation"
+    },
+    {
+        "name":  "Press Mode",
+        "alias":  "TV_PressCmd",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation"
+    },
+    {
+        "name":  "Press Target",
+        "alias":  "TV_PressureSP",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "torr"
+    },
+    {
+        "name":  "Press Ramp Rate",
+        "alias":  "TV_PressRR",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "torr_s"
+    },
+    {
+        "name":  "Apply Press Offset",
+        "alias":  "StepPressOffsetApply",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation"
+    },
+    {
+        "name":  "Position Target",
+        "alias":  "TV_PosSP",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Position Ramp Rate",
+        "alias":  "TV_PosRR",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "percent_s"
+    },
+    {
+        "name":  "Lift Pins Pos",
+        "alias":  "Lift_PinPos",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation"
+    },
+    {
+        "name":  "MagLev Control",
+        "alias":  "MagLev_SpeedCmd",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation"
+    },
+    {
+        "name":  "Rotation Speed",
+        "alias":  "MagLev_Speed",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "RPM"
+    },
+    {
+        "name":  "O2 Step Ctrl",
+        "alias":  "O2An_CtrlMode",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation"
+    },
+    {
+        "name":  "O2 Warning Level",
+        "alias":  "O2An_WarnLevel",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "ppm"
+    },
+    {
+        "name":  "O2 Fault Level",
+        "alias":  "O2An_FaultLevel",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "ppm"
+    },
+    {
+        "name":  "Emissivity Min Lim",
+        "alias":  "Em_MinLimit",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation"
+    },
+    {
+        "name":  "Emissivity Max Lim",
+        "alias":  "Em_MaxLimit",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation"
+    },
+    {
+        "name":  "RPS Power Setpoint",
+        "alias":  "RPS_PowerSP",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation",
+        "unit":  "W"
+    },
+    {
+        "name":  "Include Temp 1 in Calc",
+        "alias":  "Temp_IncTemp1",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation"
+    },
+    {
+        "name":  "Include Temp 2 in Calc",
+        "alias":  "Temp_IncTemp2",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation"
+    },
+    {
+        "name":  "Include Temp 3 in Calc",
+        "alias":  "Temp_IncTemp3",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation"
+    },
+    {
+        "name":  "Include Temp 4 in Calc",
+        "alias":  "Temp_IncTemp4",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation"
+    },
+    {
+        "name":  "Include Temp 5 in Calc",
+        "alias":  "Temp_IncTemp5",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation"
+    },
+    {
+        "name":  "Include Temp 6 in Calc",
+        "alias":  "Temp_IncTemp6",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation"
+    },
+    {
+        "name":  "Include Temp 7 in Calc",
+        "alias":  "Temp_IncTemp7",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation"
+    },
+    {
+        "name":  "Include Temp 8 in Calc",
+        "alias":  "Temp_IncTemp8",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation"
+    },
+    {
+        "name":  "Sel Oxide Gas Destination",
+        "alias":  "SelOxideDest",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "STEP",
+        "description":  "Inferred from provided STEP PARAM instantiation"
+    }
+]

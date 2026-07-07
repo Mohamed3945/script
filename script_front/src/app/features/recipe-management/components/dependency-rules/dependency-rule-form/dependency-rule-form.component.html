@@ -3,8 +3,8 @@
     <div class="field">
       <label>Source definition</label>
       <select formControlName="sourceDefinitionId">
-        <option [ngValue]="null">Select a source definition</option>
-        <option *ngFor="let definition of definitions" [ngValue]="definition.id">
+        <option [ngValue]="null">Select an ENUM source definition</option>
+        <option *ngFor="let definition of sourceDefinitions" [ngValue]="definition.id">
           {{ definition.code || '-' }} - {{ definition.name }}
         </option>
       </select>
@@ -12,32 +12,64 @@
 
     <div class="field">
       <label>Trigger option</label>
-      <select formControlName="triggerOptionId">
+      <select *ngIf="mode === 'edit'" formControlName="triggerOptionId">
         <option [ngValue]="null">Select a trigger option</option>
         <option *ngFor="let option of sourceOptions" [ngValue]="option.id">
           {{ option.code || '-' }} - {{ option.label }}
         </option>
       </select>
+      <div *ngIf="mode === 'create'" class="checkbox-list">
+        <p *ngIf="sourceOptions.length === 0" class="hint">
+          Select a source definition to load trigger options.
+        </p>
+        <label *ngFor="let option of sourceOptions" class="checkbox-item">
+          <input
+            type="checkbox"
+            [checked]="isTriggerSelected(option.id)"
+            (change)="toggleTriggerOption(option.id, $any($event.target).checked)"
+          />
+          <span>{{ option.code || '-' }} - {{ option.label }}</span>
+        </label>
+      </div>
     </div>
 
     <div class="field">
       <label>Source activation context (optional)</label>
       <select formControlName="requiredSourceActivationOptionId">
-        <option [ngValue]="null">No contextual filter</option>
-        <option *ngFor="let option of sourceOptions" [ngValue]="option.id">
-          {{ option.code || '-' }} - {{ option.label }}
+        <option [ngValue]="null">
+          {{ hasControllerContext ? 'No contextual filter' : 'No controlling parameter found' }}
+        </option>
+        <option *ngFor="let option of sourceActivationContextOptions" [ngValue]="option.id">
+          {{ option.code }} - {{ option.label }} (from {{ option.controllerDefinitionCode }} - {{ option.controllerDefinitionName }})
         </option>
       </select>
     </div>
 
     <div class="field">
       <label>Target definition</label>
-      <select formControlName="targetDefinitionId">
+      <select *ngIf="mode === 'edit'" formControlName="targetDefinitionId">
         <option [ngValue]="null">Select a target definition</option>
-        <option *ngFor="let definition of definitions" [ngValue]="definition.id">
+        <option *ngFor="let definition of targetDefinitions" [ngValue]="definition.id">
           {{ definition.code || '-' }} - {{ definition.name }}
         </option>
       </select>
+      <div *ngIf="mode === 'create'" class="checkbox-list">
+        <p *ngIf="targetDefinitions.length === 0" class="hint">
+          No target definition available.
+        </p>
+        <label *ngFor="let definition of targetDefinitions" class="checkbox-item">
+          <input
+            type="checkbox"
+            [checked]="isTargetSelected(definition.id)"
+            [disabled]="definition.id === form.getRawValue().sourceDefinitionId"
+            (change)="toggleTargetDefinition(definition.id, $any($event.target).checked)"
+          />
+          <span>
+            {{ definition.code || '-' }} - {{ definition.name }}
+            <small *ngIf="definition.id === form.getRawValue().sourceDefinitionId">(source, impossible)</small>
+          </span>
+        </label>
+      </div>
     </div>
 
     <div class="field">
@@ -61,6 +93,9 @@
   </div>
 
   <div class="actions">
+    <p *ngIf="createSelectionError" class="validation-error">
+      In create mode, select at least one trigger option and one target definition.
+    </p>
     <button class="btn" type="submit">
       {{ mode === 'create' ? 'Create rule' : 'Save changes' }}
     </button>

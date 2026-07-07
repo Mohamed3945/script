@@ -5,6 +5,8 @@ export interface StepParameter {
   stepId?: number;
   definitionId: number;
   definitionName?: string | null;
+  parameterGroup?: string | null;
+  parameterGroupOrder?: number | null;
   parentStepParameterId?: number | null;
   parentOrderScope?: number | null;
   orderIndex?: number | null;
@@ -14,4 +16,6 @@ export interface StepParameter {
   selectedOptionLabel?: string | null;
   activationState?: ActivationState;
   lockedByGolden: boolean;
+  userModified?: boolean;
+  computed?: boolean;
 }

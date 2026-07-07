@@ -83,6 +83,12 @@ public class ParameterDefinition {
     @Column(name = "default_value_json", columnDefinition = "LONGTEXT")
     private String defaultValueJson;
 
+    @Column(name = "parameter_group", length = 128)
+    private String parameterGroup;
+
+    @Column(name = "parameter_group_order", nullable = false)
+    private Integer parameterGroupOrder = 0;
+
     @Column(name = "create_time", nullable = false, updatable = false)
     private Instant createTime;
 
@@ -102,6 +108,9 @@ public class ParameterDefinition {
         if (this.createTime == null) {
             this.createTime = now;
         }
+        if (this.parameterGroupOrder == null) {
+            this.parameterGroupOrder = 0;
+        }
     }
 
     /**
@@ -110,5 +119,8 @@ public class ParameterDefinition {
     @PreUpdate
     protected void onUpdate() {
         this.reviseTime = Instant.now();
+        if (this.parameterGroupOrder == null) {
+            this.parameterGroupOrder = 0;
+        }
     }
 }

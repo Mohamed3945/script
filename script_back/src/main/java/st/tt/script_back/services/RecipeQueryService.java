@@ -304,6 +304,8 @@ public class RecipeQueryService {
                                             optionsByDefinitionId.getOrDefault(definitionId, List.of()),
                                             null,
                                             false,
+                                            false,
+                                            false,
                                             false);
                                 }
 
@@ -326,7 +328,9 @@ public class RecipeQueryService {
                                         optionsByDefinitionId.getOrDefault(definitionId, List.of()),
                                         cellParameter.getActivationState(),
                                         cellParameter.isLockedByGolden(),
-                        editable);
+                                        editable,
+                                        cellParameter.isUserModified(),
+                                        false);
                             })
                             .toList();
 
@@ -334,6 +338,8 @@ public class RecipeQueryService {
                             definitionId,
                             parameter.getDefinition().getName(),
                             parameter.getDefinition().getAlias(),
+                            parameter.getDefinition().getParameterGroup(),
+                            parameter.getDefinition().getParameterGroupOrder(),
                             parameter.getDefinition().getValueType(),
                             cells);
                 })

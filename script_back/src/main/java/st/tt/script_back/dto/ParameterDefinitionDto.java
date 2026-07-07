@@ -27,6 +27,8 @@ public class ParameterDefinitionDto {
     private boolean requiredOnStep;
     private StepType stepType;
     private String defaultValueJson;
+    private String parameterGroup;
+    private Integer parameterGroupOrder;
     private Long configurationDefinitionId;
     private String configurationDefinitionCode;
     private String configurationDefinitionName;

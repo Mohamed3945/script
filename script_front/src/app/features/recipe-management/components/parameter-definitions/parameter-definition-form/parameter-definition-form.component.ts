@@ -42,6 +42,8 @@ export class ParameterDefinitionFormComponent implements OnInit {
       requiredOnStep: [true],
       stepType: ['STEP' as StepType, Validators.required],
       defaultValueJson: [''],
+      parameterGroup: [''],
+      parameterGroupOrder: [0],
       configurationDefinitionId: [null as number | null]
     });
   }
@@ -70,6 +72,8 @@ export class ParameterDefinitionFormComponent implements OnInit {
         requiredOnStep: this.initialValue.requiredOnStep,
         stepType: this.initialValue.stepType,
         defaultValueJson: this.initialValue.defaultValueJson || '',
+        parameterGroup: this.initialValue.parameterGroup || '',
+        parameterGroupOrder: this.initialValue.parameterGroupOrder ?? 0,
         configurationDefinitionId: this.initialValue.configurationDefinitionId ?? null
       });
     }
@@ -96,6 +100,8 @@ export class ParameterDefinitionFormComponent implements OnInit {
       requiredOnStep: !!raw.requiredOnStep,
       stepType: raw.stepType!,
       defaultValueJson: raw.defaultValueJson || null,
+      parameterGroup: raw.parameterGroup || null,
+      parameterGroupOrder: Number(raw.parameterGroupOrder ?? 0),
       configurationDefinitionId: raw.configurationDefinitionId ?? null
     });
   }

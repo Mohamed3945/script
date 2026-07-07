@@ -1,16 +1,28 @@
 <div class="table-card">
-  <table *ngIf="capabilities.length > 0; else emptyState" class="table">
-    <thead>
-      <tr>
-        <th>Code</th>
-        <th>Label</th>
-        <th>Category</th>
-        <th>Active</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let capability of capabilities">
+  <div class="table-toolbar">
+    <input
+      class="table-filter"
+      type="text"
+      placeholder="Filter capabilities..."
+      [value]="filterText"
+      (input)="onFilterChange($any($event.target).value)"
+    />
+    <div class="table-meta">{{ filteredCapabilities.length }} item(s)</div>
+  </div>
+
+  <div class="table-scroll" *ngIf="filteredCapabilities.length > 0; else emptyState">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Label</th>
+          <th>Category</th>
+          <th>Active</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let capability of pagedCapabilities">
         <td>{{ capability.code }}</td>
         <td>{{ capability.label }}</td>
         <td>{{ capability.category }}</td>
@@ -19,9 +31,16 @@
           <button class="link-btn" (click)="edit.emit(capability)">Edit</button>
           <button class="link-btn link-btn--danger" (click)="delete.emit(capability)">Delete</button>
         </td>
-      </tr>
-    </tbody>
-  </table>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-pagination" *ngIf="filteredCapabilities.length > 0">
+    <button class="pager-btn" (click)="previousPage()" [disabled]="currentPage === 1">Previous</button>
+    <span>Page {{ currentPage }} / {{ totalPages }}</span>
+    <button class="pager-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+  </div>
 
   <ng-template #emptyState>
     <div class="empty-state">No capabilities found.</div>

@@ -178,6 +178,9 @@ public class DecisionFinalizeService {
             cloneStepParameters(goldenStep, clonedStep);
         }
 
+        // Defensive reset: derived recipes must start with no user-modified markers.
+        stepParameterRepository.resetUserModifiedByRecipeId(savedDerivedRecipe.getId());
+
         parameterActivationService.recalculateRecipeActivationStates(savedDerivedRecipe.getId());
 
         return savedDerivedRecipe;
@@ -228,6 +231,7 @@ public class DecisionFinalizeService {
                 clonedParameter.setSelectedOption(goldenParameter.getSelectedOption());
                 clonedParameter.setActivationState(goldenParameter.getActivationState());
                 clonedParameter.setLockedByGolden(goldenParameter.isLockedByGolden());
+                clonedParameter.setUserModified(false);
 
                 StepParameter savedClonedParameter = stepParameterRepository.save(clonedParameter);
                 parameterCloneByOriginalParameterId.put(goldenParameter.getId(), savedClonedParameter);

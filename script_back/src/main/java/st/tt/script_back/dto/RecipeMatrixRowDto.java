@@ -21,6 +21,8 @@ public class RecipeMatrixRowDto {
     private Long definitionId;
     private String parameterName;
     private String parameterAlias;
+    private String parameterGroup;
+    private Integer parameterGroupOrder;
     private ParameterValueType valueType;
     private List<RecipeMatrixCellDto> cells;
 }

@@ -2,6 +2,7 @@ package st.tt.script_back.repositories;
 
 import java.util.List;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -74,5 +75,21 @@ public interface StepParameterRepository extends JpaRepository<StepParameter, Lo
                 where sp.definition.id in :definitionIds
                 """)
     List<Long> findDistinctRecipeIdsByDefinitionIds(@Param("definitionIds") List<Long> definitionIds);
+
+        /**
+         * Resets user-modification markers for all parameters of one recipe.
+         * <p>
+         * Used after golden-to-derived cloning to ensure the new derived recipe starts with a clean editable state.
+         *
+         * @param recipeId recipe identifier.
+         * @return number of updated parameters.
+         */
+        @Modifying(clearAutomatically = true, flushAutomatically = true)
+        @Query("""
+                        update StepParameter sp
+                        set sp.userModified = false
+                        where sp.step.recipe.id = :recipeId
+                        """)
+        int resetUserModifiedByRecipeId(@Param("recipeId") Long recipeId);
 
 }

@@ -1,6 +1,6 @@
 ﻿.page {
-  padding: 14px 18px 18px;
-  min-height: calc(100vh - 58px);
+  padding: 6px 8px 8px;
+  min-height: calc(100vh - 48px);
 }
 
 .page__container {
@@ -8,7 +8,7 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
 }
 
 .workspace {
@@ -16,17 +16,17 @@
   grid-template-columns: minmax(0, 1fr) 0;
   grid-template-areas: 'main drawer';
   gap: 0;
-  height: calc(100vh - 142px);
-  min-height: 640px;
+  height: calc(100vh - 84px);
+  min-height: 560px;
   border: 1px solid var(--border-soft);
-  border-radius: 10px;
+  border-radius: 8px;
   background: #f4f7fa;
   overflow: hidden;
   transition: grid-template-columns 300ms ease;
 }
 
 .workspace--drawer-open {
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr) 250px;
 }
 
 .workspace__main {
@@ -37,7 +37,7 @@
   min-height: 0;
   background: #f9fbfd;
   border-right: 1px solid var(--border-soft);
-  padding: 10px;
+  padding: 6px;
 }
 
 .workspace__main-topbar {
@@ -47,22 +47,22 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 6px;
+  margin-bottom: 6px;
   border: 1px solid var(--border-soft);
-  border-radius: 8px;
+  border-radius: 6px;
   background: #eef3f7;
-  padding: 8px;
+  padding: 4px 6px;
 }
 
 .workspace__main-topbar-child {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   border: 1px solid var(--border-soft);
-  border-radius: 7px;
+  border-radius: 6px;
   background: #f8fbfe;
-  padding: 6px 8px;
+  padding: 4px 6px;
 }
 
 .workspace__drawer {
@@ -84,11 +84,11 @@
 
 .drawer__toggle-tab {
   position: absolute;
-  left: -28px;
+  left: -24px;
   top: 50%;
   transform: translateY(-50%);
-  width: 28px;
-  height: 64px;
+  width: 24px;
+  height: 56px;
   border-radius: 8px 0 0 8px;
   background: #dde5ee;
   border: 1px solid var(--border-soft);
@@ -116,19 +116,19 @@
 }
 
 .drawer__toggle-glyph {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   color: #32465a;
   line-height: 1;
 }
 
 .drawer-section {
-  padding: 8px 10px;
+  padding: 6px 8px;
   border-bottom: 1px solid var(--border-soft);
 }
 
 .drawer-section__title {
-  margin: 0 0 6px;
+  margin: 0 0 4px;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
@@ -148,7 +148,7 @@
   align-items: center;
   gap: 8px;
   width: 100%;
-  padding: 6px 8px;
+  padding: 5px 6px;
   border-radius: 4px;
   font-size: 12px;
   font-weight: 600;
@@ -161,7 +161,7 @@
 }
 
 .drawer-action + .drawer-action {
-  margin-top: 4px;
+  margin-top: 3px;
 }
 
 .drawer-action:hover:not([disabled]) {
@@ -203,11 +203,11 @@
 }
 
 .machine-pill {
-  margin-top: 4px;
+  margin-top: 3px;
   border: 1px solid var(--border-soft);
   border-radius: 4px;
   background: #fff;
-  padding: 6px 8px;
+  padding: 5px 6px;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -229,14 +229,14 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: calc(100vh - 210px);
+  min-height: calc(100vh - 140px);
   background: #fff;
   border: 1px solid var(--border-soft);
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .steps-shell__toolbar-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -248,7 +248,7 @@
   flex: 1;
   overflow: auto;
   min-height: 0;
-  padding: 10px;
+  padding: 4px;
 }
 
 :host ::ng-deep app-recipe-detail-header .actions {
@@ -256,26 +256,27 @@
 }
 
 :host ::ng-deep app-recipe-detail-header .header-card {
-  border-radius: 8px;
-  padding: 14px 16px;
+  border-radius: 6px;
+  padding: 8px 10px;
   box-shadow: none;
 }
 
 :host ::ng-deep app-recipe-detail-header .header-card h1 {
-  font-size: 20px;
+  font-size: 16px;
   margin: 0;
+  line-height: 1.2;
 }
 
 :host ::ng-deep app-recipe-detail-header .header-card p {
-  margin: 4px 0 0;
-  font-size: 12px;
+  margin: 2px 0 0;
+  font-size: 11px;
   font-family: Consolas, 'Courier New', monospace;
 }
 
 @media (max-width: 1280px) {
   .workspace,
   .workspace--drawer-open {
-    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-columns: minmax(0, 1fr) 230px;
   }
 }
 

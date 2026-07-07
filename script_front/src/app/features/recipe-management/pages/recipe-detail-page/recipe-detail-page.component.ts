@@ -31,7 +31,6 @@ import { RecipeMatrixCellUpdate, RecipeMatrixViewComponent } from '../../compone
 import { RecipeStepFocusViewComponent } from '../../components/recipes/recipe-step-focus-view/recipe-step-focus-view.component';
 import {
   PrestepCellUpdate,
-  PrestepRow,
   RecipePrestepViewComponent
 } from '../../components/recipes/recipe-prestep-view/recipe-prestep-view.component';
 import { StepModalComponent } from '../../components/steps/step-modal/step-modal.component';
@@ -76,7 +75,7 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
   stepsViewSteps$;
   stepsViewSelectedStep$;
   stepsViewMatrix$;
-  prestepRows$;
+  prestepMatrix$;
 
   activeTab: RecipeWorkspaceTab = 'steps';
   viewMode: RecipeViewMode = 'matrix';
@@ -123,8 +122,8 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
       map((matrix) => this.filterMatrixToRegularSteps(matrix))
     );
 
-    this.prestepRows$ = this.recipeMatrix$.pipe(
-      map((matrix) => this.buildPrestepRows(matrix))
+    this.prestepMatrix$ = this.recipeMatrix$.pipe(
+      map((matrix) => this.buildPrestepMatrix(matrix))
     );
 
     this.sub.add(
@@ -507,31 +506,28 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
   /**
    * Handles the buildPrestepRows workflow.
    */
-  private buildPrestepRows(matrix: RecipeMatrix | null): PrestepRow[] {
+  private buildPrestepMatrix(matrix: RecipeMatrix | null): RecipeMatrix | null {
     if (!matrix) {
-      return [];
+      return null;
     }
 
     const prestepColumn = matrix.columns.find((column) => column.stepKind === 'PRESTEP');
     if (!prestepColumn) {
-      return [];
+      return null;
     }
 
-    return matrix.rows
-      .map((row) => {
-        const cell = row.cells.find((candidate) => candidate.stepId === prestepColumn.stepId);
-        if (!cell?.stepParameterId) {
-          return null;
-        }
+    const filteredRows = matrix.rows
+      .map((row) => ({
+        ...row,
+        cells: row.cells.filter((candidate) => candidate.stepId === prestepColumn.stepId)
+      }))
+      .filter((row) => row.cells.some((cell) => Boolean(cell.stepParameterId)));
 
-        return {
-          parameterName: row.parameterName,
-          parameterAlias: row.parameterAlias || row.parameterName,
-          valueType: row.valueType,
-          cell
-        };
-      })
-      .filter((row): row is PrestepRow => row !== null);
+    return {
+      ...matrix,
+      columns: [prestepColumn],
+      rows: filteredRows
+    };
   }
 
   /**

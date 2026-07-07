@@ -34,4 +34,6 @@ public class RecipeMatrixCellDto {
     private ActivationState activationState;
     private boolean lockedByGolden;
     private boolean editable;
+    private boolean userModified;
+    private boolean computed;
 }

@@ -57,7 +57,12 @@ export class DependencyRuleEditPageComponent implements OnInit {
   /**
    * Handles the onSubmit workflow.
    */
-  onSubmit(rule: ParameterDependencyRule): void {
+  onSubmit(payload: ParameterDependencyRule | ParameterDependencyRule[]): void {
+    if (Array.isArray(payload)) {
+      return;
+    }
+
+    const rule = payload;
     const current = this.ruleView$.value;
     if (!current) {
       return;
