@@ -171,36 +171,68 @@
   color: #41586d;
 }
 
-.legend {
-  margin-top: 10px;
-  display: flex;
-  flex-wrap: wrap;
+.legend-explainer {
+  margin-top: 12px;
+  border: 1px solid #d9e4ee;
+  border-radius: 10px;
+  padding: 10px;
+  display: grid;
   gap: 8px;
+  background: #f9fcff;
 }
 
-.legend-item {
-  border-radius: 999px;
-  padding: 4px 9px;
-  font-size: 11px;
-  border: 1px solid transparent;
+.legend-explainer__item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
 }
 
-.legend-item--golden {
+.legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-top: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  flex-shrink: 0;
+}
+
+.legend-swatch--golden-active {
   background: #f2d23b;
-  border-color: #d5bb45;
-  color: #2a260f;
 }
 
-.legend-item--inactive {
+.legend-swatch--golden-inactive {
   background: #efe6b8;
-  border-color: #d8cf9f;
-  color: #645f50;
 }
 
-.legend-item--computed {
+.legend-swatch--computed {
   background: #f3c9d1;
-  border-color: #d9a7b2;
-  color: #6e3040;
+}
+
+.legend-swatch--editable-default {
+  background: #ff1e1e;
+}
+
+.legend-swatch--user-modified {
+  background: #1db9e8;
+}
+
+.legend-swatch--readonly-neutral {
+  background: #f7fafc;
+}
+
+.legend-explainer__copy {
+  min-width: 0;
+}
+
+.legend-explainer__title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #274053;
+}
+
+.legend-explainer__text {
+  font-size: 12px;
+  color: #567085;
 }
 
 .result-page__panels {

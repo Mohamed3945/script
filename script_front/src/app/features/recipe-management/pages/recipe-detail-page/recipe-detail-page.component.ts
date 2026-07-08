@@ -610,7 +610,8 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
 
   refreshCompatibilityByCapabilitiesOnly(): void {
     const recipe = this.recipe$.value;
-    const recipeId = recipe?.id ?? null;
+    const requirementsRecipeId = this.requirements$.value?.recipeId ?? null;
+    const recipeId = requirementsRecipeId ?? recipe?.parentRecipeId ?? recipe?.id ?? null;
 
     if (!this.isDerivedWorkspace || !recipeId) {
       this.compatibility$.next(null);

@@ -29,6 +29,8 @@
 .page__actions {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .card {

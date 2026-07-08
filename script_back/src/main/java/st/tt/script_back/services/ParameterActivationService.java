@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +45,8 @@ public class ParameterActivationService {
     private static final Comparator<RuleMatch> RULE_MATCH_COMPARATOR = Comparator
             .comparingInt(RuleMatch::priority)
             .thenComparingInt(match -> effectRank(match.effect()));
+
+    private static final ConcurrentHashMap<Long, ReentrantLock> RECIPE_LOCKS = new ConcurrentHashMap<>();
 
     private final StepRepository stepRepository;
     private final StepParameterRepository stepParameterRepository;
@@ -81,6 +85,9 @@ public class ParameterActivationService {
      */
     @Transactional
     public void recalculateRecipeActivationStates(Long recipeId) {
+        ReentrantLock recipeLock = RECIPE_LOCKS.computeIfAbsent(recipeId, ignored -> new ReentrantLock());
+        recipeLock.lock();
+        try {
         List<Step> steps = stepRepository.findByRecipeIdOrderByOrderIndexAsc(recipeId);
         if (steps.isEmpty()) {
             return;
@@ -162,7 +169,10 @@ public class ParameterActivationService {
                     if (!selectedOptionId.equals(rule.getTriggerOption().getId())) {
                         continue;
                     }
-                    if (!matchesRequiredSourceActivationContext(rule, sourceParameter)) {
+                    if (!matchesRequiredSourceActivationContext(
+                            rule,
+                            sourceParameter,
+                            parametersByStepAndDefinition)) {
                         continue;
                     }
 
@@ -208,6 +218,9 @@ public class ParameterActivationService {
         }
 
         stepParameterRepository.saveAll(parameters);
+        } finally {
+            recipeLock.unlock();
+        }
     }
 
     /**
@@ -290,21 +303,55 @@ public class ParameterActivationService {
      */
     private static boolean matchesRequiredSourceActivationContext(
             ParameterDependencyRule rule,
-            StepParameter sourceParameter) {
+            StepParameter sourceParameter,
+            Map<Long, Map<Long, StepParameter>> parametersByStepAndDefinition) {
         if (rule.getRequiredSourceActivationOption() == null
                 || rule.getRequiredSourceActivationOption().getId() == null) {
             return true;
         }
 
-        if (sourceParameter.getParentStepParameter() == null
-                || sourceParameter.getParentStepParameter().getSelectedOption() == null
-                || sourceParameter.getParentStepParameter().getSelectedOption().getId() == null) {
+        Long requiredId = rule.getRequiredSourceActivationOption().getId();
+
+        if (sourceParameter.getParentStepParameter() != null
+                && sourceParameter.getParentStepParameter().getSelectedOption() != null
+                && sourceParameter.getParentStepParameter().getSelectedOption().getId() != null
+                && requiredId.equals(sourceParameter.getParentStepParameter().getSelectedOption().getId())) {
+            return true;
+        }
+
+        Long sourceStepId = sourceParameter.getStep() != null ? sourceParameter.getStep().getId() : null;
+        if (sourceStepId == null) {
             return false;
         }
 
-        Long requiredId = rule.getRequiredSourceActivationOption().getId();
-        Long parentSelectedOptionId = sourceParameter.getParentStepParameter().getSelectedOption().getId();
-        return requiredId.equals(parentSelectedOptionId);
+        // Context option can be carried by any sibling parameter in the same step.
+        boolean matchedOnSameStep = parametersByStepAndDefinition
+                .getOrDefault(sourceStepId, Map.of())
+                .values()
+                .stream()
+                .anyMatch(parameter -> parameter.getSelectedOption() != null
+                        && parameter.getSelectedOption().getId() != null
+                        && requiredId.equals(parameter.getSelectedOption().getId()));
+        if (matchedOnSameStep) {
+            return true;
+        }
+
+        Long requiredDefinitionId = rule.getRequiredSourceActivationOption().getDefinition() != null
+                ? rule.getRequiredSourceActivationOption().getDefinition().getId()
+                : null;
+
+        if (requiredDefinitionId == null) {
+            return false;
+        }
+
+        StepParameter contextParameter = parametersByStepAndDefinition
+                .getOrDefault(sourceStepId, Map.of())
+                .get(requiredDefinitionId);
+
+        return contextParameter != null
+                && contextParameter.getSelectedOption() != null
+                && contextParameter.getSelectedOption().getId() != null
+                && requiredId.equals(contextParameter.getSelectedOption().getId());
     }
 
     /**

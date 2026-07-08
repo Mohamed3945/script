@@ -80,6 +80,14 @@ export class RecipeListPageComponent implements OnInit {
     this.router.navigate(['/recipes/new-derived']);
   }
 
+  onOpenCapabilitiesCatalog(): void {
+    this.router.navigate(['/chamber-capabilities']);
+  }
+
+  onCreateCapability(): void {
+    this.router.navigate(['/chamber-capabilities/new']);
+  }
+
   /**
    * Handles the onViewRecipe workflow.
    */

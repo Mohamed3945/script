@@ -229,6 +229,8 @@ export class ParameterDefinitionDetailPageComponent implements OnInit {
       requiredOnStep: detail.requiredOnStep,
       stepType: detail.stepType,
       defaultValueJson: detail.defaultValueJson ?? null,
+      parameterGroup: detail.parameterGroup ?? null,
+      parameterGroupOrder: detail.parameterGroupOrder ?? null,
       configurationDefinitionId
     };
   }

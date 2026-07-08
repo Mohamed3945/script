@@ -13,10 +13,10 @@
     <div class="result-page__decision-card">
       <div class="decision-card__header">
         <div>
-          <div class="decision-card__title">Golden recipe preview</div>
+          <div class="decision-card__title">Compact matrix legend</div>
           <div class="decision-card__value">{{ result.code || ('Recipe #' + (result.goldenRecipeId ?? '—')) }}</div>
           <div class="decision-card__meta">
-            ID: {{ result.goldenRecipeId ?? '—' }} | exact first {{ previewStepCount }} steps and first {{ previewParamCount }} params
+            Static 5-step x 5-parameter visual guide with coherent sample values and full cell color semantics.
           </div>
         </div>
 
@@ -29,43 +29,39 @@
         </button>
       </div>
 
-      <div class="decision-card__body" *ngIf="goldenMatrix$ | async as matrix; else matrixLoading">
-        <div class="preview-table-wrapper" *ngIf="previewColumns.length > 0 && previewRows.length > 0; else noMatrixData">
+      <div class="decision-card__body">
+        <div class="preview-table-wrapper">
           <table class="preview-table">
             <thead>
               <tr>
                 <th class="param-col">Parameter</th>
-                <th *ngFor="let column of previewColumns">{{ column.stepCode }}</th>
+                <th *ngFor="let stepCode of legendColumns">{{ stepCode }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let row of previewRows">
-                <td class="param-col">{{ row.parameterAlias || row.parameterName }}</td>
+              <tr *ngFor="let row of legendRows">
+                <td class="param-col">{{ row.parameterName }}</td>
                 <td
-                  *ngFor="let column of previewColumns"
+                  *ngFor="let cell of row.cells"
                   class="preview-cell"
-                  [ngClass]="'cell--' + getCellStateClass(getPreviewCell(row, column))">
-                  <span>{{ getPreviewCellValue(getPreviewCell(row, column)) }}</span>
+                  [ngClass]="'cell--' + getCellStateClass(cell)">
+                  <span>{{ cell.selectedOptionLabel || cell.displayValue || '—' }}</span>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <ng-template #noMatrixData>
-          <div class="empty-note">Golden matrix preview not available.</div>
-        </ng-template>
-
-        <div class="legend">
-          <span class="legend-item legend-item--golden">Golden active</span>
-          <span class="legend-item legend-item--inactive">Golden inactive</span>
-          <span class="legend-item legend-item--computed">Computed</span>
+        <div class="legend-explainer">
+          <div class="legend-explainer__item" *ngFor="let item of colorLegendItems">
+            <span class="legend-swatch" [ngClass]="'legend-swatch--' + item.cssClass"></span>
+            <div class="legend-explainer__copy">
+              <div class="legend-explainer__title">{{ item.title }}</div>
+              <div class="legend-explainer__text">{{ item.description }}</div>
+            </div>
+          </div>
         </div>
       </div>
-
-      <ng-template #matrixLoading>
-        <div class="empty-note">Loading compact golden structure...</div>
-      </ng-template>
     </div>
 
     <div class="result-page__panels">

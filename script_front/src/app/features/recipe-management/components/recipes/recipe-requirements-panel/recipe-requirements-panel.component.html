@@ -1,7 +1,9 @@
-<section class="requirements" *ngIf="requirements as req">
-  <div class="requirements__hint" *ngIf="sourceHint">
-    {{ sourceHint }}
+<section class="requirements">
+  <div class="empty-state" *ngIf="!requirements">
+    Loading requirements...
   </div>
+
+  <ng-container *ngIf="requirements as req">
 
   <div class="two-columns">
     <div class="panel">
@@ -40,7 +42,7 @@
       </div>
 
       <div class="chip-list">
-        <div class="chip" *ngFor="let configuration of req.requiredConfigurations">²
+        <div class="chip" *ngFor="let configuration of req.requiredConfigurations">
           <div class="chip__main">{{ configuration.configurationDefinitionCode }}</div>
           <div class="chip__sub">
             {{ configuration.configurationDefinitionName }}
@@ -103,4 +105,5 @@
       </div>
     </div>
   </div>
+  </ng-container>
 </section>

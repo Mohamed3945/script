@@ -79,24 +79,13 @@
         </button>
 
         <div class="drawer__body" *ngIf="showRightDrawer">
-          <section class="drawer-section">
-            <h4 class="drawer-section__title">Structure</h4>
-            <button type="button" class="drawer-action" (click)="openStepModal()">
-              <span class="drawer-action__icon">[+]</span>
-              <span class="drawer-action__label">Add step</span>
-            </button>
-            <button
-              type="button"
-              class="drawer-action"
-              [disabled]="!canAddParameter"
-              (click)="openContextualParameterModal()">
-              <span class="drawer-action__icon">[+]</span>
-              <span class="drawer-action__label">Add parameter</span>
-            </button>
-            <button type="button" class="drawer-action" [disabled]="true">
-              <span class="drawer-action__icon">[LOCK]</span>
-              <span class="drawer-action__label">Delete parameter</span>
-            </button>
+
+
+          <section class="drawer-section" *ngIf="isDerivedWorkspace">
+            <h4 class="drawer-section__title">Compatible machines</h4>
+            <app-recipe-compatible-machines-panel
+              [compatibility]="(compatibility$ | async)">
+            </app-recipe-compatible-machines-panel>
           </section>
 
           <section class="drawer-section">
@@ -106,19 +95,11 @@
               [availableCapabilities]="(availableCapabilities$ | async) ?? []"
               [availableConfigurationDefinitions]="(availableConfigurationDefinitions$ | async) ?? []"
               [readOnly]="isDerivedWorkspace"
-              [sourceHint]="isDerivedWorkspace ? 'Inherited from parent golden recipe. Edit requirements on golden only.' : 'Managed directly on this golden recipe.'"
               (addCapability)="onAddRequiredCapability($event)"
               (removeCapability)="onRemoveRequiredCapability($event)"
               (addConfiguration)="onAddRequiredConfiguration($event)"
               (removeConfiguration)="onRemoveRequiredConfiguration($event)">
             </app-recipe-requirements-panel>
-          </section>
-
-          <section class="drawer-section" *ngIf="isDerivedWorkspace">
-            <h4 class="drawer-section__title">Compatible machines</h4>
-            <app-recipe-compatible-machines-panel
-              [compatibility]="(compatibility$ | async)">
-            </app-recipe-compatible-machines-panel>
           </section>
         </div>
       </aside>

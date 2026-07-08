@@ -4,13 +4,9 @@ import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { MachineChoice } from '../../../../core/models/machine-choice.model';
 import { DecisionFinalizeRequest } from '../../../../core/models/decision-finalize-request.model';
-import { RecipeMatrix } from '../../../../core/models/recipe-matrix.model';
 import { RecipeMatrixCell } from '../../../../core/models/recipe-matrix-cell.model';
-import { RecipeMatrixColumn } from '../../../../core/models/recipe-matrix-column.model';
-import { RecipeMatrixRow } from '../../../../core/models/recipe-matrix-row.model';
 import { RecipeRequirements } from '../../../../core/models/recipe-requirements.model';
 import { RecipeCompatibilityResult } from '../../../../core/models/recipe-compatibility-result.model';
-import { RecipeApiService } from '../../../../core/services/recipe-api.service';
 import { RecipeRequirementsApiService } from '../../../../core/services/recipe-requirements-api.service';
 import { RecipeCompatibilityApiService } from '../../../../core/services/recipe-compatibility-api.service';
 import { DecisionWizardService } from '../../../../core/services/decision-wizard.service';
@@ -18,6 +14,17 @@ import { DecisionFinalizeApiService } from '../../../../core/services/decision-f
 import { buildRecipeDetailRouteByKind } from '../../../../core/utils/recipe-route.util';
 import { ResultSummaryComponent } from '../../components/result-summary/result-summary.component';
 import { ResultFinalActionsComponent } from '../../components/result-final-actions/result-final-actions.component';
+
+interface LegendMatrixRow {
+  parameterName: string;
+  cells: RecipeMatrixCell[];
+}
+
+interface ColorLegendItem {
+  cssClass: string;
+  title: string;
+  description: string;
+}
 
 @Component({
   selector: 'app-decision-result-page',
@@ -34,12 +41,43 @@ import { ResultFinalActionsComponent } from '../../components/result-final-actio
   styleUrl: './decision-result-page.component.scss'
 })
 export class DecisionResultPageComponent {
-  readonly previewStepCount = 10;
-  readonly previewParamCount = 20;
+  readonly legendColumns = ['STEP_01', 'STEP_02', 'STEP_03', 'STEP_04', 'STEP_05'];
+  readonly legendRows: LegendMatrixRow[] = this.buildLegendRows();
+  readonly colorLegendItems: ColorLegendItem[] = [
+    {
+      cssClass: 'golden-active',
+      title: 'Golden active',
+      description: 'Value inherited from golden baseline and currently active.'
+    },
+    {
+      cssClass: 'golden-inactive',
+      title: 'Golden inactive',
+      description: 'Golden value exists but the rule context disables this cell.'
+    },
+    {
+      cssClass: 'computed',
+      title: 'Computed',
+      description: 'Value is calculated by runtime logic, not manually edited.'
+    },
+    {
+      cssClass: 'editable-default',
+      title: 'Editable default',
+      description: 'Editable value that keeps the current default state.'
+    },
+    {
+      cssClass: 'user-modified',
+      title: 'User modified',
+      description: 'Editable value changed by the user in derived customization.'
+    },
+    {
+      cssClass: 'readonly-neutral',
+      title: 'Read-only neutral',
+      description: 'Displayed for context only; no direct edit allowed.'
+    }
+  ];
 
   private readonly wizardService = inject(DecisionWizardService);
   private readonly decisionFinalizeApiService = inject(DecisionFinalizeApiService);
-  private readonly recipeApiService = inject(RecipeApiService);
   private readonly recipeRequirementsApiService = inject(RecipeRequirementsApiService);
   private readonly recipeCompatibilityApiService = inject(RecipeCompatibilityApiService);
   private readonly router = inject(Router);
@@ -48,53 +86,22 @@ export class DecisionResultPageComponent {
   selections$ = this.wizardService.selections$;
 
   loading$ = new BehaviorSubject<boolean>(false);
-  goldenMatrix$ = new BehaviorSubject<RecipeMatrix | null>(null);
   requirements$ = new BehaviorSubject<RecipeRequirements | null>(null);
   compatibility$ = new BehaviorSubject<RecipeCompatibilityResult | null>(null);
 
   goldenValidated = false;
   machineChoices: MachineChoice[] = [];
   selectedMachineId: number | null = null;
-  loadingPreview = false;
 
   constructor() {
     const result = this.wizardService.resultSnapshot ?? null;
     if (result?.goldenRecipeId) {
-      this.loadGoldenPreview(result.goldenRecipeId, result.machineId ?? null);
+      this.loadResultContext(result.goldenRecipeId, result.machineId ?? null);
     }
   }
 
   get canSubmit(): boolean {
     return this.goldenValidated && Boolean(this.selectedMachineId);
-  }
-
-  get previewColumns(): RecipeMatrixColumn[] {
-    const matrix = this.goldenMatrix$.value;
-    if (!matrix) {
-      return [];
-    }
-    return [...matrix.columns]
-      .sort((a, b) => a.orderIndex - b.orderIndex)
-      .slice(0, this.previewStepCount);
-  }
-
-  get previewRows(): RecipeMatrixRow[] {
-    const matrix = this.goldenMatrix$.value;
-    if (!matrix) {
-      return [];
-    }
-    return matrix.rows.slice(0, this.previewParamCount);
-  }
-
-  getPreviewCell(row: RecipeMatrixRow, column: RecipeMatrixColumn): RecipeMatrixCell | null {
-    return row.cells.find((cell) => cell.stepId === column.stepId) ?? null;
-  }
-
-  getPreviewCellValue(cell: RecipeMatrixCell | null): string {
-    if (!cell) {
-      return '—';
-    }
-    return cell.selectedOptionLabel || cell.displayValue || '—';
   }
 
   toggleGoldenValidated(): void {
@@ -164,14 +171,7 @@ export class DecisionResultPageComponent {
     return 'readonly-neutral';
   }
 
-  private loadGoldenPreview(goldenRecipeId: number, preferredMachineId: number | null): void {
-    this.loadingPreview = true;
-
-    this.recipeApiService.getRecipeMatrix(goldenRecipeId).subscribe({
-      next: (matrix) => this.goldenMatrix$.next(matrix),
-      error: (error) => console.error('Failed to load golden matrix preview', error)
-    });
-
+  private loadResultContext(goldenRecipeId: number, preferredMachineId: number | null): void {
     this.recipeRequirementsApiService.getRequirements(goldenRecipeId).subscribe({
       next: (requirements) => this.requirements$.next(requirements),
       error: (error) => console.error('Failed to load golden requirements', error)
@@ -202,7 +202,6 @@ export class DecisionResultPageComponent {
             ...machine,
             selected: machine.id === defaultId
           }));
-          this.loadingPreview = false;
         },
         error: (error) => {
           console.error('Failed to load compatible machines from golden requirements', error);
@@ -217,8 +216,96 @@ export class DecisionResultPageComponent {
               ]
             : [];
           this.selectedMachineId = preferredMachineId;
-          this.loadingPreview = false;
         }
       });
+  }
+
+  private buildLegendRows(): LegendMatrixRow[] {
+    return [
+      {
+        parameterName: 'Name',
+        cells: [
+          this.createLegendCell(1, 'STRING', 'ETCH_A', 'readonly-neutral'),
+          this.createLegendCell(2, 'STRING', 'ETCH_B', 'readonly-neutral'),
+          this.createLegendCell(3, 'STRING', 'ETCH_C', 'readonly-neutral'),
+          this.createLegendCell(4, 'STRING', 'ETCH_D', 'readonly-neutral'),
+          this.createLegendCell(5, 'STRING', 'ETCH_E', 'readonly-neutral')
+        ]
+      },
+      {
+        parameterName: 'Chamber',
+        cells: [
+          this.createLegendCell(1, 'ENUM', 'CH_A', 'golden-active', { selectedOptionLabel: 'CH_A' }),
+          this.createLegendCell(2, 'ENUM', 'CH_B', 'golden-inactive', { selectedOptionLabel: 'CH_B', activationState: 'DISABLED' }),
+          this.createLegendCell(3, 'ENUM', 'CH_C', 'editable-default', { selectedOptionLabel: 'CH_C', editable: true }),
+          this.createLegendCell(4, 'ENUM', 'CH_D', 'user-modified', { selectedOptionLabel: 'CH_D', editable: true, userModified: true }),
+          this.createLegendCell(5, 'ENUM', 'CH_E', 'computed', { selectedOptionLabel: 'CH_E', computed: true })
+        ]
+      },
+      {
+        parameterName: 'Max Time',
+        cells: [
+          this.createLegendCell(1, 'NUMBER', '120', 'golden-active', { valueJson: '120' }),
+          this.createLegendCell(2, 'NUMBER', '135', 'editable-default', { valueJson: '135', editable: true }),
+          this.createLegendCell(3, 'NUMBER', '150', 'user-modified', { valueJson: '150', editable: true, userModified: true }),
+          this.createLegendCell(4, 'NUMBER', '145', 'computed', { valueJson: '145', computed: true }),
+          this.createLegendCell(5, 'NUMBER', '—', 'golden-inactive', { activationState: 'DISABLED' })
+        ]
+      },
+      {
+        parameterName: 'RTC mode',
+        cells: [
+          this.createLegendCell(1, 'ENUM', 'CONST_VOLTAGE', 'golden-active', { selectedOptionLabel: 'CONST_VOLTAGE' }),
+          this.createLegendCell(2, 'ENUM', 'CONST_CURRENT', 'editable-default', { selectedOptionLabel: 'CONST_CURRENT', editable: true }),
+          this.createLegendCell(3, 'ENUM', 'CONST_VOLTAGE', 'user-modified', { selectedOptionLabel: 'CONST_VOLTAGE', editable: true, userModified: true }),
+          this.createLegendCell(4, 'ENUM', 'CONST_VOLTAGE', 'computed', { selectedOptionLabel: 'CONST_VOLTAGE', computed: true }),
+          this.createLegendCell(5, 'ENUM', 'CONST_CURRENT', 'readonly-neutral', { selectedOptionLabel: 'CONST_CURRENT' })
+        ]
+      },
+      {
+        parameterName: 'Voltage control',
+        cells: [
+          this.createLegendCell(1, 'ENUM', 'AUTO', 'golden-active', { selectedOptionLabel: 'AUTO' }),
+          this.createLegendCell(2, 'ENUM', 'MANUAL', 'editable-default', { selectedOptionLabel: 'MANUAL', editable: true }),
+          this.createLegendCell(3, 'ENUM', 'AUTO', 'golden-inactive', { selectedOptionLabel: 'AUTO', activationState: 'DISABLED' }),
+          this.createLegendCell(4, 'ENUM', 'MANUAL', 'user-modified', { selectedOptionLabel: 'MANUAL', editable: true, userModified: true }),
+          this.createLegendCell(5, 'ENUM', 'AUTO', 'computed', { selectedOptionLabel: 'AUTO', computed: true })
+        ]
+      }
+    ];
+  }
+
+  private createLegendCell(
+    stepId: number,
+    valueType: RecipeMatrixCell['valueType'],
+    displayValue: string,
+    state: ColorLegendItem['cssClass'],
+    overrides?: Partial<RecipeMatrixCell>
+  ): RecipeMatrixCell {
+    const defaultsByState: Record<ColorLegendItem['cssClass'], Partial<RecipeMatrixCell>> = {
+      'golden-active': { lockedByGolden: true, activationState: 'ENABLED', editable: false, userModified: false, computed: false },
+      'golden-inactive': { lockedByGolden: true, activationState: 'DISABLED', editable: false, userModified: false, computed: false },
+      computed: { lockedByGolden: false, activationState: 'ENABLED', editable: false, userModified: false, computed: true },
+      'editable-default': { lockedByGolden: false, activationState: 'ENABLED', editable: true, userModified: false, computed: false },
+      'user-modified': { lockedByGolden: false, activationState: 'ENABLED', editable: true, userModified: true, computed: false },
+      'readonly-neutral': { lockedByGolden: false, activationState: 'ENABLED', editable: false, userModified: false, computed: false }
+    };
+
+    return {
+      stepId,
+      definitionId: stepId,
+      valueType,
+      displayValue,
+      valueJson: null,
+      selectedOptionId: null,
+      selectedOptionLabel: null,
+      availableOptions: [],
+      lockedByGolden: false,
+      editable: false,
+      userModified: false,
+      computed: false,
+      ...defaultsByState[state],
+      ...overrides
+    };
   }
 }
