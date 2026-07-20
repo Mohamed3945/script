@@ -37,7 +37,7 @@ export class CapabilityEditPageComponent implements OnInit {
     if (!current?.id) return;
 
     this.chamberCapabilityApiService.updateCapability(current.id, capability).subscribe({
-      next: () => this.router.navigate(['/chamber-capabilities']),
+      next: () => this.router.navigate(['/reference-data/capabilities']),
       error: (error) => console.error('Failed to update capability', error)
     });
   }

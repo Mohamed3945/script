@@ -11,6 +11,28 @@ export interface RecipeMatrixCellUpdate {
   valueType: ParameterValueType;
   selectedOptionId?: number | null;
   valueJson?: string | null;
+  action?: 'edit' | 'toggle-golden';
+  lockedByGolden?: boolean;
+}
+
+export interface RecipeMatrixParameterRowContextRequest {
+  definitionId: number;
+  parameterName: string;
+  x: number;
+  y: number;
+}
+
+export interface RecipeMatrixStepContextRequest {
+  stepId: number;
+  stepCode?: string | null;
+  x: number;
+  y: number;
+}
+
+export interface RecipeMatrixCellContextRequest {
+  cell: RecipeMatrixCell;
+  x: number;
+  y: number;
 }
 
 interface MatrixGroup {
@@ -35,13 +57,17 @@ type MatrixCellVisualState =
   templateUrl: './recipe-matrix-view.component.html',
   styleUrl: './recipe-matrix-view.component.scss'
 })
-/**
- * RecipeMatrixViewComponent coordinates UI logic for this feature.
- */
 export class RecipeMatrixViewComponent {
+  @Input() workspaceMode: 'golden' | 'derived' = 'derived';
+
   @Input()
   set matrix(value: RecipeMatrix | null) {
     this._matrix = value;
+
+    if (this.hasRenderableMatrix(value)) {
+      this.lastRenderableMatrix = value;
+    }
+
     this.rebuildGroups();
   }
 
@@ -49,15 +75,19 @@ export class RecipeMatrixViewComponent {
     return this._matrix;
   }
 
-  @Output() addStepClicked = new EventEmitter<void>();
   @Output() cellUpdated = new EventEmitter<RecipeMatrixCellUpdate>();
+  @Output() stepHeaderContextRequested = new EventEmitter<RecipeMatrixStepContextRequest>();
+  @Output() cellContextRequested = new EventEmitter<RecipeMatrixCellContextRequest>();
+  @Output() parameterRowContextRequested = new EventEmitter<RecipeMatrixParameterRowContextRequest>();
 
   readonly enumValueType: ParameterValueType = 'ENUM';
   readonly numberValueType: ParameterValueType = 'NUMBER';
+
   groupedRows: MatrixGroup[] = [];
   pinnedRows: RecipeMatrixRow[] = [];
 
   private _matrix: RecipeMatrix | null = null;
+  private lastRenderableMatrix: RecipeMatrix | null = null;
   private collapsedByGroupKey: Record<string, boolean> = {};
   private readonly pinnedParameterOrder: string[] = [
     'name',
@@ -67,12 +97,34 @@ export class RecipeMatrixViewComponent {
     'rtc mode'
   ];
 
+  get effectiveMatrix(): RecipeMatrix | null {
+    return this.hasRenderableMatrix(this._matrix)
+      ? this._matrix
+      : this.lastRenderableMatrix;
+  }
+
   get stepColumns() {
-    return this.matrix?.columns ?? [];
+    return this.effectiveMatrix?.columns ?? [];
   }
 
   get parameterRows() {
-    return this.matrix?.rows ?? [];
+    return this.effectiveMatrix?.rows ?? [];
+  }
+
+  get hasDisplayableMatrix(): boolean {
+    return this.stepColumns.length > 0 && this.parameterRows.length > 0;
+  }
+
+  get isGoldenWorkspace(): boolean {
+    return this.workspaceMode === 'golden';
+  }
+
+  get isDerivedWorkspace(): boolean {
+    return this.workspaceMode === 'derived';
+  }
+
+  private hasRenderableMatrix(matrix: RecipeMatrix | null): boolean {
+    return Boolean(matrix && matrix.columns?.length && matrix.rows?.length);
   }
 
   private rebuildGroups(): void {
@@ -147,16 +199,82 @@ export class RecipeMatrixViewComponent {
     return this.collapsedByGroupKey[groupKey] ?? false;
   }
 
-  /**
-   * Handles the isEditable workflow.
-   */
   isEditable(cell: RecipeMatrixCell): boolean {
     const isActive = !cell.activationState || cell.activationState === 'ENABLED';
+    const blockedByDerived = this.isDerivedWorkspace && cell.lockedByGolden;
     return Boolean(cell.editable)
-      && !cell.lockedByGolden
       && !cell.computed
       && Boolean(cell.stepParameterId)
-      && isActive;
+      && isActive
+      && !blockedByDerived;
+  }
+
+  canToggleGolden(cell: RecipeMatrixCell): boolean {
+    return this.isGoldenWorkspace && Boolean(cell.stepParameterId) && !cell.computed;
+  }
+
+  canOpenCellContext(cell: RecipeMatrixCell): boolean {
+    return this.isGoldenWorkspace && Boolean(cell.stepParameterId);
+  }
+
+  onGoldenToggleRequested(cell: RecipeMatrixCell): void {
+    if (!this.canToggleGolden(cell)) {
+      return;
+    }
+
+    this.cellUpdated.emit({
+      cell,
+      valueType: cell.valueType,
+      action: 'toggle-golden',
+      lockedByGolden: !cell.lockedByGolden
+    });
+  }
+
+  onStepHeaderContextMenu(event: MouseEvent, step: any): void {
+    if (!this.isGoldenWorkspace || !step?.stepId) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.stepHeaderContextRequested.emit({
+      stepId: step.stepId,
+      stepCode: step.stepCode ?? null,
+      x: event.clientX,
+      y: event.clientY
+    });
+  }
+
+  onCellContextMenu(event: MouseEvent, cell: RecipeMatrixCell): void {
+    if (!this.canOpenCellContext(cell)) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.cellContextRequested.emit({
+      cell,
+      x: event.clientX,
+      y: event.clientY
+    });
+  }
+
+  onParameterRowContextMenu(event: MouseEvent, row: RecipeMatrixRow): void {
+    if (!this.isGoldenWorkspace || !row.definitionId) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.parameterRowContextRequested.emit({
+      definitionId: row.definitionId,
+      parameterName: row.parameterName,
+      x: event.clientX,
+      y: event.clientY
+    });
   }
 
   computeCellDisplayState(cell: RecipeMatrixCell): MatrixCellVisualState {
@@ -184,9 +302,6 @@ export class RecipeMatrixViewComponent {
     return `cell--${visualState}`;
   }
 
-  /**
-   * Handles the onEnumChanged workflow.
-   */
   onEnumChanged(cell: RecipeMatrixCell, selectedValue: string): void {
     if (!this.isEditable(cell)) {
       return;
@@ -201,9 +316,6 @@ export class RecipeMatrixViewComponent {
     });
   }
 
-  /**
-   * Handles the onValueCommitted workflow.
-   */
   onValueCommitted(cell: RecipeMatrixCell, rawValue: string): void {
     if (!this.isEditable(cell)) {
       return;
@@ -219,9 +331,6 @@ export class RecipeMatrixViewComponent {
     });
   }
 
-  /**
-   * Handles the onNumberCommitted workflow.
-   */
   onNumberCommitted(cell: RecipeMatrixCell, rawValue: string): void {
     if (!this.isEditable(cell)) {
       return;
@@ -250,6 +359,40 @@ export class RecipeMatrixViewComponent {
       return this.normalizeJsonScalarForDisplay(cell.displayValue);
     }
     return this.normalizeJsonScalarForDisplay(cell.valueJson);
+  }
+
+  trackByStepColumn = (_: number, step: any): number | string =>
+    step?.stepId ?? step?.stepCode ?? _;
+
+  trackByPinnedRow = (_: number, row: RecipeMatrixRow): string =>
+    this.buildRowKey(row);
+
+  trackByGroup = (_: number, group: MatrixGroup): string =>
+    group.key;
+
+  trackByGroupRow = (_: number, row: RecipeMatrixRow): string =>
+    this.buildRowKey(row);
+
+  trackByCell = (_: number, cell: RecipeMatrixCell): string =>
+    this.buildCellKey(cell);
+
+  trackByOption = (_: number, option: any): number | string =>
+    option?.id ?? option?.code ?? option?.label ?? _;
+
+  private buildRowKey(row: RecipeMatrixRow): string {
+    return [
+      row.parameterAlias ?? '',
+      row.parameterName ?? '',
+      row.parameterGroup ?? ''
+    ].join('|');
+  }
+
+  private buildCellKey(cell: RecipeMatrixCell): string {
+    if (cell.stepParameterId != null) {
+      return `sp:${cell.stepParameterId}`;
+    }
+
+    return `d:${cell.definitionId ?? 'na'}|s:${cell.stepId ?? 'na'}`;
   }
 
   private toValueJsonPayload(valueType: ParameterValueType, rawValue: string | null | undefined): string | null {

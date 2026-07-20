@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import st.tt.script_back.dto.ParameterDefinitionDto;
+import st.tt.script_back.dto.ParameterDefinitionMoveRequestDto;
+import st.tt.script_back.dto.ParameterDefinitionReorderRequestDto;
 import st.tt.script_back.enums.StepType;
 import st.tt.script_back.services.ParameterDefinitionService;
 
@@ -92,5 +94,32 @@ public class ParameterDefinitionController {
     @DeleteMapping("/{id}")
     public void deleteParameterDefinition(@PathVariable Long id) {
         parameterDefinitionService.deleteParameterDefinition(id);
+    }
+
+    /**
+     * Executes reorderDefinitions.
+     *
+     * @param request input argument consumed by reorderDefinitions.
+     */
+    @PostMapping("/reorder")
+    public void reorderDefinitions(@RequestBody ParameterDefinitionReorderRequestDto request) {
+        parameterDefinitionService.reorderDefinitionsInGroup(request);
+    }
+
+    /**
+     * Executes moveDefinition.
+     *
+     * @param request input argument consumed by moveDefinition.
+     * @return computed ParameterDefinitionDto result returned by moveDefinition.
+     */
+    @PostMapping("/move")
+    public ParameterDefinitionDto moveDefinition(@RequestBody ParameterDefinitionMoveRequestDto request) {
+        return parameterDefinitionService.moveDefinitionToGroup(request);
+    }
+
+    @GetMapping("/by-configuration-definition/{configDefId}")
+    public List<ParameterDefinitionDto> getByConfigurationDefinition(
+            @PathVariable Long configDefId) {
+        return parameterDefinitionService.findByConfigurationDefinitionId(configDefId);
     }
 }

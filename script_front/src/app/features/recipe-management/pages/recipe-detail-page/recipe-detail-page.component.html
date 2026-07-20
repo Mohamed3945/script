@@ -40,8 +40,10 @@
         <app-recipe-prestep-view
           *ngIf="activeTab === 'prestep'"
           [matrix]="(prestepMatrix$ | async)"
-          (addParameterClicked)="openPrestepParameterModal()"
-          (cellUpdated)="onPrestepCellUpdated($event)">
+          [workspaceMode]="workspaceMode === 'golden' ? 'golden' : 'derived'"
+          (cellUpdated)="onPrestepCellUpdated($event)"
+          (cellContextRequested)="onPrestepCellContextRequested($event)"
+          (parameterRowContextRequested)="onPrestepParameterRowContextRequested($event)">
         </app-recipe-prestep-view>
 
         <ng-container *ngIf="activeTab === 'steps'">
@@ -50,8 +52,11 @@
               <app-recipe-matrix-view
                 *ngIf="viewMode === 'matrix'"
                 [matrix]="(stepsViewMatrix$ | async)"
-                (addStepClicked)="openStepModal()"
-                (cellUpdated)="onMatrixCellUpdated($event)">
+                [workspaceMode]="workspaceMode === 'golden' ? 'golden' : 'derived'"
+                (cellUpdated)="onMatrixCellUpdated($event)"
+                (stepHeaderContextRequested)="onStepHeaderContextRequested($event)"
+                (cellContextRequested)="onMatrixCellContextRequested($event)"
+                (parameterRowContextRequested)="onParameterRowContextRequested($event)">
               </app-recipe-matrix-view>
 
               <app-recipe-step-focus-view
@@ -61,12 +66,55 @@
                 [selectedStep]="(stepsViewSelectedStep$ | async)"
                 [parameters]="(stepParameters$ | async) ?? []"
                 (stepSelected)="onStepSelected($event)"
-                (addParameterClicked)="openStepParameterModal()"
                 (deleteParameterClicked)="onDeleteStepParameter($event)">
               </app-recipe-step-focus-view>
             </div>
           </section>
         </ng-container>
+
+        <div
+          class="context-menu"
+          *ngIf="stepContextMenu.visible"
+          [style.left.px]="stepContextMenu.x"
+          [style.top.px]="stepContextMenu.y"
+          (click)="$event.stopPropagation()">
+          <button
+            type="button"
+            class="context-menu__action context-menu__action--danger"
+            [disabled]="!canDeleteStepFromContext"
+            (click)="onDeleteStepFromContext()">
+            Delete step
+          </button>
+        </div>
+
+        <div
+          class="context-menu"
+          *ngIf="parameterRowContextMenu.visible"
+          [style.left.px]="parameterRowContextMenu.x"
+          [style.top.px]="parameterRowContextMenu.y"
+          (click)="$event.stopPropagation()">
+          <button
+            type="button"
+            class="context-menu__action context-menu__action--danger"
+            (click)="onDeleteRecipeWideParameterFromContext()">
+            Delete parameter
+          </button>
+        </div>
+
+        <div
+          class="cell-action-bar"
+          *ngIf="cellActionBar.visible"
+          [style.left.px]="cellActionBar.x"
+          [style.top.px]="cellActionBar.y"
+          (click)="$event.stopPropagation()">
+          <button
+            type="button"
+            class="cell-action-bar__action"
+            [disabled]="!canToggleGoldenFromContext"
+            (click)="onToggleGoldenFromContext()">
+            {{ goldenToggleLabel }}
+          </button>
+        </div>
       </main>
 
       <aside class="workspace__drawer" [class.workspace__drawer--open]="showRightDrawer">
@@ -79,7 +127,26 @@
         </button>
 
         <div class="drawer__body" *ngIf="showRightDrawer">
+          <section class="drawer-section" *ngIf="isGoldenWorkspace">
+            <h4 class="drawer-section__title">Structure actions</h4>
 
+            <button
+              type="button"
+              class="drawer-action"
+              (click)="openStepModal()">
+              <span class="drawer-action__icon">STEP</span>
+              <span class="drawer-action__label">Add step</span>
+            </button>
+
+            <button
+              type="button"
+              class="drawer-action"
+              (click)="activeTab === 'prestep' ? openPrestepParameterModal() : openStepParameterModal()"
+              [disabled]="!canAddParameter">
+              <span class="drawer-action__icon">PARAM</span>
+              <span class="drawer-action__label">Add parameter</span>
+            </button>
+          </section>
 
           <section class="drawer-section" *ngIf="isDerivedWorkspace">
             <h4 class="drawer-section__title">Compatible machines</h4>

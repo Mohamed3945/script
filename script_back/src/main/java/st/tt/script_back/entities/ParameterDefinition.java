@@ -1,18 +1,23 @@
 package st.tt.script_back.entities;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hibernate.annotations.Check;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -23,17 +28,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import st.tt.script_back.enums.ParameterValueType;
 import st.tt.script_back.enums.StepType;
-import java.util.ArrayList;
-import java.util.List;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.FetchType;
 
-/**
- * ParameterDefinition class for the backend domain.
- * <p>
- * This type exposes behavior used by the application service layer.
- */
 @Entity
 @Getter
 @Setter
@@ -42,7 +37,8 @@ import jakarta.persistence.FetchType;
 @Table(name = "parameter_definition", uniqueConstraints = {
     @UniqueConstraint(name = "uq_parameter_definition_step_name", columnNames = { "step_type", "name" }),
     @UniqueConstraint(name = "uq_parameter_definition_step_alias", columnNames = { "step_type", "alias" }),
-    @UniqueConstraint(name = "uq_parameter_definition_step_code", columnNames = { "step_type", "code" })
+    @UniqueConstraint(name = "uq_parameter_definition_step_code", columnNames = { "step_type", "code" }),
+    @UniqueConstraint(name = "uq_parameter_definition_group_order", columnNames = { "parameter_group_id", "order_index_in_group" })
 })
 @Check(constraints = "default_value_json IS NULL OR JSON_VALID(default_value_json)")
 public class ParameterDefinition {
@@ -83,11 +79,12 @@ public class ParameterDefinition {
     @Column(name = "default_value_json", columnDefinition = "LONGTEXT")
     private String defaultValueJson;
 
-    @Column(name = "parameter_group", length = 128)
-    private String parameterGroup;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parameter_group_id")
+    private ParameterGroup parameterGroupRef;
 
-    @Column(name = "parameter_group_order", nullable = false)
-    private Integer parameterGroupOrder = 0;
+    @Column(name = "order_index_in_group", nullable = false)
+    private Integer orderIndexInGroup = 0;
 
     @Column(name = "create_time", nullable = false, updatable = false)
     private Instant createTime;
@@ -98,9 +95,6 @@ public class ParameterDefinition {
     @OneToMany(mappedBy = "definition", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ParameterOption> options = new ArrayList<>();
 
-    /**
-     * Executes onCreate.
-     */
     @PrePersist
     protected void onCreate() {
         Instant now = Instant.now();
@@ -108,19 +102,16 @@ public class ParameterDefinition {
         if (this.createTime == null) {
             this.createTime = now;
         }
-        if (this.parameterGroupOrder == null) {
-            this.parameterGroupOrder = 0;
+        if (this.orderIndexInGroup == null) {
+            this.orderIndexInGroup = 0;
         }
     }
 
-    /**
-     * Executes onUpdate.
-     */
     @PreUpdate
     protected void onUpdate() {
         this.reviseTime = Instant.now();
-        if (this.parameterGroupOrder == null) {
-            this.parameterGroupOrder = 0;
+        if (this.orderIndexInGroup == null) {
+            this.orderIndexInGroup = 0;
         }
     }
 }

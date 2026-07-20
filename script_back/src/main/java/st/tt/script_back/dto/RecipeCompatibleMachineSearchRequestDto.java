@@ -13,5 +13,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class RecipeCompatibleMachineSearchRequestDto {
     private Long recipeId;
+    private Long capabilitySourceRecipeId;
     private List<RecipeConfigurationConstraintDto> configurationConstraints;
 }

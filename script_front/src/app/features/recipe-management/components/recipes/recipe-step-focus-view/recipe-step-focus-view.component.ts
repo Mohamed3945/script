@@ -19,9 +19,6 @@ interface StepParameterGroup {
   templateUrl: './recipe-step-focus-view.component.html',
   styleUrl: './recipe-step-focus-view.component.scss'
 })
-/**
- * RecipeStepFocusViewComponent coordinates UI logic for this feature.
- */
 export class RecipeStepFocusViewComponent {
   @Input() steps: Step[] = [];
   @Input() selectedStepId?: number | null;
@@ -37,7 +34,6 @@ export class RecipeStepFocusViewComponent {
   }
 
   @Output() stepSelected = new EventEmitter<Step>();
-  @Output() addParameterClicked = new EventEmitter<void>();
   @Output() deleteParameterClicked = new EventEmitter<StepParameter>();
 
   groupedParameters: StepParameterGroup[] = [];
@@ -89,11 +85,8 @@ export class RecipeStepFocusViewComponent {
 
   constructor(private router: Router) {}
 
-  /**
-   * Handles the goToDefinition workflow.
-   */
   goToDefinition(parameter: StepParameter): void {
     if (!parameter.definitionId) return;
-    this.router.navigate(['/parameter', parameter.definitionId]);
+    this.router.navigate(['/parameters', parameter.definitionId]);
   }
 }

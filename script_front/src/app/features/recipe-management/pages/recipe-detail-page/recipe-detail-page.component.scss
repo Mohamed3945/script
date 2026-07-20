@@ -76,6 +76,7 @@
 
 .drawer__body {
   height: 100%;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-gutter: stable;
@@ -84,7 +85,6 @@
   flex-direction: column;
   gap: 8px;
   padding: 8px;
-  min-height: 0;
 }
 
 .drawer__toggle-tab {
@@ -128,17 +128,18 @@
 }
 
 .drawer-section {
-  padding: 6px 8px;
-  border: 1px solid var(--border-soft);
-  border-radius: 6px;
-  background: #fff;
   display: flex;
   flex-direction: column;
+  gap: 6px;
+  padding: 6px 8px;
   min-height: 220px;
   max-height: calc(50% - 4px);
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-gutter: stable;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  background: #fff;
 }
 
 .drawer-section:only-child {
@@ -148,7 +149,7 @@
 }
 
 .drawer-section__title {
-  margin: 0 0 4px;
+  margin: 0 0 2px;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
@@ -168,16 +169,18 @@
   align-items: center;
   gap: 8px;
   width: 100%;
+  min-height: 34px;
   padding: 5px 6px;
+  border: 1px solid var(--border-soft);
   border-radius: 4px;
+  background: #fff;
+  color: var(--text-main);
   font-size: 12px;
   font-weight: 600;
   font-family: Consolas, 'Courier New', monospace;
-  background: #fff;
-  border: 1px solid var(--border-soft);
-  color: var(--text-main);
+  text-align: left;
   cursor: pointer;
-  transition: background 120ms ease, border-color 120ms ease;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 
 .drawer-action + .drawer-action {
@@ -202,7 +205,10 @@
 
 .drawer-action__icon {
   width: 28px;
-  display: inline-block;
+  flex: 0 0 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 10px;
   letter-spacing: 0.05em;
   color: #4c6278;
@@ -216,7 +222,7 @@
 }
 
 .drawer-action__label {
-  text-align: left;
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -224,13 +230,13 @@
 
 .machine-pill {
   margin-top: 3px;
-  border: 1px solid var(--border-soft);
-  border-radius: 4px;
-  background: #fff;
-  padding: 5px 6px;
   display: flex;
   flex-direction: column;
   gap: 2px;
+  padding: 5px 6px;
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  background: #fff;
 }
 
 .machine-pill__code {
@@ -250,9 +256,9 @@
   flex-direction: column;
   height: 100%;
   min-height: calc(100vh - 140px);
-  background: #fff;
   border: 1px solid var(--border-soft);
   border-radius: 6px;
+  background: #fff;
 }
 
 .steps-shell__toolbar-label {
@@ -266,8 +272,8 @@
 
 .steps-shell__content {
   flex: 1;
-  overflow: auto;
   min-height: 0;
+  overflow: auto;
   padding: 4px;
 }
 
@@ -282,8 +288,8 @@
 }
 
 :host ::ng-deep app-recipe-detail-header .header-card h1 {
-  font-size: 16px;
   margin: 0;
+  font-size: 16px;
   line-height: 1.2;
 }
 
@@ -292,6 +298,86 @@
   font-size: 11px;
   font-family: Consolas, 'Courier New', monospace;
 }
+
+/* Context overlays */
+
+.context-menu,
+.cell-action-bar {
+  position: fixed;
+  z-index: 40;
+  border: 1px solid #c9d5e1;
+  background: rgba(248, 251, 254, 0.98);
+  box-shadow: 0 10px 24px rgba(20, 35, 50, 0.18);
+  backdrop-filter: blur(6px);
+}
+
+.context-menu {
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 6px;
+}
+
+.context-menu__action,
+.cell-action-bar__action {
+  appearance: none;
+  border: 1px solid #d5deea;
+  background: linear-gradient(180deg, #ffffff 0%, #f4f8fc 100%);
+  color: #233647;
+  font-family: Consolas, 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.context-menu__action {
+  border-radius: 4px;
+  padding: 7px 9px;
+  text-align: left;
+}
+
+.cell-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px;
+  border-radius: 999px;
+}
+
+.cell-action-bar__action {
+  border-radius: 999px;
+  padding: 7px 12px;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+.context-menu__action:hover:not(:disabled),
+.cell-action-bar__action:hover:not(:disabled) {
+  background: linear-gradient(180deg, #ffffff 0%, #eaf2fa 100%);
+  border-color: #b9cadc;
+}
+
+.context-menu__action--danger {
+  color: #a92f2a;
+  border-color: #dfb0ab;
+  background: linear-gradient(180deg, #fffafa 0%, #fff1f0 100%);
+}
+
+.context-menu__action--danger:hover:not(:disabled) {
+  background: linear-gradient(180deg, #ffffff 0%, #fdeceb 100%);
+  border-color: #d69f99;
+}
+
+.context-menu__action:disabled,
+.cell-action-bar__action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Responsive */
 
 @media (max-width: 1280px) {
   .workspace,

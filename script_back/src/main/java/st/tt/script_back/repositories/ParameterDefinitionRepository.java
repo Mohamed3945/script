@@ -27,4 +27,13 @@ public interface ParameterDefinitionRepository extends JpaRepository<ParameterDe
 
     List<ParameterDefinition> findByStepTypeOrderByNameAsc(StepType stepType);
 
+    Optional<ParameterDefinition> findTopByParameterGroupRefIdOrderByOrderIndexInGroupDesc(Long parameterGroupId);
+
+    List<ParameterDefinition> findByParameterGroupRefIdOrderByOrderIndexInGroupAsc(Long parameterGroupId);
+
+    List<ParameterDefinition> findByIdIn(List<Long> ids);
+
+    List<ParameterDefinition> findByConfigurationDefinitionIdOrderByNameAsc(
+        Long configurationDefinitionId);
+
 }

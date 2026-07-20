@@ -21,9 +21,9 @@ export class CapabilityCreatePageComponent {
     this.chamberCapabilityApiService.createCapability(capability).subscribe({
       next: (created) => {
         if (created.id) {
-          this.router.navigate(['/chamber-capabilities', created.id]);
+          this.router.navigate(['/reference-data/capabilities', created.id, 'edit']);
         } else {
-          this.router.navigate(['/chamber-capabilities']);
+          this.router.navigate(['/reference-data/capabilities']);
         }
       },
       error: (error) => console.error('Failed to create capability', error)

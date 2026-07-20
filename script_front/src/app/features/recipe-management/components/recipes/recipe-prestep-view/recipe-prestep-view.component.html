@@ -1,15 +1,14 @@
 <div class="matrix-card">
   <div class="matrix-card__header">
     <h3>Recipe prestep view</h3>
-    <button class="btn" (click)="addParameterClicked.emit()">Add parameter</button>
   </div>
 
-  <div class="matrix-wrapper" *ngIf="stepColumns.length > 0 && (pinnedRows.length > 0 || groupedRows.length > 0); else emptyState">
-    <table class="matrix-table">
+  <div class="matrix-wrapper" [class.is-hidden]="!hasDisplayableMatrix">
+    <table class="matrix-table" *ngIf="hasDisplayableMatrix; else emptyState">
       <thead>
         <tr>
           <th>Parameter</th>
-          <th *ngFor="let step of stepColumns">
+          <th *ngFor="let step of stepColumns; trackBy: trackByStepColumn">
             <div class="step-header">
               <span class="step-header__code">{{ step.stepCode }}</span>
             </div>
@@ -18,72 +17,17 @@
       </thead>
 
       <tbody *ngIf="pinnedRows.length > 0">
-        <tr *ngFor="let row of pinnedRows" class="grouped-parameter-row">
-          <td class="matrix-table__param">
+        <tr *ngFor="let row of pinnedRows; trackBy: trackByPinnedRow" class="grouped-parameter-row">
+          <td class="matrix-table__param" (contextmenu)="onParameterRowContextMenu($event, row)">
             <div class="param-name">{{ row.parameterAlias || row.parameterName }}</div>
           </td>
           <td
-            *ngFor="let cell of row.cells"
+            *ngFor="let cell of row.cells; trackBy: trackByCell"
             [ngClass]="getCellStateClass(cell)"
-            [class.cell-readonly]="!isEditable(cell)">
-            <ng-container *ngIf="isEditable(cell); else readonlyPinnedCell">
-              <ng-container [ngSwitch]="row.valueType">
-                <select
-                  *ngSwitchCase="enumValueType"
-                  class="cell-input"
-                  [ngModel]="cell.selectedOptionId"
-                  (ngModelChange)="onEnumChanged(cell, $event)">
-                  <option [ngValue]="null">-</option>
-                  <option *ngFor="let option of cell.availableOptions" [ngValue]="option.id">{{ option.label }}</option>
-                </select>
-
-                <input
-                  *ngSwitchCase="numberValueType"
-                  class="cell-input"
-                  type="number"
-                  [value]="getInputDisplayValue(cell)"
-                  (change)="onNumberCommitted(cell, $any($event.target).value)" />
-
-                <input
-                  *ngSwitchDefault
-                  class="cell-input"
-                  type="text"
-                  [value]="getInputDisplayValue(cell)"
-                  (change)="onValueCommitted(cell, $any($event.target).value)" />
-              </ng-container>
-            </ng-container>
-
-            <ng-template #readonlyPinnedCell>
-              <div class="cell-display">{{ getReadonlyDisplayValue(cell) || '-' }}</div>
-            </ng-template>
-          </td>
-        </tr>
-      </tbody>
-
-      <tbody *ngFor="let group of groupedRows">
-        <tr class="group-row">
-          <td class="group-cell" [attr.colspan]="stepColumns.length + 1">
-            <button
-              type="button"
-              class="group-toggle"
-              (click)="toggleGroup(group.key)">
-              <span class="group-toggle__icon">{{ isGroupCollapsed(group.key) ? '▸' : '▾' }}</span>
-              <span class="group-toggle__title">{{ group.title }}</span>
-              <span class="group-toggle__count">({{ group.rows.length }})</span>
-            </button>
-          </td>
-        </tr>
-
-        <ng-container *ngIf="!isGroupCollapsed(group.key)">
-          <tr *ngFor="let row of group.rows" class="grouped-parameter-row">
-            <td class="matrix-table__param">
-              <div class="param-name">{{ row.parameterAlias || row.parameterName }}</div>
-            </td>
-            <td
-              *ngFor="let cell of row.cells"
-              [ngClass]="getCellStateClass(cell)"
-              [class.cell-readonly]="!isEditable(cell)">
-              <ng-container *ngIf="isEditable(cell); else readonlyCell">
+            [class.cell-readonly]="!isEditable(cell)"
+            (contextmenu)="onCellContextMenu($event, cell)">
+            <div class="cell-shell">
+              <ng-container *ngIf="isEditable(cell); else readonlyPinnedCell">
                 <ng-container [ngSwitch]="row.valueType">
                   <select
                     *ngSwitchCase="enumValueType"
@@ -91,7 +35,11 @@
                     [ngModel]="cell.selectedOptionId"
                     (ngModelChange)="onEnumChanged(cell, $event)">
                     <option [ngValue]="null">-</option>
-                    <option *ngFor="let option of cell.availableOptions" [ngValue]="option.id">{{ option.label }}</option>
+                    <option
+                      *ngFor="let option of cell.availableOptions; trackBy: trackByOption"
+                      [ngValue]="option.id">
+                      {{ option.label }}
+                    </option>
                   </select>
 
                   <input
@@ -110,9 +58,74 @@
                 </ng-container>
               </ng-container>
 
-              <ng-template #readonlyCell>
+              <ng-template #readonlyPinnedCell>
                 <div class="cell-display">{{ getReadonlyDisplayValue(cell) || '-' }}</div>
               </ng-template>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+
+      <tbody *ngFor="let group of groupedRows; trackBy: trackByGroup">
+        <tr class="group-row">
+          <td class="group-cell" [attr.colspan]="stepColumns.length + 1">
+            <button
+              type="button"
+              class="group-toggle"
+              (click)="toggleGroup(group.key)">
+              <span class="group-toggle__icon">{{ isGroupCollapsed(group.key) ? '▸' : '▾' }}</span>
+              <span class="group-toggle__title">{{ group.title }}</span>
+              <span class="group-toggle__count">({{ group.rows.length }})</span>
+            </button>
+          </td>
+        </tr>
+
+        <ng-container *ngIf="!isGroupCollapsed(group.key)">
+          <tr *ngFor="let row of group.rows; trackBy: trackByGroupRow" class="grouped-parameter-row">
+            <td class="matrix-table__param" (contextmenu)="onParameterRowContextMenu($event, row)">
+              <div class="param-name">{{ row.parameterAlias || row.parameterName }}</div>
+            </td>
+            <td
+              *ngFor="let cell of row.cells; trackBy: trackByCell"
+              [ngClass]="getCellStateClass(cell)"
+              [class.cell-readonly]="!isEditable(cell)"
+              (contextmenu)="onCellContextMenu($event, cell)">
+              <div class="cell-shell">
+                <ng-container *ngIf="isEditable(cell); else readonlyCell">
+                  <ng-container [ngSwitch]="row.valueType">
+                    <select
+                      *ngSwitchCase="enumValueType"
+                      class="cell-input"
+                      [ngModel]="cell.selectedOptionId"
+                      (ngModelChange)="onEnumChanged(cell, $event)">
+                      <option [ngValue]="null">-</option>
+                      <option
+                        *ngFor="let option of cell.availableOptions; trackBy: trackByOption"
+                        [ngValue]="option.id">
+                        {{ option.label }}
+                      </option>
+                    </select>
+
+                    <input
+                      *ngSwitchCase="numberValueType"
+                      class="cell-input"
+                      type="number"
+                      [value]="getInputDisplayValue(cell)"
+                      (change)="onNumberCommitted(cell, $any($event.target).value)" />
+
+                    <input
+                      *ngSwitchDefault
+                      class="cell-input"
+                      type="text"
+                      [value]="getInputDisplayValue(cell)"
+                      (change)="onValueCommitted(cell, $any($event.target).value)" />
+                  </ng-container>
+                </ng-container>
+
+                <ng-template #readonlyCell>
+                  <div class="cell-display">{{ getReadonlyDisplayValue(cell) || '-' }}</div>
+                </ng-template>
+              </div>
             </td>
           </tr>
         </ng-container>

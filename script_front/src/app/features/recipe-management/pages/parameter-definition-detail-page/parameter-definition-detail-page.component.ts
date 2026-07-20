@@ -24,7 +24,7 @@ import { ParameterOptionFormComponent } from '../../components/parameter-definit
     FormsModule,
     ParameterDefinitionSummaryComponent,
     ParameterOptionTableComponent,
-    ParameterOptionFormComponent
+    ParameterOptionFormComponent,
   ],
   templateUrl: './parameter-definition-detail-page.component.html',
   styleUrl: './parameter-definition-detail-page.component.scss'
@@ -84,7 +84,7 @@ export class ParameterDefinitionDetailPageComponent implements OnInit {
   onEditDefinition(): void {
     const detail = this.detail$.value;
     if (!detail?.id) return;
-    this.router.navigate(['/recipes/parameter-definitions', detail.id, 'edit']);
+    this.router.navigate(['/parameters', detail.id, 'edit']);
   }
 
   /**
@@ -98,7 +98,7 @@ export class ParameterDefinitionDetailPageComponent implements OnInit {
     if (!confirmed) return;
 
     this.parameterDefinitionApiService.deleteDefinition(detail.id).subscribe({
-      next: () => this.router.navigate(['/recipes/parameter-definitions']),
+      next: () => this.router.navigate(['/parameters']),
       error: (error) => console.error('Failed to delete parameter definition', error)
     });
   }
@@ -215,12 +215,13 @@ export class ParameterDefinitionDetailPageComponent implements OnInit {
     });
   }
 
-  private buildDefinitionPayload(
+private buildDefinitionPayload(
     detail: ParameterDefinitionDetail,
     configurationDefinitionId: number | null
   ): ParameterDefinition {
     return {
       id: detail.id,
+      code: detail.code,
       name: detail.name,
       alias: detail.alias,
       unit: detail.unit ?? null,
@@ -229,8 +230,10 @@ export class ParameterDefinitionDetailPageComponent implements OnInit {
       requiredOnStep: detail.requiredOnStep,
       stepType: detail.stepType,
       defaultValueJson: detail.defaultValueJson ?? null,
-      parameterGroup: detail.parameterGroup ?? null,
+      parameterGroupId: detail.parameterGroupId ?? null,
+      parameterGroupName: detail.parameterGroupName ?? null,
       parameterGroupOrder: detail.parameterGroupOrder ?? null,
+      orderIndexInGroup: detail.orderIndexInGroup ?? null,
       configurationDefinitionId
     };
   }

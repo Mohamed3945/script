@@ -36,10 +36,10 @@ export class DependencyRuleCreatePageComponent {
       this.parameterDependencyRuleApiService.createRule(rules[0]).subscribe({
         next: (created) => {
           if (created.id) {
-            this.router.navigate(['/recipes/rules', created.id]);
+            this.router.navigate(['/rules', created.id]);
             return;
           }
-          this.router.navigate(['/recipes/rules']);
+          this.router.navigate(['/rules']);
         },
         error: (error) => console.error('Failed to create dependency rule', error)
       });
@@ -89,7 +89,7 @@ export class DependencyRuleCreatePageComponent {
       })
     ).subscribe({
       next: () => {
-        this.router.navigate(['/recipes/rules']);
+        this.router.navigate(['/rules']);
       },
       error: (error) => console.error('Failed to create dependency rules batch', error)
     });

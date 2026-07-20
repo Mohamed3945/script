@@ -15,10 +15,6 @@
           {{ selectedStep.stepKind }} - order {{ selectedStep.orderIndex }}
         </p>
       </div>
-
-      <button class="btn" *ngIf="selectedStep" (click)="addParameterClicked.emit()">
-        Add parameter
-      </button>
     </div>
 
     <div class="parameter-list-card" *ngIf="selectedStep; else noStep">

@@ -46,7 +46,7 @@ export class ParameterDefinitionEditPageComponent implements OnInit {
     if (!current?.id) return;
 
     this.parameterDefinitionApiService.updateDefinition(current.id, definition).subscribe({
-      next: () => this.router.navigate(['/recipes/parameter-definitions', current.id]),
+      next: () => this.router.navigate(['/parameters', current.id]),
       error: (error) => console.error('Failed to update parameter definition', error)
     });
   }

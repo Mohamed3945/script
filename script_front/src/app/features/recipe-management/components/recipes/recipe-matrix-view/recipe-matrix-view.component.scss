@@ -280,6 +280,52 @@ td.cell--user-modified {
   font-size: 11px;
 }
 
+// ...existing code...
+.cell-shell {
+  position: relative;
+  min-height: 22px;
+}
+
+.cell-golden-toggle {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 16px;
+  height: 16px;
+  border: 1px solid #c9d7e6;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #8fa3b8;
+  line-height: 1;
+  font-size: 10px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.cell-golden-toggle:hover {
+  border-color: #9db4cb;
+  color: #5f7e9d;
+}
+
+.cell-golden-toggle.is-active {
+  background: #f2d23b;
+  border-color: #d3b83a;
+  color: #111111;
+}
+
+
+.cell-shell .cell-input,
+.cell-shell .cell-display {
+  padding-right: 22px;
+}
+
+.cell-golden-toggle__icon {
+  display: inline-block;
+  line-height: 1;
+  font-size: 10px;
+}
+
+
 @media (max-width: 1180px) {
   .matrix-card {
     max-height: none;

@@ -2,5 +2,6 @@ import { RecipeConfigurationConstraint } from './recipe-configuration-constraint
 
 export interface RecipeCompatibleMachineSearchRequest {
   recipeId: number;
-  configurationConstraints: RecipeConfigurationConstraint[];
+  capabilitySourceRecipeId?: number | null; 
+  configurationConstraints: RecipeConfigurationConstraint[] | null;
 }

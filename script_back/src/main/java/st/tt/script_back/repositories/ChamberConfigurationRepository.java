@@ -20,4 +20,14 @@ public interface ChamberConfigurationRepository extends JpaRepository<ChamberCon
     List<ChamberConfiguration> findByChamberIdOrdered(@Param("chamberId") Long chamberId);
 
     boolean existsByChamberIdAndConfigurationDefinitionIdAndCode(Long chamberId, Long configurationDefinitionId, String code);
+
+    @Query("""
+            select cc
+            from ChamberConfiguration cc
+            join fetch cc.configurationDefinition cd
+            join fetch cc.chamber ch
+            where ch.id in :chamberIds
+            """)
+    List<ChamberConfiguration> findByChamberIdsWithDefinition(@Param("chamberIds") List<Long> chamberIds);
+
 }

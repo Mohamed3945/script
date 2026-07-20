@@ -36,4 +36,12 @@ public interface ChamberRepository extends JpaRepository<Chamber, Long> {
         left join fetch cfg.configurationDefinition
     """)
     List<Chamber> findAllWithMachineCapabilitiesAndConfigurations();
+
+    @Query("""
+            select distinct c
+            from Chamber c
+            join fetch c.machine m
+            left join fetch c.capabilities cap
+            """)
+    List<Chamber> findAllWithMachineAndCapabilities();
 }

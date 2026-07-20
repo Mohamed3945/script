@@ -1,6 +1,24 @@
-<div class="app-shell">
-  <app-top-navbar></app-top-navbar>
+<div class="app-shell" [class.is-resizing]="isResizing" [class.is-sidebar-collapsed]="!isSidebarOpen">
+  <aside
+    class="app-shell__sidebar"
+    [style.width.px]="isSidebarOpen ? sidebarWidth : collapsedSidebarWidth"
+    [style.min-width.px]="isSidebarOpen ? sidebarWidth : collapsedSidebarWidth"
+  >
+    <app-top-navbar [collapsed]="!isSidebarOpen" (toggleRequested)="toggleSidebar()"></app-top-navbar>
+
+    <button
+      type="button"
+      class="app-shell__resize-handle"
+      [class.is-disabled]="!isSidebarOpen"
+      (mousedown)="startResize($event)"
+      aria-label="Resize sidebar"
+      title="Drag to resize"
+    ></button>
+  </aside>
+
   <main class="app-shell__content">
-    <ng-content></ng-content>
+    <div class="app-shell__inner">
+      <ng-content></ng-content>
+    </div>
   </main>
 </div>

@@ -27,9 +27,9 @@ export class ParameterDefinitionCreatePageComponent {
     this.parameterDefinitionApiService.createDefinition(definition).subscribe({
       next: (created) => {
         if (created.id) {
-          this.router.navigate(['/recipes/parameter-definitions', created.id]);
+          this.router.navigate(['/parameters', created.id]);
         } else {
-          this.router.navigate(['/recipes/parameter-definitions']);
+          this.router.navigate(['/parameters']);
         }
       },
       error: (error) => {

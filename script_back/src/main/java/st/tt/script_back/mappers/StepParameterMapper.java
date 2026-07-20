@@ -30,16 +30,22 @@ public class StepParameterMapper {
                 parameter.getId(),
                 parameter.getStep() != null ? parameter.getStep().getId() : null,
                 parameter.getDefinition() != null ? parameter.getDefinition().getId() : null,
-            parameter.getDefinition() != null ? parameter.getDefinition().getName() : null,
-                parameter.getDefinition() != null ? parameter.getDefinition().getParameterGroup() : null,
-                parameter.getDefinition() != null ? parameter.getDefinition().getParameterGroupOrder() : 0,
+                parameter.getDefinition() != null ? parameter.getDefinition().getName() : null,
+                parameter.getDefinition() != null && parameter.getDefinition().getParameterGroupRef() != null
+                        ? parameter.getDefinition().getParameterGroupRef().getName()
+                        : null,
+                parameter.getDefinition() != null
+                        && parameter.getDefinition().getParameterGroupRef() != null
+                        && parameter.getDefinition().getParameterGroupRef().getOrderIndex() != null
+                                ? parameter.getDefinition().getParameterGroupRef().getOrderIndex()
+                                : 0,
                 parameter.getParentStepParameter() != null ? parameter.getParentStepParameter().getId() : null,
                 parameter.getParentOrderScope(),
                 parameter.getOrderIndex(),
                 parameter.getLabelOverride(),
                 parameter.getValueJson(),
                 parameter.getSelectedOption() != null ? parameter.getSelectedOption().getId() : null,
-            parameter.getSelectedOption() != null ? parameter.getSelectedOption().getLabel() : null,
+                parameter.getSelectedOption() != null ? parameter.getSelectedOption().getLabel() : null,
                 parameter.getActivationState(),
                 parameter.isLockedByGolden(),
                 parameter.isUserModified(),

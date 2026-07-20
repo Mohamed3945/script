@@ -1,7 +1,7 @@
 ﻿import { AsyncPipe, NgIf } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, Subscription, map } from 'rxjs';
+import {BehaviorSubject,Subject,Subscription,distinctUntilChanged,filter,finalize,map,takeUntil} from 'rxjs';
 import { ChamberCapability } from '../../../../core/models/chamber-capability.model';
 import { ConfigurationDefinition } from '../../../../core/models/configuration-definition.model';
 import { Recipe } from '../../../../core/models/recipe.model';
@@ -18,6 +18,7 @@ import { StepParameter } from '../../../../core/models/step-parameter.model';
 import { ChamberCapabilityApiService } from '../../../../core/services/chamber-capability-api.service';
 import { ConfigurationDefinitionApiService } from '../../../../core/services/configuration-definition-api.service';
 import { RecipeCompatibilityApiService } from '../../../../core/services/recipe-compatibility-api.service';
+import { RecipeCompatibilityRefreshService } from '../../../../core/services/recipe-compatibility-refresh.service';
 import { RecipeApiService } from '../../../../core/services/recipe-api.service';
 import { RecipeBuilderService } from '../../../../core/services/recipe-builder.service';
 import { RecipeRequirementsApiService } from '../../../../core/services/recipe-requirements-api.service';
@@ -27,10 +28,18 @@ import { RecipeCompatibleMachinesPanelComponent } from '../../components/recipes
 import { SummaryViewComponent } from '../../components/recipes/summary-view/summary-view.component';
 import { RecipeTabNavComponent, RecipeWorkspaceTab } from '../../components/recipes/recipe-tab-nav/recipe-tab-nav.component';
 import { RecipeViewSwitchComponent, RecipeViewMode } from '../../components/recipes/recipe-view-switch/recipe-view-switch.component';
-import { RecipeMatrixCellUpdate, RecipeMatrixViewComponent } from '../../components/recipes/recipe-matrix-view/recipe-matrix-view.component';
+import {
+  RecipeMatrixCellContextRequest,
+  RecipeMatrixCellUpdate,
+  RecipeMatrixParameterRowContextRequest,
+  RecipeMatrixStepContextRequest,
+  RecipeMatrixViewComponent
+} from '../../components/recipes/recipe-matrix-view/recipe-matrix-view.component';
 import { RecipeStepFocusViewComponent } from '../../components/recipes/recipe-step-focus-view/recipe-step-focus-view.component';
 import {
+  PrestepCellContextRequest,
   PrestepCellUpdate,
+  PrestepParameterRowContextRequest,
   RecipePrestepViewComponent
 } from '../../components/recipes/recipe-prestep-view/recipe-prestep-view.component';
 import { StepModalComponent } from '../../components/steps/step-modal/step-modal.component';
@@ -57,16 +66,15 @@ import { StepParameterModalComponent } from '../../components/steps/step-paramet
   templateUrl: './recipe-detail-page.component.html',
   styleUrl: './recipe-detail-page.component.scss'
 })
-/**
- * RecipeDetailPageComponent coordinates UI logic for this feature.
- */
 export class RecipeDetailPageComponent implements OnInit, OnDestroy {
   workspaceMode: 'auto' | 'golden' | 'derived' = 'auto';
+
   recipe$ = new BehaviorSubject<Recipe | null>(null);
   compatibility$ = new BehaviorSubject<RecipeCompatibilityResult | null>(null);
   requirements$ = new BehaviorSubject<RecipeRequirements | null>(null);
   availableCapabilities$ = new BehaviorSubject<ChamberCapability[]>([]);
   availableConfigurationDefinitions$ = new BehaviorSubject<ConfigurationDefinition[]>([]);
+
   steps$;
   selectedStep$;
   stepParameters$;
@@ -89,10 +97,44 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
   modalStepKind: StepKind | null = null;
   modalParentCandidates: StepParameter[] = [];
 
+  stepContextMenu: { visible: boolean; x: number; y: number; stepId: number | null; stepCode: string | null } = {
+    visible: false,
+    x: 0,
+    y: 0,
+    stepId: null,
+    stepCode: null
+  };
+
+  cellActionBar: { visible: boolean; x: number; y: number; cell: RecipeMatrixCell | null } = {
+    visible: false,
+    x: 0,
+    y: 0,
+    cell: null
+  };
+
+  parameterRowContextMenu: {
+    visible: boolean;
+    x: number;
+    y: number;
+    definitionId: number | null;
+    parameterName: string | null;
+  } = {
+    visible: false,
+    x: 0,
+    y: 0,
+    definitionId: null,
+    parameterName: null
+  };
+
+  compatibility: RecipeCompatibilityResult | null = null;
+  compatibilityLoading = false;
+
   readonly recipeKindOptions: RecipeKind[] = ['GOLDEN', 'DERIVED', 'IMPORTED'];
   readonly recipeStatusOptions: RecipeStatus[] = ['DRAFT', 'VALIDATED', 'ARCHIVED'];
 
   private sub = new Subscription();
+  private readonly destroy$ = new Subject<void>();
+  private currentRecipeId: number | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -102,7 +144,8 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     private recipeRequirementsApiService: RecipeRequirementsApiService,
     private chamberCapabilityApiService: ChamberCapabilityApiService,
     private configurationDefinitionApiService: ConfigurationDefinitionApiService,
-    private recipeCompatibilityApiService: RecipeCompatibilityApiService
+    private recipeCompatibilityApiService: RecipeCompatibilityApiService,
+    private recipeCompatibilityRefreshService: RecipeCompatibilityRefreshService
   ) {
     this.steps$ = this.recipeBuilderService.steps$;
     this.selectedStep$ = this.recipeBuilderService.selectedStep$;
@@ -133,10 +176,22 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     );
   }
 
-  /**
-   * Handles the ngOnInit workflow.
-   */
   ngOnInit(): void {
+    this.route.paramMap.pipe(
+      map(params => Number(params.get('id'))),
+      filter(id => !Number.isNaN(id)),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(recipeId => {
+      this.currentRecipeId = recipeId;
+    });
+
+    this.recipeCompatibilityRefreshService.refresh$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(recipeId => {
+        this.refreshCompatibility(recipeId ?? this.currentRecipeId);
+      });
+
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (!id) {
       return;
@@ -160,8 +215,8 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
           this.workspaceMode = recipe.recipeKind === 'GOLDEN' ? 'golden' : 'derived';
         }
         this.recipe$.next(recipe);
+        this.currentRecipeId = recipe.id ?? id;
         this.loadRequirementsForWorkspace(recipe);
-        this.refreshCompatibilityByCapabilitiesOnly();
         this.recipeBuilderService.loadRecipeWorkspace(recipe);
       },
       error: (error) => {
@@ -172,18 +227,22 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     this.sub.add(recipeSub);
   }
 
-  /**
-   * Handles the onEditRecipe workflow.
-   */
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.closeAllContextActions();
+  }
+
+  @HostListener('document:scroll')
+  onDocumentScroll(): void {
+    this.closeAllContextActions();
+  }
+
   onEditRecipe(): void {
     const recipe = this.recipe$.value;
     if (!recipe?.id) return;
     this.router.navigate(['/recipes', recipe.id, 'edit']);
   }
 
-  /**
-   * Handles the onDeleteRecipe workflow.
-   */
   onDeleteRecipe(): void {
     const recipe = this.recipe$.value;
     if (!recipe?.id) return;
@@ -197,9 +256,6 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Handles the onStepSelected workflow.
-   */
   onStepSelected(step: Step): void {
     this.recipeBuilderService.setSelectedStep(step);
     if (step.id) {
@@ -207,54 +263,54 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Handles the onCreateStep workflow.
-   */
   onCreateStep(step: Step): void {
     const recipe = this.recipe$.value;
     if (!recipe?.id) return;
 
-    this.recipeApiService.createStep(recipe.id, step).subscribe({
+    this.recipeApiService.createStructuredStep(recipe.id, {
+      name: step.name,
+      stepKind: step.stepKind,
+      orderIndex: step.orderIndex ?? null
+    }).subscribe({
       next: () => {
         this.showStepModal = false;
-        this.recipeBuilderService.loadRecipeWorkspace(recipe);
+        this.runWithViewportPreserved(() => {
+          this.recipeBuilderService.loadRecipeWorkspace(recipe);
+        });
+        this.requestCompatibilityRefresh();
       },
       error: (error) => {
-        console.error('Failed to create step', error);
+        console.error('Failed to create structured step', error);
       }
     });
   }
 
-  /**
-   * Handles the onCreateStepParameter workflow.
-   */
   onCreateStepParameter(payload: StepParameter): void {
-    if (!this.modalStepId) {
+    const recipe = this.recipe$.value;
+    if (!recipe?.id || !this.modalStepKind) {
       return;
     }
 
-    this.recipeApiService.createStepParameter(this.modalStepId, payload).subscribe({
-      next: () => {
-        const modalStepId = this.modalStepId;
-        const selectedStep = this.recipeBuilderService.selectedStepSnapshot;
+    const stepKind: StepKind = this.modalStepKind === 'PRESTEP' ? 'PRESTEP' : 'STEP';
+    const request = this.buildStepParameterCreatePayload(payload);
 
+    this.recipeApiService.propagateStepParameter(recipe.id, stepKind, request).subscribe({
+      next: () => {
+        const selectedStep = this.recipeBuilderService.selectedStepSnapshot;
         this.closeStepParameterModal();
 
-        if (selectedStep?.id === modalStepId) {
+        if (selectedStep?.id) {
           this.recipeBuilderService.loadStepParameters(selectedStep.id);
         }
-
         this.recipeBuilderService.refreshMatrix();
+        this.requestCompatibilityRefresh();
       },
       error: (error) => {
-        console.error('Failed to create step parameter', error);
+        console.error('Failed to propagate recipe-wide step parameter(s)', error);
       }
     });
   }
 
-  /**
-   * Handles the onDeleteStepParameter workflow.
-   */
   onDeleteStepParameter(parameter: StepParameter): void {
     if (!parameter.id) return;
 
@@ -263,22 +319,51 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
 
     this.recipeApiService.deleteStepParameter(parameter.id).subscribe({
       next: () => {
-        const selectedStep = this.recipeBuilderService.selectedStepSnapshot;
-        if (selectedStep?.id) {
-          this.recipeBuilderService.loadStepParameters(selectedStep.id);
-        }
-        this.recipeBuilderService.refreshMatrix();
+        this.runWithViewportPreserved(() => {
+          const selectedStep = this.recipeBuilderService.selectedStepSnapshot;
+          if (selectedStep?.id) {
+            this.recipeBuilderService.loadStepParameters(selectedStep.id);
+          }
+          this.recipeBuilderService.refreshMatrix();
+        });
+        this.requestCompatibilityRefresh();
       },
       error: (error) => console.error('Failed to delete step parameter', error)
     });
   }
 
-  /**
-   * Handles the onMatrixCellUpdated workflow.
-   */
   onMatrixCellUpdated(update: RecipeMatrixCellUpdate): void {
     const cell: RecipeMatrixCell = update.cell;
     if (!cell.stepParameterId) {
+      return;
+    }
+
+    if (update.action === 'toggle-golden') {
+      if (!this.isGoldenWorkspace) {
+        return;
+      }
+
+      const togglePayload: StepParameter = {
+        definitionId: cell.definitionId,
+        valueJson: cell.valueJson ?? null,
+        selectedOptionId: cell.selectedOptionId ?? null,
+        lockedByGolden: update.lockedByGolden ?? !cell.lockedByGolden
+      };
+
+      this.recipeApiService.updateStepParameter(cell.stepParameterId, togglePayload).subscribe({
+        next: () => {
+          this.runWithViewportPreserved(() => {
+            this.recipeBuilderService.refreshMatrix();
+            this.closeCellActionBar();
+          });
+          this.requestCompatibilityRefresh();
+        },
+        error: (error) => console.error('Failed to toggle golden lock', error)
+      });
+      return;
+    }
+
+    if (this.isDerivedWorkspace && cell.lockedByGolden) {
       return;
     }
 
@@ -291,12 +376,15 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
 
     this.recipeApiService.updateStepParameter(cell.stepParameterId, payload).subscribe({
       next: () => {
-        this.recipeBuilderService.refreshMatrix();
+        this.runWithViewportPreserved(() => {
+          this.recipeBuilderService.refreshMatrix();
 
-        const selectedStep = this.recipeBuilderService.selectedStepSnapshot;
-        if (selectedStep?.id === cell.stepId) {
-          this.recipeBuilderService.loadStepParameters(selectedStep.id);
-        }
+          const selectedStep = this.recipeBuilderService.selectedStepSnapshot;
+          if (selectedStep?.id === cell.stepId) {
+            this.recipeBuilderService.loadStepParameters(selectedStep.id);
+          }
+        });
+        this.requestCompatibilityRefresh();
       },
       error: (error) => {
         console.error('Failed to update matrix cell', error);
@@ -304,16 +392,10 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Handles the onPrestepCellUpdated workflow.
-   */
   onPrestepCellUpdated(update: PrestepCellUpdate): void {
     this.onMatrixCellUpdated(update);
   }
 
-  /**
-   * Handles the onDeletePrestepParameter workflow.
-   */
   onDeletePrestepParameter(cell: RecipeMatrixCell): void {
     if (!cell.stepParameterId) {
       return;
@@ -326,7 +408,10 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
 
     this.recipeApiService.deleteStepParameter(cell.stepParameterId).subscribe({
       next: () => {
-        this.recipeBuilderService.refreshMatrix();
+        this.runWithViewportPreserved(() => {
+          this.recipeBuilderService.refreshMatrix();
+        });
+        this.requestCompatibilityRefresh();
       },
       error: (error) => {
         console.error('Failed to delete PRESTEP parameter', error);
@@ -334,34 +419,188 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Handles the openStepModal workflow.
-   */
+  onStepHeaderContextRequested(request: RecipeMatrixStepContextRequest): void {
+    if (!this.isGoldenWorkspace) {
+      return;
+    }
+
+    this.closeCellActionBar();
+    this.closeParameterRowContextMenu();
+
+    this.stepContextMenu = {
+      visible: true,
+      x: request.x,
+      y: request.y,
+      stepId: request.stepId,
+      stepCode: request.stepCode ?? null
+    };
+  }
+
+  onMatrixCellContextRequested(request: RecipeMatrixCellContextRequest): void {
+    if (!this.isGoldenWorkspace) {
+      return;
+    }
+
+    this.closeStepContextMenu();
+    this.closeParameterRowContextMenu();
+
+    this.cellActionBar = {
+      visible: true,
+      x: request.x,
+      y: request.y,
+      cell: request.cell
+    };
+  }
+
+  onPrestepCellContextRequested(request: PrestepCellContextRequest): void {
+    if (!this.isGoldenWorkspace) {
+      return;
+    }
+
+    this.closeStepContextMenu();
+    this.closeParameterRowContextMenu();
+
+    this.cellActionBar = {
+      visible: true,
+      x: request.x,
+      y: request.y,
+      cell: request.cell
+    };
+  }
+
+  onParameterRowContextRequested(request: RecipeMatrixParameterRowContextRequest): void {
+    if (!this.isGoldenWorkspace) {
+      return;
+    }
+
+    this.closeStepContextMenu();
+    this.closeCellActionBar();
+
+    this.parameterRowContextMenu = {
+      visible: true,
+      x: request.x,
+      y: request.y,
+      definitionId: request.definitionId,
+      parameterName: request.parameterName
+    };
+  }
+
+  onPrestepParameterRowContextRequested(request: PrestepParameterRowContextRequest): void {
+    if (!this.isGoldenWorkspace) {
+      return;
+    }
+
+    this.closeStepContextMenu();
+    this.closeCellActionBar();
+
+    this.parameterRowContextMenu = {
+      visible: true,
+      x: request.x,
+      y: request.y,
+      definitionId: request.definitionId,
+      parameterName: request.parameterName
+    };
+  }
+
+  onDeleteStepFromContext(): void {
+    const stepId = this.stepContextMenu.stepId;
+    if (!stepId || !this.isGoldenWorkspace) {
+      return;
+    }
+
+    const confirmed = window.confirm(`Delete step ${this.stepContextMenu.stepCode ?? '#' + stepId}?`);
+    if (!confirmed) {
+      return;
+    }
+
+    this.recipeApiService.deleteStep(stepId).subscribe({
+      next: () => {
+        this.closeStepContextMenu();
+        const recipe = this.recipe$.value;
+        if (!recipe) {
+          return;
+        }
+        this.runWithViewportPreserved(() => {
+          this.recipeBuilderService.loadRecipeWorkspace(recipe);
+        });
+        this.requestCompatibilityRefresh();
+      },
+      error: (error) => console.error('Failed to delete step', error)
+    });
+  }
+
+  onToggleGoldenFromContext(): void {
+    const cell = this.cellActionBar.cell;
+    if (!cell?.stepParameterId || !this.isGoldenWorkspace) {
+      return;
+    }
+
+    this.onMatrixCellUpdated({
+      cell,
+      valueType: cell.valueType,
+      action: 'toggle-golden',
+      lockedByGolden: !cell.lockedByGolden
+    });
+  }
+
+  onDeleteRecipeWideParameterFromContext(): void {
+    const recipe = this.recipe$.value;
+    const definitionId = this.parameterRowContextMenu.definitionId;
+
+    if (!recipe?.id || !definitionId || !this.isGoldenWorkspace) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Delete parameter "${this.parameterRowContextMenu.parameterName ?? ('#' + definitionId)}" from the whole recipe?`
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    this.recipeApiService.deleteRecipeWideParameter(recipe.id, definitionId).subscribe({
+      next: () => {
+        this.closeParameterRowContextMenu();
+        this.runWithViewportPreserved(() => {
+          this.recipeBuilderService.refreshMatrix();
+
+          const selectedStep = this.recipeBuilderService.selectedStepSnapshot;
+          if (selectedStep?.id) {
+            this.recipeBuilderService.loadStepParameters(selectedStep.id);
+          }
+        });
+        this.requestCompatibilityRefresh();
+      },
+      error: (error) => {
+        console.error('Failed to delete recipe-wide parameter', error);
+      }
+    });
+  }
+
   openStepModal(): void {
+    if (!this.isGoldenWorkspace) {
+      return;
+    }
     this.showStepModal = true;
   }
 
   toggleRightDrawer(): void {
     this.showRightDrawer = !this.showRightDrawer;
-  }
-
-  openContextualParameterModal(): void {
-    if (this.activeTab === 'prestep') {
-      this.openPrestepParameterModal();
-      return;
-    }
-
-    this.openStepParameterModal();
+    this.closeAllContextActions();
   }
 
   get canAddParameter(): boolean {
     return this.activeTab === 'prestep'
       ? Boolean(this.prestepStep?.id)
-      : Boolean(this.recipeBuilderService.selectedStepSnapshot);
+      : this.recipeBuilderService.stepsSnapshot.some((s) => s.stepKind !== 'PRESTEP' && !!s.id);
   }
 
   get isDerivedWorkspace(): boolean {
     return this.workspaceMode === 'derived';
+  }
+
+  get isGoldenWorkspace(): boolean {
+    return this.workspaceMode === 'golden';
   }
 
   get workspaceHeading(): string {
@@ -372,6 +611,19 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     return this.isDerivedWorkspace
       ? 'Customize the inherited recipe and keep an eye on the compatible machine list in the right drawer.'
       : 'Manage the golden reference recipe structure and parameter baseline from this workspace.';
+  }
+
+  get canDeleteStepFromContext(): boolean {
+    return this.isGoldenWorkspace && Boolean(this.stepContextMenu.stepId);
+  }
+
+  get canToggleGoldenFromContext(): boolean {
+    const cell = this.cellActionBar.cell;
+    return this.isGoldenWorkspace && !!cell?.stepParameterId && !cell.computed;
+  }
+
+  get goldenToggleLabel(): string {
+    return this.cellActionBar.cell?.lockedByGolden ? 'Unlock golden' : 'Lock golden';
   }
 
   onSummaryFieldCommitted(event: { key: string; value: unknown }): void {
@@ -385,7 +637,7 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     this.recipeRequirementsApiService.addRequiredCapability(recipe.id, capabilityId).subscribe({
       next: (requirements) => {
         this.requirements$.next(requirements);
-        this.refreshCompatibilityByCapabilitiesOnly();
+        this.requestCompatibilityRefresh();
       },
       error: (error) => console.error('Failed to add required capability', error)
     });
@@ -398,7 +650,7 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     this.recipeRequirementsApiService.removeRequiredCapability(recipe.id, capabilityId).subscribe({
       next: (requirements) => {
         this.requirements$.next(requirements);
-        this.refreshCompatibilityByCapabilitiesOnly();
+        this.requestCompatibilityRefresh();
       },
       error: (error) => console.error('Failed to remove required capability', error)
     });
@@ -411,7 +663,7 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     this.recipeRequirementsApiService.addRequiredConfiguration(recipe.id, configurationDefinitionId).subscribe({
       next: (requirements) => {
         this.requirements$.next(requirements);
-        this.refreshCompatibilityByCapabilitiesOnly();
+        this.requestCompatibilityRefresh();
       },
       error: (error) => console.error('Failed to add required configuration', error)
     });
@@ -424,45 +676,42 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     this.recipeRequirementsApiService.removeRequiredConfiguration(recipe.id, configurationDefinitionId).subscribe({
       next: (requirements) => {
         this.requirements$.next(requirements);
-        this.refreshCompatibilityByCapabilitiesOnly();
+        this.requestCompatibilityRefresh();
       },
       error: (error) => console.error('Failed to remove required configuration', error)
     });
   }
 
-  /**
-   * Handles the closeStepModal workflow.
-   */
   closeStepModal(): void {
     this.showStepModal = false;
   }
 
-  /**
-   * Handles the openStepParameterModal workflow.
-   */
   openStepParameterModal(): void {
-    const selectedStep = this.recipeBuilderService.selectedStepSnapshot;
-    if (!selectedStep) {
+    if (!this.isGoldenWorkspace) {
       return;
     }
 
-    this.prepareStepParameterModal(selectedStep);
+    const selectedStep = this.recipeBuilderService.selectedStepSnapshot;
+    const anchorStep =
+      (selectedStep && selectedStep.stepKind !== 'PRESTEP' ? selectedStep : null)
+      ?? this.recipeBuilderService.stepsSnapshot.find((s) => s.stepKind !== 'PRESTEP')
+      ?? null;
+
+    if (!anchorStep) {
+      return;
+    }
+
+    this.prepareStepParameterModal(anchorStep);
   }
 
-  /**
-   * Handles the openPrestepParameterModal workflow.
-   */
   openPrestepParameterModal(): void {
-    if (!this.prestepStep) {
+    if (!this.isGoldenWorkspace || !this.prestepStep) {
       return;
     }
 
     this.prepareStepParameterModal(this.prestepStep);
   }
 
-  /**
-   * Handles the closeStepParameterModal workflow.
-   */
   closeStepParameterModal(): void {
     this.showStepParameterModal = false;
     this.modalStepId = null;
@@ -470,17 +719,59 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     this.modalParentCandidates = [];
   }
 
-  /**
-   * Handles the ngOnDestroy workflow.
-   */
+  closeStepContextMenu(): void {
+    this.stepContextMenu = {
+      visible: false,
+      x: 0,
+      y: 0,
+      stepId: null,
+      stepCode: null
+    };
+  }
+
+  closeCellActionBar(): void {
+    this.cellActionBar = {
+      visible: false,
+      x: 0,
+      y: 0,
+      cell: null
+    };
+  }
+
+  closeParameterRowContextMenu(): void {
+    this.parameterRowContextMenu = {
+      visible: false,
+      x: 0,
+      y: 0,
+      definitionId: null,
+      parameterName: null
+    };
+  }
+
+  closeAllContextActions(): void {
+    this.closeStepContextMenu();
+    this.closeCellActionBar();
+    this.closeParameterRowContextMenu();
+  }
+
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.sub.unsubscribe();
     this.recipeBuilderService.reset();
   }
 
-  /**
-   * Handles the filterMatrixToRegularSteps workflow.
-   */
+  
+  private requestCompatibilityRefresh(): void {
+    const recipe = this.recipe$.value;
+    if (!recipe?.id) return;
+
+    // Pour une dérivée : recipeId = dérivée (pour les configs),
+    //                    capabilitySourceRecipeId = golden parente (pour les capabilities)
+    // Pour une golden  : recipeId = golden, pas de capabilitySourceRecipeId
+    this.refreshCompatibilityForRecipe(recipe);
+  }
+
   private filterMatrixToRegularSteps(matrix: RecipeMatrix | null): RecipeMatrix | null {
     if (!matrix) {
       return null;
@@ -503,9 +794,6 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     };
   }
 
-  /**
-   * Handles the buildPrestepRows workflow.
-   */
   private buildPrestepMatrix(matrix: RecipeMatrix | null): RecipeMatrix | null {
     if (!matrix) {
       return null;
@@ -530,9 +818,6 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     };
   }
 
-  /**
-   * Handles the prepareStepParameterModal workflow.
-   */
   private prepareStepParameterModal(step: Step): void {
     if (!step.id) {
       return;
@@ -564,20 +849,21 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
 
     if (!primaryRequirementsId) {
       this.requirements$.next(this.buildEmptyRequirements(recipe));
+      this.requestCompatibilityRefresh();
       return;
     }
 
     this.recipeRequirementsApiService.getRequirements(primaryRequirementsId).subscribe({
       next: (requirements) => {
         this.requirements$.next(requirements);
-        this.refreshCompatibilityByCapabilitiesOnly();
+        this.requestCompatibilityRefresh();
       },
       error: (primaryError) => {
         if (this.isDerivedWorkspace && recipe.id && primaryRequirementsId !== recipe.id) {
           this.recipeRequirementsApiService.getRequirements(recipe.id).subscribe({
             next: (requirements) => {
               this.requirements$.next(requirements);
-              this.refreshCompatibilityByCapabilitiesOnly();
+              this.requestCompatibilityRefresh();
             },
             error: (fallbackError) => {
               console.error('Failed to load recipe requirements (parent and derived fallback)', {
@@ -585,7 +871,7 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
                 fallbackError
               });
               this.requirements$.next(this.buildEmptyRequirements(recipe, primaryRequirementsId));
-              this.refreshCompatibilityByCapabilitiesOnly();
+              this.requestCompatibilityRefresh();
             }
           });
           return;
@@ -593,7 +879,7 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
 
         console.error('Failed to load recipe requirements', primaryError);
         this.requirements$.next(this.buildEmptyRequirements(recipe, primaryRequirementsId));
-        this.refreshCompatibilityByCapabilitiesOnly();
+        this.requestCompatibilityRefresh();
       }
     });
   }
@@ -609,29 +895,69 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
   }
 
   refreshCompatibilityByCapabilitiesOnly(): void {
-    const recipe = this.recipe$.value;
-    const requirementsRecipeId = this.requirements$.value?.recipeId ?? null;
-    const recipeId = requirementsRecipeId ?? recipe?.parentRecipeId ?? recipe?.id ?? null;
+    this.requestCompatibilityRefresh();
+  }
 
-    if (!this.isDerivedWorkspace || !recipeId) {
-      this.compatibility$.next(null);
+  refreshCompatibility(recipeId: number | null): void {
+    // Conservé pour le RecipeCompatibilityRefreshService (appelé depuis d'autres endroits)
+    // Mais maintenant on passe par refreshCompatibilityForRecipe si on a la recette complète
+    const recipe = this.recipe$.value;
+    if (recipe?.id === recipeId) {
+      this.refreshCompatibilityForRecipe(recipe);
       return;
     }
 
+    // Fallback : pas de recette en mémoire, on ne peut pas savoir le parentRecipeId
+    if (recipeId == null || Number.isNaN(recipeId)) return;
+
+    this.compatibilityLoading = true;
     const request: RecipeCompatibleMachineSearchRequest = {
       recipeId,
-      configurationConstraints: []
+      capabilitySourceRecipeId: null,  // on n'a pas l'info → capabilities depuis la recette elle-même
+      configurationConstraints: null   // calcul depuis les StepParameters
     };
 
-    this.recipeCompatibilityApiService.findCompatibleMachines(request).subscribe({
-      next: (result) => this.compatibility$.next(result),
-      error: (error) => {
-        console.error('Failed to compute compatible machines', error);
-        this.compatibility$.next(this.buildEmptyCompatibility(recipeId));
-      }
-    });
+    this.executeCompatibilityRequest(request);
+  }
+  // Nouvelle méthode centrale
+  private refreshCompatibilityForRecipe(recipe: Recipe): void {
+    if (!recipe?.id) return;
+
+    this.compatibilityLoading = true;
+
+    const isDerived = recipe.recipeKind === 'DERIVED';
+
+    const request: RecipeCompatibleMachineSearchRequest = {
+      recipeId: recipe.id,
+      // Si dérivée : capabilities lues depuis la golden parente
+      capabilitySourceRecipeId: isDerived ? (recipe.parentRecipeId ?? null) : null,
+      // null → calcul automatique depuis les StepParameters de recipeId (la dérivée)
+      // C'est exactement ce qu'on veut : les valeurs que l'user est en train de modifier
+      configurationConstraints: null
+    };
+
+    this.executeCompatibilityRequest(request);
   }
 
+  // Extraction de la logique HTTP pour éviter la duplication
+  private executeCompatibilityRequest(
+    request: RecipeCompatibleMachineSearchRequest
+  ): void {
+    this.recipeCompatibilityApiService.findCompatibleMachines(request)
+      .pipe(finalize(() => { this.compatibilityLoading = false; }))
+      .subscribe({
+        next: result => {
+          this.compatibility = result;
+          this.compatibility$.next(result);
+        },
+        error: (error) => {
+          console.error('Failed to refresh compatibility', error);
+          const empty = this.buildEmptyCompatibility(request.recipeId as number);
+          this.compatibility = empty;
+          this.compatibility$.next(empty);
+        }
+      });
+  }
   private buildEmptyCompatibility(recipeId: number): RecipeCompatibilityResult {
     return {
       recipeId,
@@ -667,6 +993,62 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
         console.error(`Failed to update recipe field ${String(field)}`, error);
         this.savingSummaryField = null;
       }
+    });
+  }
+
+  private buildStepParameterCreatePayload(source: StepParameter): StepParameter {
+    const payload = { ...(source as any) };
+    delete payload.id;
+    delete payload.step;
+    delete payload.stepId;
+    delete payload.createdAt;
+    delete payload.updatedAt;
+    payload.parentStepParameterId = null;
+    return payload as StepParameter;
+  }
+
+  private runWithViewportPreserved(action: () => void): void {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      action();
+      return;
+    }
+
+    const selectors = [
+      '.workspace__main',
+      '.steps-shell__content',
+      '.matrix-wrapper'
+    ];
+
+    const capture = (selector: string) => {
+      const element = document.querySelector(selector) as HTMLElement | null;
+      return {
+        selector,
+        top: element?.scrollTop ?? 0,
+        left: element?.scrollLeft ?? 0
+      };
+    };
+
+    const windowPosition = {
+      x: window.scrollX,
+      y: window.scrollY
+    };
+
+    const scrollStates = selectors.map(capture);
+
+    action();
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        window.scrollTo(windowPosition.x, windowPosition.y);
+
+        for (const state of scrollStates) {
+          const element = document.querySelector(state.selector) as HTMLElement | null;
+          if (element) {
+            element.scrollTop = state.top;
+            element.scrollLeft = state.left;
+          }
+        }
+      });
     });
   }
 }

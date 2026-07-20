@@ -21,9 +21,9 @@ export class DefinitionCreatePageComponent {
     this.configurationDefinitionApiService.createDefinition(definition).subscribe({
       next: (created) => {
         if (created.id) {
-          this.router.navigate(['/configuration-definitions', created.id]);
+          this.router.navigate(['/reference-data/configuration-definitions', created.id]);
         } else {
-          this.router.navigate(['/configuration-definitions']);
+          this.router.navigate(['/reference-data/configuration-definitions']);
         }
       },
       error: (error) => console.error('Failed to create definition', error)

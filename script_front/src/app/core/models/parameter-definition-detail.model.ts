@@ -13,10 +13,15 @@ export interface ParameterDefinitionDetail {
   requiredOnStep: boolean;
   stepType: StepType;
   defaultValueJson?: string | null;
-  parameterGroup?: string | null;
+
+  parameterGroupId?: number | null;
+  parameterGroupName?: string | null;
   parameterGroupOrder?: number | null;
+  orderIndexInGroup?: number | null;
+
   configurationDefinitionId?: number | null;
   configurationDefinitionCode?: string | null;
   configurationDefinitionName?: string | null;
+
   options: ParameterOption[];
 }

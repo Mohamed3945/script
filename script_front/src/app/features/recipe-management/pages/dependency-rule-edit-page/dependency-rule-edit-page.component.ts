@@ -69,7 +69,7 @@ export class DependencyRuleEditPageComponent implements OnInit {
     }
 
     this.parameterDependencyRuleApiService.updateRule(current.id, rule).subscribe({
-      next: () => this.router.navigate(['/recipes/rules', current.id]),
+      next: () => this.router.navigate(['/rules', current.id]),
       error: (error) => console.error('Failed to update dependency rule', error)
     });
   }
