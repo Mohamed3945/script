@@ -5,6 +5,7 @@ import { StepParameter } from '../../../../../core/models/step-parameter.model';
 import { ParameterDefinition } from '../../../../../core/models/parameter-definition.model';
 import { ParameterOption } from '../../../../../core/models/parameter-option.model';
 import { StepKind } from '../../../../../core/models/step-kind.model';
+import { ParameterScope } from '../../../../../core/models/parameter-scope.model';
 import { ParameterDefinitionApiService } from '../../../../../core/services/parameter-definition-api.service';
 import { ParameterOptionApiService } from '../../../../../core/services/parameter-option-api.service';
 
@@ -74,7 +75,7 @@ export class StepParameterFormComponent implements OnChanges {
     this.loadingDefinitions = true;
     this.definitionLoadError = false;
 
-    const stepType = this.stepKind === 'PRESTEP' ? 'PRESTEP' : 'STEP';
+    const stepType: ParameterScope = this.stepKind === 'PRESTEP' ? 'PRESTEP' : 'STEP';
 
     this.parameterDefinitionApiService.getDefinitions(stepType).subscribe({
       next: (definitions) => {

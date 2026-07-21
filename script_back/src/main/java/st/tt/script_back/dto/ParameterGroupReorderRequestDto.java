@@ -6,13 +6,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import st.tt.script_back.enums.StepType;
+import st.tt.script_back.enums.ParameterScope;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ParameterGroupReorderRequestDto {
-    private StepType stepType;
+    private ParameterScope stepType;
     private List<Long> orderedGroupIds;
 }
+

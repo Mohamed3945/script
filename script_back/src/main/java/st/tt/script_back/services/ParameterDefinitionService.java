@@ -20,8 +20,8 @@ import st.tt.script_back.dto.ParameterDefinitionDto;
 import st.tt.script_back.dto.ParameterDefinitionReorderRequestDto;
 import st.tt.script_back.entities.ParameterDefinition;
 import st.tt.script_back.entities.ParameterGroup;
+import st.tt.script_back.enums.ParameterScope;
 import st.tt.script_back.enums.ParameterValueType;
-import st.tt.script_back.enums.StepType;
 import st.tt.script_back.mappers.ParameterDefinitionMapper;
 import st.tt.script_back.repositories.ParameterDefinitionRepository;
 import st.tt.script_back.repositories.ParameterGroupRepository;
@@ -59,7 +59,7 @@ public class ParameterDefinitionService {
 
         ParameterDefinition definition = parameterDefinitionMapper.toEntity(request);
         if (definition.getStepType() == null) {
-            definition.setStepType(StepType.STEP);
+            definition.setStepType(ParameterScope.STEP);
         }
 
         if (request.getParameterGroupId() != null) {
@@ -87,7 +87,7 @@ public class ParameterDefinitionService {
     }
 
     @Transactional(readOnly = true)
-    public List<ParameterDefinitionDto> getParameterDefinitions(StepType stepType) {
+    public List<ParameterDefinitionDto> getParameterDefinitions(ParameterScope stepType) {
         List<ParameterDefinition> definitions;
         if (stepType == null) {
             definitions = parameterDefinitionRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
@@ -120,7 +120,7 @@ public class ParameterDefinitionService {
         }
 
         if (existing.getStepType() == null) {
-            existing.setStepType(StepType.STEP);
+            existing.setStepType(ParameterScope.STEP);
         }
 
         existing.setDefaultValueJson(
@@ -374,7 +374,7 @@ public class ParameterDefinitionService {
         return normalized.isBlank() ? fallbackPrefix : normalized;
     }
 
-    private String ensureUniqueCode(String baseCode, Long currentId, StepType stepType) {
+    private String ensureUniqueCode(String baseCode, Long currentId, ParameterScope stepType) {
         String candidate = baseCode;
         int suffix = 2;
 
@@ -389,3 +389,4 @@ public class ParameterDefinitionService {
         }
     }
 }
+

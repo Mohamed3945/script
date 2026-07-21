@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import st.tt.script_back.dto.ParameterGroupDto;
 import st.tt.script_back.dto.ParameterGroupReorderRequestDto;
-import st.tt.script_back.enums.StepType;
+import st.tt.script_back.enums.ParameterScope;
 import st.tt.script_back.services.ParameterGroupService;
 
 @RestController
@@ -25,7 +25,7 @@ public class ParameterGroupController {
     }
 
     @GetMapping
-    public List<ParameterGroupDto> getGroups(@RequestParam StepType stepType) {
+    public List<ParameterGroupDto> getGroups(@RequestParam ParameterScope stepType) {
         return parameterGroupService.getGroups(stepType);
     }
 
@@ -39,3 +39,4 @@ public class ParameterGroupController {
         parameterGroupService.reorderGroups(request);
     }
 }
+

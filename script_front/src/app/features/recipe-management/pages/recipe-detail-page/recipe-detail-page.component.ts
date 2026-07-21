@@ -11,6 +11,7 @@ import { RecipeKind } from '../../../../core/models/recipe-kind.model';
 import { RecipeRequirements } from '../../../../core/models/recipe-requirements.model';
 import { RecipeStatus } from '../../../../core/models/recipe-status.model';
 import { RecipeMatrixCell } from '../../../../core/models/recipe-matrix-cell.model';
+import { RecipeMatrixEndpointCell } from '../../../../core/models/recipe-matrix-endpoint-cell.model';
 import { RecipeMatrix } from '../../../../core/models/recipe-matrix.model';
 import { Step } from '../../../../core/models/step.model';
 import { StepKind } from '../../../../core/models/step-kind.model';
@@ -30,6 +31,7 @@ import { RecipeTabNavComponent, RecipeWorkspaceTab } from '../../components/reci
 import { RecipeViewSwitchComponent, RecipeViewMode } from '../../components/recipes/recipe-view-switch/recipe-view-switch.component';
 import {
   RecipeMatrixCellContextRequest,
+  RecipeMatrixEndpointCellContextRequest,
   RecipeMatrixCellUpdate,
   RecipeMatrixParameterRowContextRequest,
   RecipeMatrixStepContextRequest,
@@ -43,6 +45,7 @@ import {
   RecipePrestepViewComponent
 } from '../../components/recipes/recipe-prestep-view/recipe-prestep-view.component';
 import { StepModalComponent } from '../../components/steps/step-modal/step-modal.component';
+import { StepEndpointModalComponent } from '../../components/steps/step-endpoint-modal/step-endpoint-modal.component';
 import { StepParameterModalComponent } from '../../components/steps/step-parameter-modal/step-parameter-modal.component';
 
 @Component({
@@ -61,6 +64,7 @@ import { StepParameterModalComponent } from '../../components/steps/step-paramet
     RecipeStepFocusViewComponent,
     RecipePrestepViewComponent,
     StepModalComponent,
+    StepEndpointModalComponent,
     StepParameterModalComponent
   ],
   templateUrl: './recipe-detail-page.component.html',
@@ -91,11 +95,14 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
 
   showStepModal = false;
   showStepParameterModal = false;
+  showEndpointModal = false;
   savingSummaryField: string | null = null;
   prestepStep: Step | null = null;
   modalStepId: number | null = null;
   modalStepKind: StepKind | null = null;
   modalParentCandidates: StepParameter[] = [];
+  endpointModalStepId: number | null = null;
+  endpointModalLockedByGolden = false;
 
   stepContextMenu: { visible: boolean; x: number; y: number; stepId: number | null; stepCode: string | null } = {
     visible: false,
@@ -105,11 +112,18 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     stepCode: null
   };
 
-  cellActionBar: { visible: boolean; x: number; y: number; cell: RecipeMatrixCell | null } = {
+  cellActionBar: {
+    visible: boolean;
+    x: number;
+    y: number;
+    cell: RecipeMatrixCell | null;
+    endpointCell: RecipeMatrixEndpointCell | null;
+  } = {
     visible: false,
     x: 0,
     y: 0,
-    cell: null
+    cell: null,
+    endpointCell: null
   };
 
   parameterRowContextMenu: {
@@ -448,7 +462,8 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
       visible: true,
       x: request.x,
       y: request.y,
-      cell: request.cell
+      cell: request.cell,
+      endpointCell: null
     };
   }
 
@@ -464,7 +479,8 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
       visible: true,
       x: request.x,
       y: request.y,
-      cell: request.cell
+      cell: request.cell,
+      endpointCell: null
     };
   }
 
@@ -482,6 +498,23 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
       y: request.y,
       definitionId: request.definitionId,
       parameterName: request.parameterName
+    };
+  }
+
+  onEndpointCellContextRequested(request: RecipeMatrixEndpointCellContextRequest): void {
+    if (!this.isGoldenWorkspace) {
+      return;
+    }
+
+    this.closeStepContextMenu();
+    this.closeParameterRowContextMenu();
+
+    this.cellActionBar = {
+      visible: true,
+      x: request.x,
+      y: request.y,
+      cell: null,
+      endpointCell: request.endpointCell
     };
   }
 
@@ -531,7 +564,38 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
 
   onToggleGoldenFromContext(): void {
     const cell = this.cellActionBar.cell;
-    if (!cell?.stepParameterId || !this.isGoldenWorkspace) {
+    const endpointCell = this.cellActionBar.endpointCell;
+
+    if (!this.isGoldenWorkspace) {
+      return;
+    }
+
+    if (endpointCell?.stepId) {
+      this.recipeApiService.getStepEndpoint(endpointCell.stepId).subscribe({
+        next: (endpoint) => {
+          const payload = {
+            ...endpoint,
+            stepId: endpointCell.stepId,
+            lockedByGolden: !endpointCell.lockedByGolden
+          };
+
+          this.recipeApiService.upsertStepEndpoint(endpointCell.stepId, payload).subscribe({
+            next: () => {
+              this.runWithViewportPreserved(() => {
+                this.recipeBuilderService.refreshMatrix();
+                this.closeCellActionBar();
+              });
+              this.requestCompatibilityRefresh();
+            },
+            error: (error) => console.error('Failed to toggle endpoint golden lock', error)
+          });
+        },
+        error: (error) => console.error('Failed to load endpoint before lock toggle', error)
+      });
+      return;
+    }
+
+    if (!cell?.stepParameterId) {
       return;
     }
 
@@ -541,6 +605,16 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
       action: 'toggle-golden',
       lockedByGolden: !cell.lockedByGolden
     });
+  }
+
+  onEditEndpointFromContext(): void {
+    const endpointCell = this.cellActionBar.endpointCell;
+    if (!endpointCell?.stepId) {
+      return;
+    }
+
+    this.closeCellActionBar();
+    this.openEndpointModalForCell(endpointCell);
   }
 
   onDeleteRecipeWideParameterFromContext(): void {
@@ -619,11 +693,28 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
 
   get canToggleGoldenFromContext(): boolean {
     const cell = this.cellActionBar.cell;
-    return this.isGoldenWorkspace && !!cell?.stepParameterId && !cell.computed;
+    const endpointCell = this.cellActionBar.endpointCell;
+    if (!this.isGoldenWorkspace) {
+      return false;
+    }
+
+    if (endpointCell) {
+      return Boolean(endpointCell.stepId);
+    }
+
+    return !!cell?.stepParameterId && !cell.computed;
   }
 
   get goldenToggleLabel(): string {
+    if (this.cellActionBar.endpointCell) {
+      return this.cellActionBar.endpointCell.lockedByGolden ? 'Unlock golden' : 'Lock golden';
+    }
+
     return this.cellActionBar.cell?.lockedByGolden ? 'Unlock golden' : 'Lock golden';
+  }
+
+  get canEditEndpointFromContext(): boolean {
+    return Boolean(this.cellActionBar.endpointCell?.stepId);
   }
 
   onSummaryFieldCommitted(event: { key: string; value: unknown }): void {
@@ -719,6 +810,19 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     this.modalParentCandidates = [];
   }
 
+  closeEndpointModal(): void {
+    this.showEndpointModal = false;
+    this.endpointModalStepId = null;
+    this.endpointModalLockedByGolden = false;
+  }
+
+  onEndpointSaved(): void {
+    this.runWithViewportPreserved(() => {
+      this.recipeBuilderService.refreshMatrix();
+    });
+    this.requestCompatibilityRefresh();
+  }
+
   closeStepContextMenu(): void {
     this.stepContextMenu = {
       visible: false,
@@ -734,7 +838,8 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
       visible: false,
       x: 0,
       y: 0,
-      cell: null
+      cell: null,
+      endpointCell: null
     };
   }
 
@@ -790,7 +895,8 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     return {
       ...matrix,
       columns: stepColumns,
-      rows: filteredRows
+      rows: filteredRows,
+      endpointRow: (matrix.endpointRow ?? []).filter((cell) => stepColumnIds.has(cell.stepId))
     };
   }
 
@@ -814,8 +920,19 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     return {
       ...matrix,
       columns: [prestepColumn],
-      rows: filteredRows
+      rows: filteredRows,
+      endpointRow: (matrix.endpointRow ?? []).filter((cell) => cell.stepId === prestepColumn.stepId)
     };
+  }
+
+  private openEndpointModalForCell(endpointCell: RecipeMatrixEndpointCell): void {
+    if (!endpointCell.stepId) {
+      return;
+    }
+
+    this.endpointModalStepId = endpointCell.stepId;
+    this.endpointModalLockedByGolden = endpointCell.lockedByGolden;
+    this.showEndpointModal = true;
   }
 
   private prepareStepParameterModal(step: Step): void {

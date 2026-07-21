@@ -8,6 +8,7 @@ import { StepParameterGridRow } from '../models/step-parameter-grid-row.model';
 import { RecipeMatrix } from '../models/recipe-matrix.model';
 import { RecipeKind } from '../models/recipe-kind.model';
 import { StepKind } from '../models/step-kind.model';
+import { StepEndpoint } from '../models/step-endpoint.model';
 
 @Injectable({ providedIn: 'root' })
 export class RecipeApiService {
@@ -122,5 +123,17 @@ export class RecipeApiService {
       payload,
       { params }
     );
+  }
+
+  getStepEndpoint(stepId: number): Observable<StepEndpoint> {
+    return this.http.get<StepEndpoint>(`${this.baseUrl}/steps/${stepId}/endpoint`);
+  }
+
+  upsertStepEndpoint(stepId: number, payload: StepEndpoint): Observable<StepEndpoint> {
+    return this.http.put<StepEndpoint>(`${this.baseUrl}/steps/${stepId}/endpoint`, payload);
+  }
+
+  deleteStepEndpoint(stepId: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/steps/${stepId}/endpoint`);
   }
 }

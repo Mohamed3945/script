@@ -1,8 +1,8 @@
-import { StepType } from './step-type.model';
+import { ParameterScope } from './parameter-scope.model';
 
 export interface ParameterGroup {
   id?: number;
   name: string;
-  stepType: StepType;
+  stepType: ParameterScope;
   orderIndex?: number | null;
 }

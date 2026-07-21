@@ -27,7 +27,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import st.tt.script_back.enums.ParameterValueType;
-import st.tt.script_back.enums.StepType;
+import st.tt.script_back.enums.ParameterScope;
 
 @Entity
 @Getter
@@ -70,7 +70,7 @@ public class ParameterDefinition {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "step_type", nullable = false)
-    private StepType stepType = StepType.STEP;
+    private ParameterScope stepType = ParameterScope.STEP;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "configuration_definition_id")
@@ -115,3 +115,4 @@ public class ParameterDefinition {
         }
     }
 }
+

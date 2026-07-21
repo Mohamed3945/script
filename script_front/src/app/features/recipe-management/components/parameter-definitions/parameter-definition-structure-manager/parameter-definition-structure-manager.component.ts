@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ParameterDefinition } from '../../../../../core/models/parameter-definition.model';
 import { ParameterGroup } from '../../../../../core/models/parameter-group.model';
-import { StepType } from '../../../../../core/models/step-type.model';
+import { ParameterScope } from '../../../../../core/models/parameter-scope.model';
 import { ParameterDefinitionApiService } from '../../../../../core/services/parameter-definition-api.service';
 import { ParameterGroupApiService } from '../../../../../core/services/parameter-group-api.service';
 
@@ -20,7 +20,7 @@ interface ParameterDefinitionGroupVm {
   styleUrl: './parameter-definition-structure-manager.component.scss'
 })
 export class ParameterDefinitionStructureManagerComponent implements OnInit {
-  stepType: StepType = 'STEP';
+  stepType: ParameterScope = 'STEP';
   groups: ParameterDefinitionGroupVm[] = [];
   newGroupName = '';
   loading = false;
@@ -36,7 +36,7 @@ export class ParameterDefinitionStructureManagerComponent implements OnInit {
     this.load();
   }
 
-  onStepTypeChanged(stepType: StepType): void {
+  onStepTypeChanged(stepType: ParameterScope): void {
     this.stepType = stepType;
     this.load();
   }

@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import st.tt.script_back.enums.StepType;
+import st.tt.script_back.enums.ParameterScope;
 
 @Getter
 @Setter
@@ -13,6 +13,7 @@ import st.tt.script_back.enums.StepType;
 public class ParameterGroupDto {
     private Long id;
     private String name;
-    private StepType stepType;
+    private ParameterScope stepType;
     private Integer orderIndex;
 }
+

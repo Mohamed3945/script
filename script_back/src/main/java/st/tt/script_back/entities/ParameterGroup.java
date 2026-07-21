@@ -22,7 +22,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import st.tt.script_back.enums.StepType;
+import st.tt.script_back.enums.ParameterScope;
 
 @Entity
 @Getter
@@ -44,7 +44,7 @@ public class ParameterGroup {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "step_type", nullable = false)
-    private StepType stepType = StepType.STEP;
+    private ParameterScope stepType = ParameterScope.STEP;
 
     @Column(name = "order_index", nullable = false)
     private Integer orderIndex;
@@ -70,3 +70,4 @@ public class ParameterGroup {
         this.reviseTime = Instant.now();
     }
 }
+

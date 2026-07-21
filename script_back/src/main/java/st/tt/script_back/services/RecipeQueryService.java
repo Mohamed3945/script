@@ -19,6 +19,7 @@ import st.tt.script_back.dto.RecipeDto;
 import st.tt.script_back.dto.RecipeMatrixCellDto;
 import st.tt.script_back.dto.RecipeMatrixColumnDto;
 import st.tt.script_back.dto.RecipeMatrixDto;
+import st.tt.script_back.dto.RecipeMatrixEndpointCellDto;
 import st.tt.script_back.dto.RecipeMatrixRowDto;
 import st.tt.script_back.dto.StepDto;
 import st.tt.script_back.dto.StepParameterDto;
@@ -26,6 +27,8 @@ import st.tt.script_back.dto.StepParameterGridRowDto;
 import st.tt.script_back.entities.ParameterOption;
 import st.tt.script_back.entities.Recipe;
 import st.tt.script_back.entities.Step;
+import st.tt.script_back.entities.StepEndpoint;
+import st.tt.script_back.entities.StepEndpointCondition;
 import st.tt.script_back.entities.StepParameter;
 import st.tt.script_back.enums.ActivationState;
 import st.tt.script_back.enums.ParameterValueType;
@@ -37,6 +40,7 @@ import st.tt.script_back.mappers.StepMapper;
 import st.tt.script_back.mappers.StepParameterMapper;
 import st.tt.script_back.repositories.ParameterOptionRepository;
 import st.tt.script_back.repositories.RecipeRepository;
+import st.tt.script_back.repositories.StepEndpointRepository;
 import st.tt.script_back.repositories.StepParameterRepository;
 import st.tt.script_back.repositories.StepRepository;
 
@@ -51,6 +55,7 @@ public class RecipeQueryService {
 
     private final RecipeRepository recipeRepository;
     private final StepRepository stepRepository;
+    private final StepEndpointRepository stepEndpointRepository;
     private final StepParameterRepository stepParameterRepository;
     private final ParameterOptionRepository parameterOptionRepository;
     private final RecipeMapper recipeMapper;
@@ -61,6 +66,7 @@ public class RecipeQueryService {
     public RecipeQueryService(
             RecipeRepository recipeRepository,
             StepRepository stepRepository,
+            StepEndpointRepository stepEndpointRepository,
             StepParameterRepository stepParameterRepository,
             RecipeMapper recipeMapper,
             ParameterOptionRepository parameterOptionRepository,
@@ -69,6 +75,7 @@ public class RecipeQueryService {
             StepParameterMapper stepParameterMapper) {
         this.recipeRepository = recipeRepository;
         this.stepRepository = stepRepository;
+        this.stepEndpointRepository = stepEndpointRepository;
         this.stepParameterRepository = stepParameterRepository;
         this.recipeMapper = recipeMapper;
         this.parameterOptionRepository = parameterOptionRepository;
@@ -180,11 +187,20 @@ public class RecipeQueryService {
 
         List<Step> steps = stepRepository.findByRecipeIdOrderByOrderIndexAsc(recipeId);
         if (steps.isEmpty()) {
-            return new RecipeMatrixDto(recipeId, List.of(), List.of());
+            return new RecipeMatrixDto(recipeId, List.of(), List.of(), List.of());
         }
 
         List<Long> stepIds = steps.stream().map(Step::getId).toList();
         List<StepParameter> parameters = stepParameterRepository.findByStepIdsWithDefinitionAndSelectedOption(stepIds);
+        List<StepEndpoint> endpoints = stepEndpointRepository.findByStepIdsWithConditions(stepIds);
+
+        Map<Long, StepEndpoint> endpointByStepId = new HashMap<>();
+        for (StepEndpoint endpoint : endpoints) {
+            if (endpoint.getStep() == null || endpoint.getStep().getId() == null) {
+                continue;
+            }
+            endpointByStepId.putIfAbsent(endpoint.getStep().getId(), endpoint);
+        }
 
         Map<Long, List<ParameterOptionDto>> optionsByDefinitionId = new HashMap<>();
         Set<Long> enumDefinitionIds = parameters.stream()
@@ -316,7 +332,67 @@ public class RecipeQueryService {
                 })
                 .toList();
 
-        return new RecipeMatrixDto(recipeId, columns, rows);
+        List<RecipeMatrixEndpointCellDto> endpointRow = steps.stream()
+                .map(step -> toEndpointCell(step.getId(), endpointByStepId.get(step.getId())))
+                .toList();
+
+        return new RecipeMatrixDto(recipeId, columns, rows, endpointRow);
+    }
+
+    private RecipeMatrixEndpointCellDto toEndpointCell(Long stepId, StepEndpoint endpoint) {
+        if (endpoint == null || endpoint.getConditions() == null || endpoint.getConditions().isEmpty()) {
+            return new RecipeMatrixEndpointCellDto(stepId, null, null, 0, "Time", false);
+        }
+
+        List<StepEndpointCondition> sortedConditions = endpoint.getConditions().stream()
+                .sorted(Comparator.comparing(condition -> condition.getOrderIndex() == null
+                        ? Integer.MAX_VALUE
+                        : condition.getOrderIndex()))
+                .toList();
+
+        int conditionCount = sortedConditions.size();
+        String summaryLabel = conditionCount == 1
+                ? summarizeSingleCondition(sortedConditions.get(0))
+                : conditionCount + " conditions";
+
+        return new RecipeMatrixEndpointCellDto(
+                stepId,
+                endpoint.getId(),
+                endpoint.getClause(),
+                conditionCount,
+                summaryLabel,
+                endpoint.isLockedByGolden());
+    }
+
+    private String summarizeSingleCondition(StepEndpointCondition condition) {
+        if (condition == null) {
+            return "1 condition";
+        }
+
+        String parameterLabel = condition.getEndpointParameter() != null
+                ? (condition.getEndpointParameter().getAlias() != null
+                        ? condition.getEndpointParameter().getAlias()
+                        : condition.getEndpointParameter().getName())
+                : "parameter";
+
+        String operator = condition.getOperator() != null ? condition.getOperator().name() : "EQ";
+
+        String value = "-";
+        if (condition.getSelectedOption() != null && condition.getSelectedOption().getLabel() != null) {
+            value = condition.getSelectedOption().getLabel();
+        } else if (condition.getValueJson() != null && !condition.getValueJson().isBlank()) {
+            value = normalizeScalarForSummary(condition.getValueJson());
+        }
+
+        return parameterLabel + " " + operator + " " + value;
+    }
+
+    private String normalizeScalarForSummary(String rawValue) {
+        String trimmed = rawValue.trim();
+        if (trimmed.length() >= 2 && trimmed.startsWith("\"") && trimmed.endsWith("\"")) {
+            return trimmed.substring(1, trimmed.length() - 1);
+        }
+        return trimmed;
     }
 
     /**

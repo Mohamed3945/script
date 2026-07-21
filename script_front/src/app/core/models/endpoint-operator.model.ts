@@ -1,0 +1,1 @@
+export type EndpointOperator = 'EQ' | 'NEQ' | 'LT' | 'LTE' | 'GT' | 'GTE';

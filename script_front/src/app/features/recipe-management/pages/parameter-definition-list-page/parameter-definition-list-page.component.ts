@@ -3,12 +3,12 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { ParameterDefinition } from '../../../../core/models/parameter-definition.model';
-import { StepType } from '../../../../core/models/step-type.model';
+import { ParameterScope } from '../../../../core/models/parameter-scope.model';
 import { ParameterDefinitionApiService } from '../../../../core/services/parameter-definition-api.service';
 import { ParameterDefinitionStructureManagerComponent } from '../../components/parameter-definitions/parameter-definition-structure-manager/parameter-definition-structure-manager.component';
 import { ParameterDefinitionTableComponent } from '../../components/parameter-definitions/parameter-definition-table/parameter-definition-table.component';
 
-type ParameterDefinitionFilter = 'ALL' | StepType;
+type ParameterDefinitionFilter = 'ALL' | ParameterScope;
 type ParameterDefinitionViewMode = 'table' | 'structure';
 
 @Component({
@@ -21,7 +21,7 @@ type ParameterDefinitionViewMode = 'table' | 'structure';
 export class ParameterDefinitionListPageComponent implements OnInit {
   definitions$ = new BehaviorSubject<ParameterDefinition[]>([]);
   loading$ = new BehaviorSubject<boolean>(false);
-  readonly availableFilters: ParameterDefinitionFilter[] = ['ALL', 'STEP', 'PRESTEP'];
+  readonly availableFilters: ParameterDefinitionFilter[] = ['ALL', 'STEP', 'PRESTEP', 'ENDPOINT'];
   selectedFilter: ParameterDefinitionFilter = 'ALL';
   viewMode: ParameterDefinitionViewMode = 'table';
 
@@ -56,7 +56,7 @@ export class ParameterDefinitionListPageComponent implements OnInit {
   }
 
   onFilterChanged(rawValue: string): void {
-    if (rawValue !== 'ALL' && rawValue !== 'STEP' && rawValue !== 'PRESTEP') {
+    if (rawValue !== 'ALL' && rawValue !== 'STEP' && rawValue !== 'PRESTEP' && rawValue !== 'ENDPOINT') {
       return;
     }
 

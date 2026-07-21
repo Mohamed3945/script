@@ -132,6 +132,19 @@
           </tr>
         </ng-container>
       </tbody>
+
+      <tbody *ngIf="endpointCells.length > 0">
+        <tr class="endpoint-row">
+          <td class="matrix-table__param endpoint-row__label">Endpoint</td>
+          <td
+            *ngFor="let endpointCell of endpointCells; trackBy: trackByEndpointCell"
+            class="endpoint-row__cell"
+            [class.endpoint-row__cell--locked]="isDerivedWorkspace && endpointCell.lockedByGolden"
+            (contextmenu)="onEndpointCellContextMenu($event, endpointCell)">
+            <div class="endpoint-row__summary">{{ getEndpointSummary(endpointCell) }}</div>
+          </td>
+        </tr>
+      </tbody>
     </table>
   </div>
 

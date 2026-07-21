@@ -2,6 +2,7 @@ import { NgClass, NgFor, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault } from '@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ParameterValueType } from '../../../../../core/models/parameter-value-type.model';
+import { RecipeMatrixEndpointCell } from '../../../../../core/models/recipe-matrix-endpoint-cell.model';
 import { RecipeMatrix } from '../../../../../core/models/recipe-matrix.model';
 import { RecipeMatrixCell } from '../../../../../core/models/recipe-matrix-cell.model';
 import { RecipeMatrixRow } from '../../../../../core/models/recipe-matrix-row.model';
@@ -35,6 +36,12 @@ export interface RecipeMatrixCellContextRequest {
   y: number;
 }
 
+export interface RecipeMatrixEndpointCellContextRequest {
+  endpointCell: RecipeMatrixEndpointCell;
+  x: number;
+  y: number;
+}
+
 interface MatrixGroup {
   key: string;
   title: string;
@@ -59,6 +66,7 @@ type MatrixCellVisualState =
 })
 export class RecipeMatrixViewComponent {
   @Input() workspaceMode: 'golden' | 'derived' = 'derived';
+  @Input() endpointRow: RecipeMatrixEndpointCell[] | null = null;
 
   @Input()
   set matrix(value: RecipeMatrix | null) {
@@ -79,6 +87,7 @@ export class RecipeMatrixViewComponent {
   @Output() stepHeaderContextRequested = new EventEmitter<RecipeMatrixStepContextRequest>();
   @Output() cellContextRequested = new EventEmitter<RecipeMatrixCellContextRequest>();
   @Output() parameterRowContextRequested = new EventEmitter<RecipeMatrixParameterRowContextRequest>();
+  @Output() endpointCellContextRequested = new EventEmitter<RecipeMatrixEndpointCellContextRequest>();
 
   readonly enumValueType: ParameterValueType = 'ENUM';
   readonly numberValueType: ParameterValueType = 'NUMBER';
@@ -112,7 +121,7 @@ export class RecipeMatrixViewComponent {
   }
 
   get hasDisplayableMatrix(): boolean {
-    return this.stepColumns.length > 0 && this.parameterRows.length > 0;
+    return this.stepColumns.length > 0 && (this.parameterRows.length > 0 || this.endpointCells.length > 0);
   }
 
   get isGoldenWorkspace(): boolean {
@@ -121,6 +130,22 @@ export class RecipeMatrixViewComponent {
 
   get isDerivedWorkspace(): boolean {
     return this.workspaceMode === 'derived';
+  }
+
+  get endpointCells(): RecipeMatrixEndpointCell[] {
+    const source = this.endpointRow ?? this.effectiveMatrix?.endpointRow ?? null;
+    if (source && source.length > 0) {
+      return source;
+    }
+
+    return this.stepColumns.map((column) => ({
+      stepId: column.stepId,
+      endpointId: null,
+      clause: null,
+      conditionCount: 0,
+      summaryLabel: '',
+      lockedByGolden: false
+    }));
   }
 
   private hasRenderableMatrix(matrix: RecipeMatrix | null): boolean {
@@ -277,6 +302,30 @@ export class RecipeMatrixViewComponent {
     });
   }
 
+  onEndpointCellContextMenu(event: MouseEvent, endpointCell: RecipeMatrixEndpointCell): void {
+    if (!endpointCell?.stepId) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.endpointCellContextRequested.emit({
+      endpointCell,
+      x: event.clientX,
+      y: event.clientY
+    });
+  }
+
+  getEndpointSummary(endpointCell: RecipeMatrixEndpointCell): string {
+    if (endpointCell.conditionCount <= 0) {
+      return '-';
+    }
+
+    const summary = (endpointCell.summaryLabel ?? '').trim();
+    return summary || `${endpointCell.conditionCount} condition(s)`;
+  }
+
   computeCellDisplayState(cell: RecipeMatrixCell): MatrixCellVisualState {
     if (cell.lockedByGolden) {
       return cell.activationState === 'DISABLED' ? 'golden-inactive' : 'golden-active';
@@ -378,6 +427,9 @@ export class RecipeMatrixViewComponent {
 
   trackByOption = (_: number, option: any): number | string =>
     option?.id ?? option?.code ?? option?.label ?? _;
+
+  trackByEndpointCell = (_: number, endpointCell: RecipeMatrixEndpointCell): string =>
+    `endpoint:${endpointCell.stepId}`;
 
   private buildRowKey(row: RecipeMatrixRow): string {
     return [

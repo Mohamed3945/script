@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import st.tt.script_back.enums.ParameterValueType;
-import st.tt.script_back.enums.StepType;
+import st.tt.script_back.enums.ParameterScope;
 
 @Getter
 @Setter
@@ -20,7 +20,7 @@ public class ParameterDefinitionDto {
     private String description;
     private ParameterValueType valueType;
     private boolean requiredOnStep;
-    private StepType stepType;
+    private ParameterScope stepType;
     private String defaultValueJson;
 
     private Long parameterGroupId;
@@ -32,3 +32,4 @@ public class ParameterDefinitionDto {
     private String configurationDefinitionCode;
     private String configurationDefinitionName;
 }
+

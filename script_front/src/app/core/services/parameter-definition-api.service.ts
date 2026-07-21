@@ -4,7 +4,7 @@ import { Observable, forkJoin, map } from 'rxjs';
 import { ParameterDefinition } from '../models/parameter-definition.model';
 import { ParameterDefinitionDetail } from '../models/parameter-definition-detail.model';
 import { ParameterOption } from '../models/parameter-option.model';
-import { StepType } from '../models/step-type.model';
+import { ParameterScope } from '../models/parameter-scope.model';
 
 @Injectable({ providedIn: 'root' })
 export class ParameterDefinitionApiService {
@@ -12,7 +12,7 @@ export class ParameterDefinitionApiService {
 
   constructor(private http: HttpClient) {}
 
-  getDefinitions(stepType?: StepType): Observable<ParameterDefinition[]> {
+  getDefinitions(stepType?: ParameterScope): Observable<ParameterDefinition[]> {
     let params = new HttpParams();
     if (stepType) {
       params = params.set('stepType', stepType);

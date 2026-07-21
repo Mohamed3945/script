@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ParameterGroup } from '../models/parameter-group.model';
-import { StepType } from '../models/step-type.model';
+import { ParameterScope } from '../models/parameter-scope.model';
 
 @Injectable({ providedIn: 'root' })
 export class ParameterGroupApiService {
@@ -10,7 +10,7 @@ export class ParameterGroupApiService {
 
   constructor(private http: HttpClient) {}
 
-  getGroups(stepType: StepType): Observable<ParameterGroup[]> {
+  getGroups(stepType: ParameterScope): Observable<ParameterGroup[]> {
     const params = new HttpParams().set('stepType', stepType);
     return this.http.get<ParameterGroup[]>(`${this.baseUrl}/parameter-groups`, { params });
   }
@@ -19,7 +19,7 @@ export class ParameterGroupApiService {
     return this.http.post<ParameterGroup>(`${this.baseUrl}/parameter-groups`, payload);
   }
 
-  reorderGroups(stepType: StepType, orderedGroupIds: number[]): Observable<void> {
+  reorderGroups(stepType: ParameterScope, orderedGroupIds: number[]): Observable<void> {
     return this.http.post<void>(`${this.baseUrl}/parameter-groups/reorder`, {
       stepType,
       orderedGroupIds

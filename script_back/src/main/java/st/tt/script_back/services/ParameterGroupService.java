@@ -12,7 +12,7 @@ import jakarta.persistence.EntityNotFoundException;
 import st.tt.script_back.dto.ParameterGroupDto;
 import st.tt.script_back.dto.ParameterGroupReorderRequestDto;
 import st.tt.script_back.entities.ParameterGroup;
-import st.tt.script_back.enums.StepType;
+import st.tt.script_back.enums.ParameterScope;
 import st.tt.script_back.repositories.ParameterGroupRepository;
 
 @Service
@@ -25,7 +25,7 @@ public class ParameterGroupService {
     }
 
     @Transactional(readOnly = true)
-    public List<ParameterGroupDto> getGroups(StepType stepType) {
+    public List<ParameterGroupDto> getGroups(ParameterScope stepType) {
         List<ParameterGroup> groups = parameterGroupRepository.findByStepTypeOrderByOrderIndexAsc(stepType);
         return groups.stream()
                 .map(g -> new ParameterGroupDto(g.getId(), g.getName(), g.getStepType(), g.getOrderIndex()))
@@ -124,3 +124,4 @@ public class ParameterGroupService {
         parameterGroupRepository.saveAll(groups);
     }
 }
+

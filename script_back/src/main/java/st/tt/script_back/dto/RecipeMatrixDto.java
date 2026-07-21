@@ -20,4 +20,5 @@ public class RecipeMatrixDto {
     private Long recipeId;
     private List<RecipeMatrixColumnDto> columns;
     private List<RecipeMatrixRowDto> rows;
+    private List<RecipeMatrixEndpointCellDto> endpointRow;
 }

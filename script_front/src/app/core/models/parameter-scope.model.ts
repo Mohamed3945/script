@@ -1,0 +1,1 @@
+export type ParameterScope = 'STEP' | 'PRESTEP' | 'ENDPOINT';

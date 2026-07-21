@@ -158,6 +158,36 @@
   background: #c8d9ea;
 }
 
+.endpoint-row td {
+  border-top: 2px solid #d4e1ee;
+}
+
+.endpoint-row__label {
+  background: #edf3f9;
+  color: #284056;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 10px;
+}
+
+.endpoint-row__cell {
+  background: #f7fbff;
+  cursor: context-menu;
+}
+
+.endpoint-row__cell--locked {
+  background: #f0e7b9;
+}
+
+.endpoint-row__summary {
+  font-family: Consolas, 'Courier New', monospace;
+  font-size: 11px;
+  color: #385167;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .param-alias {
   margin-top: 2px;
   font-size: 11px;

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import st.tt.script_back.dto.ParameterDefinitionDto;
 import st.tt.script_back.dto.ParameterDefinitionMoveRequestDto;
 import st.tt.script_back.dto.ParameterDefinitionReorderRequestDto;
-import st.tt.script_back.enums.StepType;
+import st.tt.script_back.enums.ParameterScope;
 import st.tt.script_back.services.ParameterDefinitionService;
 
 /**
@@ -46,7 +46,7 @@ public class ParameterDefinitionController {
      */
     @GetMapping
     public List<ParameterDefinitionDto> getParameterDefinitions(
-            @RequestParam(required = false) StepType stepType) {
+            @RequestParam(required = false) ParameterScope stepType) {
         return parameterDefinitionService.getParameterDefinitions(stepType);
     }
 
@@ -123,3 +123,5 @@ public class ParameterDefinitionController {
         return parameterDefinitionService.findByConfigurationDefinitionId(configDefId);
     }
 }
+
+

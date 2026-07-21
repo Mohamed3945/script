@@ -20,7 +20,7 @@ import st.tt.script_back.entities.StepParameter;
 import st.tt.script_back.enums.ActivationState;
 import st.tt.script_back.enums.ParameterValueType;
 import st.tt.script_back.enums.StepKind;
-import st.tt.script_back.enums.StepType;
+import st.tt.script_back.enums.ParameterScope;
 import st.tt.script_back.mappers.StepParameterMapper;
 import st.tt.script_back.repositories.ParameterDefinitionRepository;
 import st.tt.script_back.repositories.ParameterOptionRepository;
@@ -401,11 +401,13 @@ public class StepParameterService {
             return;
         }
 
-        StepType expected = step.getStepKind() == StepKind.PRESTEP ? StepType.PRESTEP : StepType.STEP;
-        StepType actual = definition.getStepType() == null ? StepType.STEP : definition.getStepType();
+        ParameterScope expected = step.getStepKind() == StepKind.PRESTEP
+            ? ParameterScope.PRESTEP
+            : ParameterScope.STEP;
+        ParameterScope actual = definition.getStepType() == null ? ParameterScope.STEP : definition.getStepType();
 
         if (expected != actual) {
-            throw new IllegalArgumentException(expected == StepType.PRESTEP
+            throw new IllegalArgumentException(expected == ParameterScope.PRESTEP
                     ? "Only PRESTEP parameter definitions are allowed for PRESTEP"
                     : "PRESTEP parameter definitions are not allowed for STEP");
         }

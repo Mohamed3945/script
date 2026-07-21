@@ -5,7 +5,7 @@ import { ConfigurationDefinition } from '../../../../../core/models/configuratio
 import { ParameterDefinition } from '../../../../../core/models/parameter-definition.model';
 import { ParameterGroup } from '../../../../../core/models/parameter-group.model';
 import { ParameterValueType } from '../../../../../core/models/parameter-value-type.model';
-import { StepType } from '../../../../../core/models/step-type.model';
+import { ParameterScope } from '../../../../../core/models/parameter-scope.model';
 import { ConfigurationDefinitionApiService } from '../../../../../core/services/configuration-definition-api.service';
 import { ParameterGroupApiService } from '../../../../../core/services/parameter-group-api.service';
 
@@ -23,7 +23,7 @@ export class ParameterDefinitionFormComponent implements OnInit {
   @Output() submitted = new EventEmitter<ParameterDefinition>();
 
   readonly valueTypes: ParameterValueType[] = ['STRING', 'NUMBER', 'BOOLEAN', 'ENUM', 'JSON'];
-  readonly stepTypes: StepType[] = ['STEP', 'PRESTEP'];
+  readonly stepTypes: ParameterScope[] = ['STEP', 'PRESTEP', 'ENDPOINT'];
 
   configurationDefinitions: ConfigurationDefinition[] = [];
   parameterGroups: ParameterGroup[] = [];
@@ -42,7 +42,7 @@ export class ParameterDefinitionFormComponent implements OnInit {
       description: [''],
       valueType: ['STRING' as ParameterValueType, Validators.required],
       requiredOnStep: [true],
-      stepType: ['STEP' as StepType, Validators.required],
+      stepType: ['STEP' as ParameterScope, Validators.required],
       defaultValueJson: [''],
       parameterGroupId: [null as number | null],
       configurationDefinitionId: [null as number | null]
@@ -111,7 +111,7 @@ export class ParameterDefinitionFormComponent implements OnInit {
     });
   }
 
-  private loadGroups(stepType: StepType): void {
+  private loadGroups(stepType: ParameterScope): void {
     this.parameterGroupApiService.getGroups(stepType).subscribe({
       next: (groups) => {
         this.parameterGroups = groups;

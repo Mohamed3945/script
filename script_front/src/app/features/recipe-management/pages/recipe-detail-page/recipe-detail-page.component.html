@@ -56,6 +56,7 @@
                 (cellUpdated)="onMatrixCellUpdated($event)"
                 (stepHeaderContextRequested)="onStepHeaderContextRequested($event)"
                 (cellContextRequested)="onMatrixCellContextRequested($event)"
+                (endpointCellContextRequested)="onEndpointCellContextRequested($event)"
                 (parameterRowContextRequested)="onParameterRowContextRequested($event)">
               </app-recipe-matrix-view>
 
@@ -83,7 +84,8 @@
             class="context-menu__action context-menu__action--danger"
             [disabled]="!canDeleteStepFromContext"
             (click)="onDeleteStepFromContext()">
-            Delete step
+            <span class="menu-action__icon" aria-hidden="true">DEL</span>
+            <span>Delete step</span>
           </button>
         </div>
 
@@ -97,7 +99,8 @@
             type="button"
             class="context-menu__action context-menu__action--danger"
             (click)="onDeleteRecipeWideParameterFromContext()">
-            Delete parameter
+            <span class="menu-action__icon" aria-hidden="true">DEL</span>
+            <span>Delete parameter</span>
           </button>
         </div>
 
@@ -110,9 +113,18 @@
           <button
             type="button"
             class="cell-action-bar__action"
+            *ngIf="canEditEndpointFromContext"
+            (click)="onEditEndpointFromContext()">
+            <span class="menu-action__icon" aria-hidden="true">EDT</span>
+            <span>Edit endpoint</span>
+          </button>
+          <button
+            type="button"
+            class="cell-action-bar__action"
             [disabled]="!canToggleGoldenFromContext"
             (click)="onToggleGoldenFromContext()">
-            {{ goldenToggleLabel }}
+            <span class="menu-action__icon" aria-hidden="true">{{ goldenToggleLabel.startsWith('Unlock') ? 'ULK' : 'LCK' }}</span>
+            <span>{{ goldenToggleLabel }}</span>
           </button>
         </div>
       </main>
@@ -186,4 +198,13 @@
     (closed)="closeStepParameterModal()"
     (submitted)="onCreateStepParameter($event)">
   </app-step-parameter-modal>
+
+  <app-step-endpoint-modal
+    [visible]="showEndpointModal"
+    [stepId]="endpointModalStepId"
+    [workspaceMode]="workspaceMode === 'golden' ? 'golden' : 'derived'"
+    [lockedByGolden]="endpointModalLockedByGolden"
+    (closed)="closeEndpointModal()"
+    (saved)="onEndpointSaved()">
+  </app-step-endpoint-modal>
 </section>
