@@ -82,6 +82,16 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   background: #f9fbfd;
+  cursor: grab;
+}
+
+.definition-row:active {
+  cursor: grabbing;
+}
+
+.definition-row--dragging {
+  opacity: 0.55;
+  border-style: dashed;
 }
 
 .definition-row__main {
@@ -89,6 +99,13 @@
   align-items: center;
   gap: 12px;
   min-width: 0;
+}
+
+.definition-row__drag-handle {
+  color: #8ea1b3;
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: -1px;
 }
 
 .definition-row__name {

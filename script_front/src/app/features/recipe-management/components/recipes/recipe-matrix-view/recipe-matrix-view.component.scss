@@ -17,6 +17,11 @@
   align-items: center;
 }
 
+.matrix-card__actions {
+  display: flex;
+  gap: 6px;
+}
+
 .matrix-card__header h3 {
   margin: 0;
   font-size: 10px;

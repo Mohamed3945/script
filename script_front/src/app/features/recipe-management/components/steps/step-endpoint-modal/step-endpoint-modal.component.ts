@@ -2,7 +2,7 @@ import { NgClass, NgFor, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault } from '@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, map, Observable, of } from 'rxjs';
-import { EndpointOperator } from '../../../../../core/models/endpoint-operator.model';
+import { EndpointOperator , OPERATOR_LABELS } from '../../../../../core/models/endpoint-operator.model';
 import { ParameterDefinition } from '../../../../../core/models/parameter-definition.model';
 import { ParameterOption } from '../../../../../core/models/parameter-option.model';
 import { ParameterValueType } from '../../../../../core/models/parameter-value-type.model';
@@ -38,6 +38,7 @@ export class StepEndpointModalComponent implements OnChanges {
   @Output() saved = new EventEmitter<void>();
 
   readonly operatorOptions: EndpointOperator[] = ['EQ', 'NEQ', 'LT', 'LTE', 'GT', 'GTE'];
+  readonly operatorLabels = OPERATOR_LABELS;
 
   endpointDefinitions: ParameterDefinition[] = [];
   conditions: EditableCondition[] = [];

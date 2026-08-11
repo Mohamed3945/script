@@ -29,6 +29,7 @@ public class ParameterDefinitionMapper {
                 definition.getValueType(),
                 definition.isRequiredOnStep(),
                 definition.getStepType(),
+                definition.getXmlSection(),
                 definition.getDefaultValueJson(),
                 definition.getParameterGroupRef() != null ? definition.getParameterGroupRef().getId() : null,
                 definition.getParameterGroupRef() != null ? definition.getParameterGroupRef().getName() : null,
@@ -54,6 +55,7 @@ public class ParameterDefinitionMapper {
                 definition.getValueType(),
                 definition.isRequiredOnStep(),
                 definition.getStepType(),
+                definition.getXmlSection(),
                 definition.getDefaultValueJson(),
                 definition.getParameterGroupRef() != null ? definition.getParameterGroupRef().getName() : null,
                 definition.getParameterGroupRef() != null ? definition.getParameterGroupRef().getOrderIndex() : null,
@@ -89,6 +91,7 @@ public class ParameterDefinitionMapper {
         entity.setValueType(dto.getValueType());
         entity.setRequiredOnStep(dto.isRequiredOnStep());
         entity.setStepType(dto.getStepType());
+        entity.setXmlSection(dto.getXmlSection());
         entity.setDefaultValueJson(dto.getDefaultValueJson());
         entity.setOrderIndexInGroup(dto.getOrderIndexInGroup() == null ? 0 : dto.getOrderIndexInGroup());
 

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import st.tt.script_back.enums.ParameterValueType;
 import st.tt.script_back.enums.ParameterScope;
+import st.tt.script_back.enums.XmlSection;
 
 /**
  * ParameterDefinitionDetailDto class for the backend domain.
@@ -28,6 +29,7 @@ public class ParameterDefinitionDetailDto {
     private ParameterValueType valueType;
     private boolean requiredOnStep;
     private ParameterScope stepType;
+    private XmlSection xmlSection;
     private String defaultValueJson;
     private String parameterGroup;
     private Integer parameterGroupOrder;

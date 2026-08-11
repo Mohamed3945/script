@@ -14,6 +14,8 @@ public interface ParameterGroupRepository extends JpaRepository<ParameterGroup, 
 
     Optional<ParameterGroup> findTopByStepTypeOrderByOrderIndexDesc(ParameterScope stepType);
 
+    Optional<ParameterGroup> findByStepTypeAndSystemGroupTrue(ParameterScope stepType);
+
     List<ParameterGroup> findByIdIn(List<Long> ids);
 }
 

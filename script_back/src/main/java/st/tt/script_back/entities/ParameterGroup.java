@@ -49,6 +49,9 @@ public class ParameterGroup {
     @Column(name = "order_index", nullable = false)
     private Integer orderIndex;
 
+    @Column(name = "is_system_group", nullable = false)
+    private boolean systemGroup = false;
+
     @Column(name = "create_time", nullable = false, updatable = false)
     private Instant createTime;
 

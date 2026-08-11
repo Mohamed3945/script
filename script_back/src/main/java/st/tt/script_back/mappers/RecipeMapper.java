@@ -41,7 +41,17 @@ public class RecipeMapper {
                 recipe.getProcessFamily(),
                 recipe.getStatus(),
                 recipe.getVersion(),
-                recipe.isFrozen()
+                recipe.isFrozen(),
+                recipe.getWafer(),
+                recipe.getIapc(),
+                recipe.getResumable(),
+                recipe.getChamberType(),
+                recipe.getAccessDisplayGroups(),
+                recipe.getAccessModifyGroups(),
+                recipe.getUdaFile(),
+                recipe.getType(),
+                recipe.getMaxTime(),
+                recipe.getTemplate()
         );
     }
 
@@ -68,6 +78,16 @@ public class RecipeMapper {
                 recipe.getStatus(),
                 recipe.getVersion(),
                 recipe.isFrozen(),
+                recipe.getWafer(),
+                recipe.getIapc(),
+                recipe.getResumable(),
+                recipe.getChamberType(),
+                recipe.getAccessDisplayGroups(),
+                recipe.getAccessModifyGroups(),
+                recipe.getUdaFile(),
+                recipe.getType(),
+                recipe.getMaxTime(),
+                recipe.getTemplate(),
                 steps == null ? Collections.emptyList() : steps
         );
     }
@@ -95,6 +115,16 @@ public class RecipeMapper {
                 recipe.getStatus(),
                 recipe.getVersion(),
                 recipe.isFrozen(),
+                recipe.getWafer(),
+                recipe.getIapc(),
+                recipe.getResumable(),
+                recipe.getChamberType(),
+                recipe.getAccessDisplayGroups(),
+                recipe.getAccessModifyGroups(),
+                recipe.getUdaFile(),
+                recipe.getType(),
+                recipe.getMaxTime(),
+                recipe.getTemplate(),
                 steps == null ? Collections.emptyList() : steps
         );
     }
@@ -142,5 +172,15 @@ public class RecipeMapper {
         entity.setProcessFamily(dto.getProcessFamily());
         entity.setStatus(dto.getStatus());
         entity.setFrozen(dto.isFrozen());
+        entity.setWafer(dto.getWafer());
+        entity.setIapc(dto.getIapc());
+        entity.setResumable(dto.getResumable());
+        entity.setChamberType(dto.getChamberType());
+        entity.setAccessDisplayGroups(dto.getAccessDisplayGroups());
+        entity.setAccessModifyGroups(dto.getAccessModifyGroups());
+        entity.setUdaFile(dto.getUdaFile());
+        entity.setType(dto.getType());
+        entity.setMaxTime(dto.getMaxTime());
+        entity.setTemplate(dto.getTemplate());
     }
 }

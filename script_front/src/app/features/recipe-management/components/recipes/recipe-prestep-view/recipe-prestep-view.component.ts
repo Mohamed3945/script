@@ -188,11 +188,17 @@ export class RecipePrestepViewComponent {
   }
 
   toggleGroup(groupKey: string): void {
+    if (groupKey === 'ungrouped') {
+      return;
+    }
     this.collapsedByGroupKey[groupKey] = !this.isGroupCollapsed(groupKey);
   }
 
   isGroupCollapsed(groupKey: string): boolean {
-    return this.collapsedByGroupKey[groupKey] ?? false;
+    if (groupKey === 'ungrouped') {
+      return false;
+    }
+    return this.collapsedByGroupKey[groupKey] ?? true;
   }
 
   isEditable(cell: RecipeMatrixCell): boolean {

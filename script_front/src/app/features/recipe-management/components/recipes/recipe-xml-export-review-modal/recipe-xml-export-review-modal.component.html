@@ -1,0 +1,124 @@
+<div class="modal-backdrop" *ngIf="visible">
+  <div class="modal-card modal-card--large">
+    <div class="modal-card__header">
+      <h3>Export XML review</h3>
+      <button class="close-btn" (click)="closed.emit()">x</button>
+    </div>
+
+    <div class="modal-body">
+      <p class="intro">
+        You are about to export <strong>{{ recipeName || 'this recipe' }}</strong> for Soft Machine.
+        Please confirm target equipment and review compatibility evidence before downloading.
+      </p>
+
+      <div class="selectors">
+        <div class="field">
+          <label>Target machine</label>
+          <select [value]="selectedMachineId ?? ''" (change)="onMachineSelect($any($event.target).value)">
+            <option value="">Select machine</option>
+            <option *ngFor="let machine of machines" [value]="machine.machineId">
+              {{ machine.machineCode }} - {{ machine.machineName }}
+            </option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Target chamber</label>
+          <select
+            [disabled]="!selectedMachine"
+            [value]="selectedChamberId ?? ''"
+            (change)="onChamberSelect($any($event.target).value)">
+            <option value="">Select chamber</option>
+            <option *ngFor="let chamber of selectedMachine?.compatibleChambers ?? []" [value]="chamber.chamberId">
+              {{ chamber.chamberCode }} - {{ chamber.chamberName }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid">
+        <section class="card">
+          <h4>Required capabilities by recipe</h4>
+          <ul *ngIf="(requirements?.requiredCapabilities?.length ?? 0) > 0; else noRequiredCaps">
+            <li *ngFor="let capability of requirements?.requiredCapabilities">
+              {{ capability.capabilityCode }} - {{ capability.capabilityLabel }}
+            </li>
+          </ul>
+          <ng-template #noRequiredCaps>
+            <p class="muted">No required capability declared.</p>
+          </ng-template>
+        </section>
+
+        <section class="card">
+          <h4>Capabilities provided by selected chamber</h4>
+          <div *ngIf="selectedMachine && selectedChamberId; else noSelectedChamber">
+            <div *ngIf="loadingChamberDetail" class="muted">Loading chamber data...</div>
+
+            <ul *ngIf="!loadingChamberDetail && (selectedChamberDetail?.capabilities?.length ?? 0) > 0">
+              <li *ngFor="let capability of selectedChamberDetail?.capabilities">
+                {{ capability.code }} - {{ capability.label }}
+              </li>
+            </ul>
+
+            <p class="muted" *ngIf="!loadingChamberDetail && (selectedChamberDetail?.capabilities?.length ?? 0) === 0">
+              No capability found on selected chamber.
+            </p>
+          </div>
+
+          <ng-template #noSelectedChamber>
+            <p class="muted">Select machine and chamber to view provided capabilities.</p>
+          </ng-template>
+        </section>
+
+        <section class="card card--full">
+          <h4>Required configurations by recipe</h4>
+          <ul *ngIf="(requirements?.requiredConfigurations?.length ?? 0) > 0; else noRequiredConfigs">
+            <li *ngFor="let configuration of requirements?.requiredConfigurations">
+              {{ configuration.configurationDefinitionCode }} - {{ configuration.configurationDefinitionName }}
+            </li>
+          </ul>
+          <ng-template #noRequiredConfigs>
+            <p class="muted">No required configuration declared.</p>
+          </ng-template>
+        </section>
+
+        <section class="card card--full">
+          <h4>Configurations available on selected chamber</h4>
+          <div *ngIf="selectedMachine && selectedChamberId; else noSelectedChamberConfigs">
+            <div *ngIf="loadingChamberDetail" class="muted">Loading chamber data...</div>
+
+            <ul *ngIf="!loadingChamberDetail && (selectedChamberDetail?.configurations?.length ?? 0) > 0">
+              <li *ngFor="let configuration of selectedChamberDetail?.configurations">
+                {{ configuration.configurationDefinitionCode || configuration.chamberConfigurationCode }}
+                - {{ configuration.configurationDefinitionName || configuration.chamberConfigurationName }}
+              </li>
+            </ul>
+
+            <p class="muted" *ngIf="!loadingChamberDetail && (selectedChamberDetail?.configurations?.length ?? 0) === 0">
+              No configuration found on selected chamber.
+            </p>
+          </div>
+
+          <ng-template #noSelectedChamberConfigs>
+            <p class="muted">Select machine and chamber to view available configurations.</p>
+          </ng-template>
+        </section>
+      </div>
+
+      <label class="confirm-check">
+        <input
+          type="checkbox"
+          [checked]="understandChecked"
+          (change)="onUnderstandToggle($any($event.target).checked)" />
+        I understand this is an informational check and I remain responsible for target machine suitability.
+      </label>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn--secondary" type="button" (click)="closed.emit()">Cancel</button>
+      <button class="btn" type="button" [disabled]="!canDownload" (click)="downloadRequested.emit()">
+        {{ downloading ? 'Downloading...' : 'Download XML' }}
+      </button>
+    </div>
+  </div>
+</div>

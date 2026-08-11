@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import st.tt.script_back.enums.ParameterValueType;
 import st.tt.script_back.enums.ParameterScope;
+import st.tt.script_back.enums.XmlSection;
 
 @Getter
 @Setter
@@ -21,6 +22,7 @@ public class ParameterDefinitionDto {
     private ParameterValueType valueType;
     private boolean requiredOnStep;
     private ParameterScope stepType;
+    private XmlSection xmlSection;
     private String defaultValueJson;
 
     private Long parameterGroupId;

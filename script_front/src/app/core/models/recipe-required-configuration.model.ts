@@ -2,8 +2,8 @@ import { ConfigurationValueType } from './configuration-value-type.model';
 
 export interface RecipeRequiredConfiguration {
   configurationDefinitionId: number;
-  configurationDefinitionCode: string;
-  configurationDefinitionName: string;
+  configurationDefinitionCode?: string | null;
+  configurationDefinitionName?: string | null;
   valueType: ConfigurationValueType;
   unit?: string | null;
   questionForForm: string;

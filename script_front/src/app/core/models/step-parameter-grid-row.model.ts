@@ -7,6 +7,7 @@ export interface StepParameterGridRow {
   stepId: number;
   stepName: string;
   stepKind: StepKind;
+  stepCode: string;
   stepOrderIndex: number;
 
   stepParameterId: number;
@@ -16,6 +17,9 @@ export interface StepParameterGridRow {
 
   parameterDefinitionId: number;
   parameterDefinitionName: string;
+  parameterGroup?: string | null;
+  parameterGroupOrder?: number | null;
+  parameterDefinitionPath: string;
   parameterValueType: ParameterValueType;
 
   labelOverride?: string | null;

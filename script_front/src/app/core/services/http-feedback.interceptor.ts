@@ -59,6 +59,18 @@ function isSilentSuccessRoute(method: string, endpoint: string): boolean {
     return true;
   }
 
+  if (normalizedMethod === 'POST' && endpoint.includes('/parameter-definitions/reorder')) {
+    return true;
+  }
+
+  if (normalizedMethod === 'POST' && endpoint.includes('/parameter-definitions/move')) {
+    return true;
+  }
+
+  if (normalizedMethod === 'POST' && endpoint.includes('/parameter-groups/reorder')) {
+    return true;
+  }
+
   return false;
 }
 

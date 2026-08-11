@@ -26,6 +26,8 @@ export class ParameterDefinitionStructureManagerComponent implements OnInit {
   loading = false;
 
   moveTargetsByDefinitionId: Record<number, number | null> = {};
+  draggingDefinitionId: number | null = null;
+  draggingFromGroupId: number | null = null;
 
   constructor(
     private parameterDefinitionApiService: ParameterDefinitionApiService,
@@ -122,18 +124,7 @@ export class ParameterDefinitionStructureManagerComponent implements OnInit {
 
     const reordered = [...groupVm.definitions];
     [reordered[index - 1], reordered[index]] = [reordered[index], reordered[index - 1]];
-
-    const orderedDefinitionIds = reordered
-      .map(def => def.id)
-      .filter((id): id is number => id != null);
-
-    this.parameterDefinitionApiService.reorderDefinitions(groupVm.group.id, orderedDefinitionIds).subscribe({
-      next: () => this.load(),
-      error: (error) => {
-        console.error('Failed to reorder definitions', error);
-        this.load();
-      }
-    });
+    this.persistDefinitionOrder(groupVm, reordered);
   }
 
   moveDefinitionDown(groupVm: ParameterDefinitionGroupVm, index: number): void {
@@ -143,18 +134,49 @@ export class ParameterDefinitionStructureManagerComponent implements OnInit {
 
     const reordered = [...groupVm.definitions];
     [reordered[index], reordered[index + 1]] = [reordered[index + 1], reordered[index]];
+    this.persistDefinitionOrder(groupVm, reordered);
+  }
 
-    const orderedDefinitionIds = reordered
-      .map(def => def.id)
-      .filter((id): id is number => id != null);
+  onDefinitionDragStart(groupVm: ParameterDefinitionGroupVm, definition: ParameterDefinition): void {
+    if (!groupVm.group.id || !definition.id) {
+      return;
+    }
 
-    this.parameterDefinitionApiService.reorderDefinitions(groupVm.group.id, orderedDefinitionIds).subscribe({
-      next: () => this.load(),
-      error: (error) => {
-        console.error('Failed to reorder definitions', error);
-        this.load();
-      }
-    });
+    this.draggingDefinitionId = definition.id;
+    this.draggingFromGroupId = groupVm.group.id;
+  }
+
+  onDefinitionDragOver(event: DragEvent): void {
+    event.preventDefault();
+  }
+
+  onDefinitionDrop(groupVm: ParameterDefinitionGroupVm, targetIndex: number): void {
+    if (!groupVm.group.id || !this.draggingDefinitionId || !this.draggingFromGroupId) {
+      this.resetDragState();
+      return;
+    }
+
+    if (this.draggingFromGroupId !== groupVm.group.id) {
+      this.resetDragState();
+      return;
+    }
+
+    const sourceIndex = groupVm.definitions.findIndex((definition) => definition.id === this.draggingDefinitionId);
+    if (sourceIndex < 0 || sourceIndex === targetIndex) {
+      this.resetDragState();
+      return;
+    }
+
+    const reordered = [...groupVm.definitions];
+    const [moved] = reordered.splice(sourceIndex, 1);
+    reordered.splice(targetIndex, 0, moved);
+
+    this.persistDefinitionOrder(groupVm, reordered);
+    this.resetDragState();
+  }
+
+  onDefinitionDragEnd(): void {
+    this.resetDragState();
   }
 
   moveDefinitionToGroup(definition: ParameterDefinition, currentGroup: ParameterDefinitionGroupVm): void {
@@ -174,11 +196,37 @@ export class ParameterDefinitionStructureManagerComponent implements OnInit {
 
     const targetIndex = targetGroup.definitions.length;
 
+    const previousGroups = this.snapshotGroups();
+
+    const updatedGroups = this.groups.map((groupVm) => {
+      if (groupVm.group.id === currentGroup.group.id) {
+        return {
+          ...groupVm,
+          definitions: groupVm.definitions.filter((d) => d.id !== definition.id)
+        };
+      }
+
+      if (groupVm.group.id === targetGroup.group.id) {
+        return {
+          ...groupVm,
+          definitions: [...groupVm.definitions, definition]
+        };
+      }
+
+      return groupVm;
+    });
+
+    this.groups = updatedGroups;
+
     this.parameterDefinitionApiService.moveDefinition(definition.id, targetGroup.group.id, targetIndex).subscribe({
-      next: () => this.load(),
+      next: () => {
+        if (definition.id) {
+          this.moveTargetsByDefinitionId[definition.id] = null;
+        }
+      },
       error: (error) => {
         console.error('Failed to move definition to another group', error);
-        this.load();
+        this.groups = previousGroups;
       }
     });
   }
@@ -190,16 +238,62 @@ export class ParameterDefinitionStructureManagerComponent implements OnInit {
   }
 
   private persistGroupOrder(reordered: ParameterDefinitionGroupVm[]): void {
+    const previousGroups = this.snapshotGroups();
+    this.groups = reordered;
+
     const orderedGroupIds = reordered
       .map(item => item.group.id)
       .filter((id): id is number => id != null);
 
     this.parameterGroupApiService.reorderGroups(this.stepType, orderedGroupIds).subscribe({
-      next: () => this.load(),
+      next: () => {},
       error: (error) => {
         console.error('Failed to reorder parameter groups', error);
-        this.load();
+        this.groups = previousGroups;
       }
     });
+  }
+
+  private persistDefinitionOrder(groupVm: ParameterDefinitionGroupVm, reorderedDefinitions: ParameterDefinition[]): void {
+    if (!groupVm.group.id) {
+      return;
+    }
+
+    const previousGroups = this.snapshotGroups();
+
+    this.groups = this.groups.map((candidate) => {
+      if (candidate.group.id !== groupVm.group.id) {
+        return candidate;
+      }
+
+      return {
+        ...candidate,
+        definitions: [...reorderedDefinitions]
+      };
+    });
+
+    const orderedDefinitionIds = reorderedDefinitions
+      .map(def => def.id)
+      .filter((id): id is number => id != null);
+
+    this.parameterDefinitionApiService.reorderDefinitions(groupVm.group.id, orderedDefinitionIds).subscribe({
+      next: () => {},
+      error: (error) => {
+        console.error('Failed to reorder definitions', error);
+        this.groups = previousGroups;
+      }
+    });
+  }
+
+  private snapshotGroups(): ParameterDefinitionGroupVm[] {
+    return this.groups.map((groupVm) => ({
+      group: groupVm.group,
+      definitions: [...groupVm.definitions]
+    }));
+  }
+
+  private resetDragState(): void {
+    this.draggingDefinitionId = null;
+    this.draggingFromGroupId = null;
   }
 }

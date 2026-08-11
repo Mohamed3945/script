@@ -1,6 +1,11 @@
 ﻿<section class="page" *ngIf="recipe$ | async as recipe">
   <div class="page__container">
-    <app-recipe-detail-header [recipe]="recipe"></app-recipe-detail-header>
+    <app-recipe-detail-header
+      [recipe]="recipe"
+      (exportXmlClicked)="onExportXmlRequested()"
+      (editClicked)="onEditRecipe()"
+      (deleteClicked)="onDeleteRecipe()">
+    </app-recipe-detail-header>
 
     <div class="workspace" [class.workspace--drawer-open]="showRightDrawer">
       <main class="workspace__main">
@@ -158,6 +163,14 @@
               <span class="drawer-action__icon">PARAM</span>
               <span class="drawer-action__label">Add parameter</span>
             </button>
+
+            <button
+              type="button"
+              class="drawer-action"
+              (click)="openComputationFormulasPage()">
+              <span class="drawer-action__icon">FORM</span>
+              <span class="drawer-action__label">Manage formulas</span>
+            </button>
           </section>
 
           <section class="drawer-section" *ngIf="isDerivedWorkspace">
@@ -195,6 +208,7 @@
     [visible]="showStepParameterModal"
     [stepKind]="modalStepKind"
     [parentCandidates]="modalParentCandidates"
+    [excludedDefinitionIds]="modalExcludedDefinitionIds"
     (closed)="closeStepParameterModal()"
     (submitted)="onCreateStepParameter($event)">
   </app-step-parameter-modal>
@@ -207,4 +221,22 @@
     (closed)="closeEndpointModal()"
     (saved)="onEndpointSaved()">
   </app-step-endpoint-modal>
+
+  <app-recipe-xml-export-review-modal
+    [visible]="showXmlExportReviewModal"
+    [recipeName]="recipe.name"
+    [requirements]="(requirements$ | async)"
+    [compatibility]="(compatibility$ | async)"
+    [selectedMachineId]="xmlExportSelectedMachineId"
+    [selectedChamberId]="xmlExportSelectedChamberId"
+    [selectedChamberDetail]="xmlExportSelectedChamberDetail"
+    [loadingChamberDetail]="xmlExportLoadingChamberDetail"
+    [understandChecked]="xmlExportUnderstandChecked"
+    [downloading]="xmlExportDownloading"
+    (closed)="closeXmlExportReviewModal()"
+    (machineChanged)="onXmlExportMachineChanged($event)"
+    (chamberChanged)="onXmlExportChamberChanged($event)"
+    (understandChanged)="onXmlExportUnderstandChanged($event)"
+    (downloadRequested)="onXmlExportDownloadConfirmed()">
+  </app-recipe-xml-export-review-modal>
 </section>

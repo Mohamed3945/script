@@ -35,6 +35,20 @@ public interface StepParameterRepository extends JpaRepository<StepParameter, Lo
     @Query("""
             select sp
             from StepParameter sp
+            join fetch sp.step s
+            join fetch sp.definition d
+            left join fetch d.parameterGroupRef pg
+            left join fetch sp.selectedOption so
+            left join fetch sp.parentStepParameter psp
+            left join fetch psp.definition pdef
+            where s.recipe.id = :recipeId
+            order by s.orderIndex asc, sp.parentOrderScope asc, sp.orderIndex asc
+            """)
+    List<StepParameter> findByRecipeIdWithStepAndDefinition(@Param("recipeId") Long recipeId);
+
+    @Query("""
+            select sp
+            from StepParameter sp
             join fetch sp.definition d
             left join fetch d.parameterGroupRef pg
             left join fetch sp.selectedOption so

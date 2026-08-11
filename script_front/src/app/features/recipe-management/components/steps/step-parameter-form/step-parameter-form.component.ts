@@ -23,8 +23,10 @@ export class StepParameterFormComponent implements OnChanges {
   @Input() visible = false;
   @Input() stepKind: StepKind | null = null;
   @Input() parentCandidates: StepParameter[] = [];
+  @Input() excludedDefinitionIds: number[] = [];
   @Output() submitted = new EventEmitter<StepParameter>();
 
+  allDefinitions: ParameterDefinition[] = [];
   definitions: ParameterDefinition[] = [];
   availableOptions: ParameterOption[] = [];
   selectedDefinition?: ParameterDefinition;
@@ -61,6 +63,11 @@ export class StepParameterFormComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['visible']?.currentValue === true || changes['stepKind']) {
       this.loadDefinitions();
+      return;
+    }
+
+    if (changes['excludedDefinitionIds']) {
+      this.applyDefinitionFilter();
     }
   }
 
@@ -79,7 +86,9 @@ export class StepParameterFormComponent implements OnChanges {
 
     this.parameterDefinitionApiService.getDefinitions(stepType).subscribe({
       next: (definitions) => {
-        this.definitions = [...definitions].sort((a, b) => a.name.localeCompare(b.name));
+        this.allDefinitions = [...definitions].sort((a, b) => a.name.localeCompare(b.name));
+        this.applyDefinitionFilter();
+
         const selectedDefinitionId = this.form.get('definitionId')?.value ?? null;
         if (!this.definitions.some(d => d.id === selectedDefinitionId)) {
           this.form.patchValue({ definitionId: null }, { emitEvent: true });
@@ -88,11 +97,39 @@ export class StepParameterFormComponent implements OnChanges {
       },
       error: (error) => {
         console.error('Failed to load parameter definitions', error);
+        this.allDefinitions = [];
         this.definitions = [];
         this.loadingDefinitions = false;
         this.definitionLoadError = true;
       }
     });
+  }
+
+  private applyDefinitionFilter(): void {
+    const excluded = new Set(this.excludedDefinitionIds ?? []);
+    this.definitions = this.allDefinitions.filter((definition) => {
+      if (definition.id == null) {
+        return true;
+      }
+
+      return !excluded.has(definition.id);
+    });
+
+    const selectedDefinitionId = this.form.get('definitionId')?.value ?? null;
+    if (!this.definitions.some((definition) => definition.id === selectedDefinitionId)) {
+      this.selectedDefinition = undefined;
+      this.availableOptions = [];
+      if (selectedDefinitionId != null) {
+        this.form.patchValue(
+          {
+            definitionId: null,
+            selectedOptionId: null,
+            valueJson: ''
+          },
+          { emitEvent: false }
+        );
+      }
+    }
   }
 
   /**

@@ -278,7 +278,7 @@
 }
 
 :host ::ng-deep app-recipe-detail-header .actions {
-  display: none;
+  display: flex;
 }
 
 :host ::ng-deep app-recipe-detail-header .header-card {

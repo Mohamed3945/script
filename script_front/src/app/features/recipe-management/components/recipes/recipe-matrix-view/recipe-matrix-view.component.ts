@@ -6,6 +6,7 @@ import { RecipeMatrixEndpointCell } from '../../../../../core/models/recipe-matr
 import { RecipeMatrix } from '../../../../../core/models/recipe-matrix.model';
 import { RecipeMatrixCell } from '../../../../../core/models/recipe-matrix-cell.model';
 import { RecipeMatrixRow } from '../../../../../core/models/recipe-matrix-row.model';
+import { OPERATOR_LABELS, EndpointOperator } from '../../../../../core/models/endpoint-operator.model';
 
 export interface RecipeMatrixCellUpdate {
   cell: RecipeMatrixCell;
@@ -168,8 +169,9 @@ export class RecipeMatrixViewComponent {
     const nonPinnedRows: RecipeMatrixRow[] = [];
 
     for (const row of rows) {
+      const hasExplicitGroup = Boolean(row.parameterGroup && row.parameterGroup.trim().length > 0);
       const normalizedName = (row.parameterName ?? '').trim().toLowerCase();
-      if (pinnedNameToRank.has(normalizedName)) {
+      if (!hasExplicitGroup && pinnedNameToRank.has(normalizedName)) {
         pinnedRows.push(row);
       } else {
         nonPinnedRows.push(row);
@@ -217,11 +219,17 @@ export class RecipeMatrixViewComponent {
   }
 
   toggleGroup(groupKey: string): void {
+    if (groupKey === 'ungrouped') {
+      return;
+    }
     this.collapsedByGroupKey[groupKey] = !this.isGroupCollapsed(groupKey);
   }
 
   isGroupCollapsed(groupKey: string): boolean {
-    return this.collapsedByGroupKey[groupKey] ?? false;
+    if (groupKey === 'ungrouped') {
+      return false;
+    }
+    return this.collapsedByGroupKey[groupKey] ?? true;
   }
 
   isEditable(cell: RecipeMatrixCell): boolean {
@@ -323,7 +331,10 @@ export class RecipeMatrixViewComponent {
     }
 
     const summary = (endpointCell.summaryLabel ?? '').trim();
-    return summary || `${endpointCell.conditionCount} condition(s)`;
+    if (!summary) {
+      return `${endpointCell.conditionCount} condition(s)`;
+    }
+    return this.formatEndpointSummary(summary)
   }
 
   computeCellDisplayState(cell: RecipeMatrixCell): MatrixCellVisualState {
@@ -431,6 +442,28 @@ export class RecipeMatrixViewComponent {
   trackByEndpointCell = (_: number, endpointCell: RecipeMatrixEndpointCell): string =>
     `endpoint:${endpointCell.stepId}`;
 
+  get areAllGroupsCollapsed(): boolean {
+    const collapsibleGroups = this.groupedRows.filter((group) => group.key !== 'ungrouped');
+    return collapsibleGroups.length > 0 && collapsibleGroups.every((group) => this.isGroupCollapsed(group.key));
+  }
+
+  toggleAllGroups(): void {
+    if (this.areAllGroupsCollapsed) {
+      for (const group of this.groupedRows) {
+        if (group.key !== 'ungrouped') {
+          this.collapsedByGroupKey[group.key] = false;
+        }
+      }
+      return;
+    }
+
+    for (const group of this.groupedRows) {
+      if (group.key !== 'ungrouped') {
+        this.collapsedByGroupKey[group.key] = true;
+      }
+    }
+  }
+
   private buildRowKey(row: RecipeMatrixRow): string {
     return [
       row.parameterAlias ?? '',
@@ -480,4 +513,15 @@ export class RecipeMatrixViewComponent {
       return rawValue;
     }
   }
+
+  private formatEndpointSummary(summary: string): string {
+    return summary
+      .replace(/\bNEQ\b/g, OPERATOR_LABELS['NEQ' as EndpointOperator])
+      .replace(/\bLTE\b/g, OPERATOR_LABELS['LTE' as EndpointOperator])
+      .replace(/\bGTE\b/g, OPERATOR_LABELS['GTE' as EndpointOperator])
+      .replace(/\bEQ\b/g, OPERATOR_LABELS['EQ' as EndpointOperator])
+      .replace(/\bLT\b/g, OPERATOR_LABELS['LT' as EndpointOperator])
+      .replace(/\bGT\b/g, OPERATOR_LABELS['GT' as EndpointOperator]);
+  }
+
 }

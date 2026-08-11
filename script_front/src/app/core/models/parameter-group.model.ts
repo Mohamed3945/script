@@ -5,4 +5,5 @@ export interface ParameterGroup {
   name: string;
   stepType: ParameterScope;
   orderIndex?: number | null;
+  systemGroup?: boolean;
 }

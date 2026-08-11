@@ -28,6 +28,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import st.tt.script_back.enums.ParameterValueType;
 import st.tt.script_back.enums.ParameterScope;
+import st.tt.script_back.enums.XmlSection;
 
 @Entity
 @Getter
@@ -72,6 +73,10 @@ public class ParameterDefinition {
     @Column(name = "step_type", nullable = false)
     private ParameterScope stepType = ParameterScope.STEP;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "xml_section", nullable = false)
+    private XmlSection xmlSection = XmlSection.REGULAR;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "configuration_definition_id")
     private ConfigurationDefinition configurationDefinition;
@@ -105,6 +110,9 @@ public class ParameterDefinition {
         if (this.orderIndexInGroup == null) {
             this.orderIndexInGroup = 0;
         }
+        if (this.xmlSection == null) {
+            this.xmlSection = XmlSection.REGULAR;
+        }
     }
 
     @PreUpdate
@@ -112,6 +120,9 @@ public class ParameterDefinition {
         this.reviseTime = Instant.now();
         if (this.orderIndexInGroup == null) {
             this.orderIndexInGroup = 0;
+        }
+        if (this.xmlSection == null) {
+            this.xmlSection = XmlSection.REGULAR;
         }
     }
 }

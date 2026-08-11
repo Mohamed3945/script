@@ -1,11 +1,16 @@
 package st.tt.script_back.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import st.tt.script_back.enums.RecipeIapcMode;
 import st.tt.script_back.enums.RecipeKind;
+import st.tt.script_back.enums.RecipeResumableMode;
 import st.tt.script_back.enums.RecipeStatus;
+import st.tt.script_back.enums.RecipeWaferMode;
 
 /**
  * RecipeDto class for the backend domain.
@@ -28,4 +33,15 @@ public class RecipeDto {
     private RecipeStatus status;
     private Integer version;
     private boolean frozen;
+    private RecipeWaferMode wafer;
+    @JsonProperty("iAPC")
+    private RecipeIapcMode iapc;
+    private RecipeResumableMode resumable;
+    private String chamberType;
+    private String accessDisplayGroups;
+    private String accessModifyGroups;
+    private String udaFile;
+    private String type;
+    private Integer maxTime;
+    private String template;
 }

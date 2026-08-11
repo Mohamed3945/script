@@ -15,5 +15,6 @@ public class ParameterGroupDto {
     private String name;
     private ParameterScope stepType;
     private Integer orderIndex;
+    private boolean systemGroup;
 }
 

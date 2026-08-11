@@ -18,6 +18,7 @@ export class StepParameterModalComponent {
   @Input() visible = false;
   @Input() stepKind: StepKind | null = null;
   @Input() parentCandidates: StepParameter[] = [];
+  @Input() excludedDefinitionIds: number[] = [];
 
   @Output() closed = new EventEmitter<void>();
   @Output() submitted = new EventEmitter<StepParameter>();

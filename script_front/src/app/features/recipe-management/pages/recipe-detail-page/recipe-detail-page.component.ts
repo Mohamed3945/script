@@ -3,6 +3,7 @@ import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {BehaviorSubject,Subject,Subscription,distinctUntilChanged,filter,finalize,map,takeUntil} from 'rxjs';
 import { ChamberCapability } from '../../../../core/models/chamber-capability.model';
+import { ChamberDetail } from '../../../../core/models/chamber-detail.model';
 import { ConfigurationDefinition } from '../../../../core/models/configuration-definition.model';
 import { Recipe } from '../../../../core/models/recipe.model';
 import { RecipeCompatibilityResult } from '../../../../core/models/recipe-compatibility-result.model';
@@ -17,6 +18,7 @@ import { Step } from '../../../../core/models/step.model';
 import { StepKind } from '../../../../core/models/step-kind.model';
 import { StepParameter } from '../../../../core/models/step-parameter.model';
 import { ChamberCapabilityApiService } from '../../../../core/services/chamber-capability-api.service';
+import { ChamberApiService } from '../../../../core/services/chamber-api.service';
 import { ConfigurationDefinitionApiService } from '../../../../core/services/configuration-definition-api.service';
 import { RecipeCompatibilityApiService } from '../../../../core/services/recipe-compatibility-api.service';
 import { RecipeCompatibilityRefreshService } from '../../../../core/services/recipe-compatibility-refresh.service';
@@ -24,6 +26,7 @@ import { RecipeApiService } from '../../../../core/services/recipe-api.service';
 import { RecipeBuilderService } from '../../../../core/services/recipe-builder.service';
 import { RecipeRequirementsApiService } from '../../../../core/services/recipe-requirements-api.service';
 import { RecipeDetailHeaderComponent } from '../../components/recipes/recipe-detail-header/recipe-detail-header.component';
+import { RecipeXmlExportReviewModalComponent } from '../../components/recipes/recipe-xml-export-review-modal/recipe-xml-export-review-modal.component';
 import { RecipeRequirementsPanelComponent } from '../../components/recipes/recipe-requirements-panel/recipe-requirements-panel.component';
 import { RecipeCompatibleMachinesPanelComponent } from '../../components/recipes/recipe-compatible-machines-panel/recipe-compatible-machines-panel.component';
 import { SummaryViewComponent } from '../../components/recipes/summary-view/summary-view.component';
@@ -55,6 +58,7 @@ import { StepParameterModalComponent } from '../../components/steps/step-paramet
     NgIf,
     AsyncPipe,
     RecipeDetailHeaderComponent,
+    RecipeXmlExportReviewModalComponent,
     RecipeRequirementsPanelComponent,
     RecipeCompatibleMachinesPanelComponent,
     SummaryViewComponent,
@@ -96,11 +100,19 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
   showStepModal = false;
   showStepParameterModal = false;
   showEndpointModal = false;
+  showXmlExportReviewModal = false;
+  xmlExportDownloading = false;
+  xmlExportSelectedMachineId: number | null = null;
+  xmlExportSelectedChamberId: number | null = null;
+  xmlExportSelectedChamberDetail: ChamberDetail | null = null;
+  xmlExportLoadingChamberDetail = false;
+  xmlExportUnderstandChecked = false;
   savingSummaryField: string | null = null;
   prestepStep: Step | null = null;
   modalStepId: number | null = null;
   modalStepKind: StepKind | null = null;
   modalParentCandidates: StepParameter[] = [];
+  modalExcludedDefinitionIds: number[] = [];
   endpointModalStepId: number | null = null;
   endpointModalLockedByGolden = false;
 
@@ -157,6 +169,7 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     private recipeBuilderService: RecipeBuilderService,
     private recipeRequirementsApiService: RecipeRequirementsApiService,
     private chamberCapabilityApiService: ChamberCapabilityApiService,
+    private chamberApiService: ChamberApiService,
     private configurationDefinitionApiService: ConfigurationDefinitionApiService,
     private recipeCompatibilityApiService: RecipeCompatibilityApiService,
     private recipeCompatibilityRefreshService: RecipeCompatibilityRefreshService
@@ -186,6 +199,12 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     this.sub.add(
       this.steps$.subscribe((steps) => {
         this.prestepStep = steps.find((step) => step.stepKind === 'PRESTEP') ?? null;
+      })
+    );
+
+    this.sub.add(
+      this.recipeMatrix$.subscribe((matrix) => {
+        this.latestRecipeMatrix = matrix;
       })
     );
   }
@@ -268,6 +287,76 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
       next: () => this.router.navigate(['/recipes']),
       error: (error) => console.error('Failed to delete recipe', error)
     });
+  }
+
+  onExportXmlRequested(): void {
+    if (this.isDerivedWorkspace) {
+      this.openXmlExportReviewModal();
+      return;
+    }
+
+    this.downloadXmlForCurrentSelectionOrDefault();
+  }
+
+  onXmlExportMachineChanged(machineId: number | null): void {
+    this.xmlExportSelectedMachineId = machineId;
+    this.xmlExportUnderstandChecked = false;
+    this.xmlExportSelectedChamberDetail = null;
+
+    if (machineId == null) {
+      this.xmlExportSelectedChamberId = null;
+      return;
+    }
+
+    const selectedMachine = this.compatibility?.machines
+      ?.find((machine) => machine.machineId === machineId);
+    const firstChamberId = selectedMachine?.compatibleChambers?.[0]?.chamberId ?? null;
+    this.onXmlExportChamberChanged(firstChamberId);
+  }
+
+  onXmlExportChamberChanged(chamberId: number | null): void {
+    this.xmlExportSelectedChamberId = chamberId;
+    this.xmlExportUnderstandChecked = false;
+    this.xmlExportSelectedChamberDetail = null;
+
+    if (chamberId == null) {
+      return;
+    }
+
+    this.xmlExportLoadingChamberDetail = true;
+    this.chamberApiService.getChamber(chamberId).subscribe({
+      next: (detail) => {
+        if (this.xmlExportSelectedChamberId === chamberId) {
+          this.xmlExportSelectedChamberDetail = detail;
+        }
+        this.xmlExportLoadingChamberDetail = false;
+      },
+      error: (error) => {
+        console.error('Failed to load chamber detail for XML export review', error);
+        this.xmlExportLoadingChamberDetail = false;
+      }
+    });
+  }
+
+  onXmlExportUnderstandChanged(checked: boolean): void {
+    this.xmlExportUnderstandChecked = checked;
+  }
+
+  onXmlExportDownloadConfirmed(): void {
+    if (!this.xmlExportUnderstandChecked) {
+      return;
+    }
+
+    this.downloadXmlForCurrentSelectionOrDefault();
+  }
+
+  closeXmlExportReviewModal(): void {
+    this.showXmlExportReviewModal = false;
+    this.xmlExportSelectedMachineId = null;
+    this.xmlExportSelectedChamberId = null;
+    this.xmlExportSelectedChamberDetail = null;
+    this.xmlExportLoadingChamberDetail = false;
+    this.xmlExportUnderstandChecked = false;
   }
 
   onStepSelected(step: Step): void {
@@ -658,6 +747,15 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     this.showStepModal = true;
   }
 
+  openComputationFormulasPage(): void {
+    const recipe = this.recipe$.value;
+    if (!this.isGoldenWorkspace || !recipe?.id) {
+      return;
+    }
+
+    this.router.navigate(['/recipes/golden', recipe.id, 'formulas']);
+  }
+
   toggleRightDrawer(): void {
     this.showRightDrawer = !this.showRightDrawer;
     this.closeAllContextActions();
@@ -808,6 +906,7 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     this.modalStepId = null;
     this.modalStepKind = null;
     this.modalParentCandidates = [];
+    this.modalExcludedDefinitionIds = [];
   }
 
   closeEndpointModal(): void {
@@ -943,6 +1042,7 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     this.modalStepId = step.id;
     this.modalStepKind = step.stepKind;
     this.modalParentCandidates = [];
+    this.modalExcludedDefinitionIds = this.collectInstantiatedDefinitionIds(step.stepKind);
     this.showStepParameterModal = true;
 
     this.recipeApiService.getStepParameters(step.id).subscribe({
@@ -958,6 +1058,38 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
         }
       }
     });
+  }
+
+  private latestRecipeMatrix: RecipeMatrix | null = null;
+
+  private collectInstantiatedDefinitionIds(stepKind: StepKind): number[] {
+    const matrix = this.latestRecipeMatrix;
+    if (!matrix) {
+      return [];
+    }
+
+    const scopedStepIds = new Set(
+      matrix.columns
+        .filter((column) => column.stepKind === stepKind)
+        .map((column) => column.stepId)
+    );
+
+    if (scopedStepIds.size === 0) {
+      return [];
+    }
+
+    const usedDefinitionIds = new Set<number>();
+    for (const row of matrix.rows) {
+      const hasInstantiatedCell = row.cells.some(
+        (cell) => scopedStepIds.has(cell.stepId) && Boolean(cell.stepParameterId)
+      );
+
+      if (hasInstantiatedCell) {
+        usedDefinitionIds.add(row.definitionId);
+      }
+    }
+
+    return Array.from(usedDefinitionIds);
   }
 
   private loadRequirementsForWorkspace(recipe: Recipe): void {
@@ -1167,5 +1299,94 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
         }
       });
     });
+  }
+
+  private openXmlExportReviewModal(): void {
+    const { machineId, chamberId } = this.resolveDefaultXmlExportTarget();
+
+    this.xmlExportSelectedMachineId = machineId;
+    this.xmlExportSelectedChamberId = chamberId;
+    this.xmlExportSelectedChamberDetail = null;
+    this.xmlExportUnderstandChecked = false;
+    this.showXmlExportReviewModal = true;
+
+    if (chamberId != null) {
+      this.onXmlExportChamberChanged(chamberId);
+    }
+  }
+
+  private resolveDefaultXmlExportTarget(): { machineId: number | null; chamberId: number | null } {
+    const firstMachine = this.compatibility?.machines?.[0] ?? null;
+    if (!firstMachine) {
+      return { machineId: null, chamberId: null };
+    }
+
+    const firstChamber = firstMachine.compatibleChambers?.[0] ?? null;
+    return {
+      machineId: firstMachine.machineId,
+      chamberId: firstChamber?.chamberId ?? null
+    };
+  }
+
+  private downloadXmlForCurrentSelectionOrDefault(): void {
+    const recipe = this.recipe$.value;
+    const recipeId = recipe?.id;
+    if (recipeId == null) {
+      return;
+    }
+
+    const machineId = this.xmlExportSelectedMachineId ?? this.resolveDefaultXmlExportTarget().machineId;
+    if (this.isDerivedWorkspace && machineId == null) {
+      window.alert('No target machine available for XML export.');
+      return;
+    }
+
+    this.xmlExportDownloading = true;
+
+    this.recipeApiService.exportRecipeXml(recipeId, machineId)
+      .pipe(finalize(() => {
+        this.xmlExportDownloading = false;
+      }))
+      .subscribe({
+        next: (response) => {
+          const filename = this.resolveXmlFilename(response.headers.get('content-disposition'), recipeId, machineId);
+          this.triggerBrowserDownload(response.body, filename);
+
+          if (this.showXmlExportReviewModal) {
+            this.closeXmlExportReviewModal();
+          }
+        },
+        error: (error) => {
+          console.error('Failed to export recipe XML', error);
+        }
+      });
+  }
+
+  private resolveXmlFilename(contentDisposition: string | null, recipeId: number, machineId?: number | null): string {
+    if (contentDisposition) {
+      const match = contentDisposition.match(/filename\*?=(?:UTF-8''|\")?([^\";]+)/i);
+      if (match?.[1]) {
+        return decodeURIComponent(match[1].trim().replace(/^"|"$/g, ''));
+      }
+    }
+
+    if (machineId != null) {
+      return `recipe_${recipeId}_machine_${machineId}.xml`;
+    }
+
+    return `recipe_${recipeId}.xml`;
+  }
+
+  private triggerBrowserDownload(payload: Blob | null, filename: string): void {
+    if (!payload) {
+      return;
+    }
+
+    const blobUrl = window.URL.createObjectURL(payload);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename;
+    link.click();
+    window.URL.revokeObjectURL(blobUrl);
   }
 }

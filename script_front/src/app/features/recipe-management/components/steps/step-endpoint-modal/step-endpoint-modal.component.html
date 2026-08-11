@@ -97,7 +97,7 @@
                 <label>
                   <span>Operator</span>
                   <select [(ngModel)]="condition.operator" [disabled]="isReadOnly">
-                    <option *ngFor="let op of operatorOptions" [ngValue]="op">{{ op }}</option>
+                    <option *ngFor="let op of operatorOptions" [ngValue]="op"> {{ operatorLabels[op] }}</option>
                   </select>
                 </label>
 

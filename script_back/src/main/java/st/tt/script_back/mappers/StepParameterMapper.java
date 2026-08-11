@@ -49,6 +49,8 @@ public class StepParameterMapper {
                 parameter.getActivationState(),
                 parameter.isLockedByGolden(),
                 parameter.isUserModified(),
+                parameter.getComputationStatus(),
+                parameter.getComputedAt(),
                 false
         );
     }

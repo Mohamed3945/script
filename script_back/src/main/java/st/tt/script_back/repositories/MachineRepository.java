@@ -24,4 +24,6 @@ public interface MachineRepository extends JpaRepository<Machine, Long> {
         order by c.code asc
     """)
     Optional<Machine> findByIdWithChambers(Long id);
+
+    Optional<Machine> findFirstByOrderByIdAsc();
 }

@@ -43,6 +43,7 @@ public class StepParameterService {
     private final ParameterOptionRepository parameterOptionRepository;
     private final StepParameterMapper stepParameterMapper;
     private final ParameterActivationService parameterActivationService;
+    private final ComputationEvaluationService computationEvaluationService;
     private final RecipeRepository recipeRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -53,7 +54,8 @@ public class StepParameterService {
             ParameterDefinitionRepository parameterDefinitionRepository,
             ParameterOptionRepository parameterOptionRepository,
             StepParameterMapper stepParameterMapper,
-            ParameterActivationService parameterActivationService) {
+            ParameterActivationService parameterActivationService,
+            ComputationEvaluationService computationEvaluationService) {
         this.stepParameterRepository = stepParameterRepository;
         this.stepRepository = stepRepository;
         this.recipeRepository = recipeRepository;
@@ -61,6 +63,7 @@ public class StepParameterService {
         this.parameterOptionRepository = parameterOptionRepository;
         this.stepParameterMapper = stepParameterMapper;
         this.parameterActivationService = parameterActivationService;
+        this.computationEvaluationService = computationEvaluationService;
     }
 
     @Transactional
@@ -70,6 +73,7 @@ public class StepParameterService {
         StepParameter saved = stepParameterRepository.save(parameter);
 
         parameterActivationService.recalculateRecipeActivationStates(step.getRecipe().getId());
+        computationEvaluationService.recomputeRecipeComputedParameters(step.getRecipe().getId());
         return stepParameterMapper.toDto(saved);
     }
 
@@ -106,6 +110,7 @@ public class StepParameterService {
         }
 
         parameterActivationService.recalculateRecipeActivationStates(recipeId);
+        computationEvaluationService.recomputeRecipeComputedParameters(recipeId);
         return created;
     }
 
@@ -125,6 +130,7 @@ public class StepParameterService {
         }
 
         parameterActivationService.recalculateRecipeActivationStates(step.getRecipe().getId());
+        computationEvaluationService.recomputeRecipeComputedParameters(step.getRecipe().getId());
         return result;
     }
 
@@ -225,6 +231,7 @@ public class StepParameterService {
 
         if (recipeId != null && (valueChanged || parentChanged)) {
             parameterActivationService.recalculateRecipeActivationStates(recipeId);
+            computationEvaluationService.recomputeRecipeComputedParameters(recipeId);
         }
 
         return stepParameterMapper.toDto(saved);
@@ -250,6 +257,7 @@ public class StepParameterService {
         }
 
         parameterActivationService.recalculateRecipeActivationStates(recipeId);
+        computationEvaluationService.recomputeRecipeComputedParameters(recipeId);
     }
 
     @Transactional
@@ -263,6 +271,7 @@ public class StepParameterService {
         stepParameterRepository.delete(existing);
         if (recipeId != null) {
             parameterActivationService.recalculateRecipeActivationStates(recipeId);
+            computationEvaluationService.recomputeRecipeComputedParameters(recipeId);
         }
     }
 

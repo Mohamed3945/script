@@ -28,7 +28,7 @@ public class ParameterGroupService {
     public List<ParameterGroupDto> getGroups(ParameterScope stepType) {
         List<ParameterGroup> groups = parameterGroupRepository.findByStepTypeOrderByOrderIndexAsc(stepType);
         return groups.stream()
-                .map(g -> new ParameterGroupDto(g.getId(), g.getName(), g.getStepType(), g.getOrderIndex()))
+                .map(g -> new ParameterGroupDto(g.getId(), g.getName(), g.getStepType(), g.getOrderIndex(), g.isSystemGroup()))
                 .toList();
     }
 
@@ -52,9 +52,15 @@ public class ParameterGroupService {
         group.setName(request.getName().trim());
         group.setStepType(request.getStepType());
         group.setOrderIndex(nextOrder);
+        group.setSystemGroup(false);
 
         ParameterGroup saved = parameterGroupRepository.save(group);
-        return new ParameterGroupDto(saved.getId(), saved.getName(), saved.getStepType(), saved.getOrderIndex());
+        return new ParameterGroupDto(
+            saved.getId(),
+            saved.getName(),
+            saved.getStepType(),
+            saved.getOrderIndex(),
+            saved.isSystemGroup());
     }
 
     @Transactional
@@ -66,12 +72,21 @@ public class ParameterGroupService {
         ParameterGroup existing = parameterGroupRepository.findById(request.getId())
                 .orElseThrow(() -> new EntityNotFoundException("ParameterGroup not found"));
 
+        if (existing.isSystemGroup()) {
+            throw new IllegalArgumentException("System parameter groups cannot be renamed");
+        }
+
         if (request.getName() != null && !request.getName().isBlank()) {
             existing.setName(request.getName().trim());
         }
 
         ParameterGroup saved = parameterGroupRepository.save(existing);
-        return new ParameterGroupDto(saved.getId(), saved.getName(), saved.getStepType(), saved.getOrderIndex());
+        return new ParameterGroupDto(
+                saved.getId(),
+                saved.getName(),
+                saved.getStepType(),
+                saved.getOrderIndex(),
+                saved.isSystemGroup());
     }
 
     @Transactional

@@ -40,8 +40,17 @@
       </div>
 
       <div class="definition-list">
-        <div class="definition-row" *ngFor="let definition of groupVm.definitions; let defIndex = index">
+        <div
+          class="definition-row"
+          [class.definition-row--dragging]="draggingDefinitionId === definition.id"
+          draggable="true"
+          (dragstart)="onDefinitionDragStart(groupVm, definition)"
+          (dragover)="onDefinitionDragOver($event)"
+          (drop)="onDefinitionDrop(groupVm, defIndex)"
+          (dragend)="onDefinitionDragEnd()"
+          *ngFor="let definition of groupVm.definitions; let defIndex = index">
           <div class="definition-row__main">
+            <span class="definition-row__drag-handle" aria-hidden="true">⋮⋮</span>
             <span class="definition-row__name">{{ definition.name }}</span>
             <span class="definition-row__meta">{{ definition.valueType }}</span>
           </div>

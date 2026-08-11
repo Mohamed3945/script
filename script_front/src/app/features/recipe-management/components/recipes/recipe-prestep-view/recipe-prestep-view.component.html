@@ -19,7 +19,7 @@
       <tbody *ngIf="pinnedRows.length > 0">
         <tr *ngFor="let row of pinnedRows; trackBy: trackByPinnedRow" class="grouped-parameter-row">
           <td class="matrix-table__param" (contextmenu)="onParameterRowContextMenu($event, row)">
-            <div class="param-name">{{ row.parameterAlias || row.parameterName }}</div>
+            <div class="param-name">{{row.parameterName }}</div>
           </td>
           <td
             *ngFor="let cell of row.cells; trackBy: trackByCell"
@@ -83,7 +83,7 @@
         <ng-container *ngIf="!isGroupCollapsed(group.key)">
           <tr *ngFor="let row of group.rows; trackBy: trackByGroupRow" class="grouped-parameter-row">
             <td class="matrix-table__param" (contextmenu)="onParameterRowContextMenu($event, row)">
-              <div class="param-name">{{ row.parameterAlias || row.parameterName }}</div>
+              <div class="param-name">{{row.parameterName }}</div>
             </td>
             <td
               *ngFor="let cell of row.cells; trackBy: trackByCell"

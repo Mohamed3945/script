@@ -22,6 +22,7 @@ import st.tt.script_back.entities.ParameterDefinition;
 import st.tt.script_back.entities.ParameterGroup;
 import st.tt.script_back.enums.ParameterScope;
 import st.tt.script_back.enums.ParameterValueType;
+import st.tt.script_back.enums.XmlSection;
 import st.tt.script_back.mappers.ParameterDefinitionMapper;
 import st.tt.script_back.repositories.ParameterDefinitionRepository;
 import st.tt.script_back.repositories.ParameterGroupRepository;
@@ -61,20 +62,18 @@ public class ParameterDefinitionService {
         if (definition.getStepType() == null) {
             definition.setStepType(ParameterScope.STEP);
         }
-
-        if (request.getParameterGroupId() != null) {
-            ParameterGroup group = parameterGroupRepository.findById(request.getParameterGroupId())
-                    .orElseThrow(() -> new EntityNotFoundException("ParameterGroup not found"));
-            definition.setParameterGroupRef(group);
-
-            int nextOrder = parameterDefinitionRepository
-                    .findTopByParameterGroupRefIdOrderByOrderIndexInGroupDesc(group.getId())
-                    .map(d -> d.getOrderIndexInGroup() == null ? 0 : d.getOrderIndexInGroup() + 1)
-                    .orElse(0);
-            definition.setOrderIndexInGroup(nextOrder);
-        } else {
-            definition.setOrderIndexInGroup(0);
+        if (definition.getXmlSection() == null) {
+            definition.setXmlSection(XmlSection.REGULAR);
         }
+
+        ParameterGroup targetGroup = resolveTargetGroup(definition.getStepType(), request.getParameterGroupId());
+        definition.setParameterGroupRef(targetGroup);
+
+        int nextOrder = parameterDefinitionRepository
+            .findTopByParameterGroupRefIdOrderByOrderIndexInGroupDesc(targetGroup.getId())
+            .map(d -> d.getOrderIndexInGroup() == null ? 0 : d.getOrderIndexInGroup() + 1)
+            .orElse(0);
+        definition.setOrderIndexInGroup(nextOrder);
 
         definition.setDefaultValueJson(
                 normalizeJsonValue(definition.getDefaultValueJson(), definition.getValueType()));
@@ -113,6 +112,10 @@ public class ParameterDefinitionService {
         ParameterDefinition existing = parameterDefinitionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("ParameterDefinition with id " + id + " not found"));
 
+        Long previousGroupId = existing.getParameterGroupRef() != null
+            ? existing.getParameterGroupRef().getId()
+            : null;
+
         parameterDefinitionMapper.updateEntityFromDto(request, existing);
 
         if (existing.getName() == null || existing.getName().isBlank()) {
@@ -121,6 +124,21 @@ public class ParameterDefinitionService {
 
         if (existing.getStepType() == null) {
             existing.setStepType(ParameterScope.STEP);
+        }
+        if (existing.getXmlSection() == null) {
+            existing.setXmlSection(XmlSection.REGULAR);
+        }
+
+        ParameterGroup targetGroup = resolveTargetGroup(existing.getStepType(), request.getParameterGroupId());
+        existing.setParameterGroupRef(targetGroup);
+
+        boolean movedToAnotherGroup = previousGroupId == null || !previousGroupId.equals(targetGroup.getId());
+        if (movedToAnotherGroup) {
+            int nextOrder = parameterDefinitionRepository
+                    .findTopByParameterGroupRefIdOrderByOrderIndexInGroupDesc(targetGroup.getId())
+                    .map(d -> d.getOrderIndexInGroup() == null ? 0 : d.getOrderIndexInGroup() + 1)
+                    .orElse(0);
+            existing.setOrderIndexInGroup(nextOrder);
         }
 
         existing.setDefaultValueJson(
@@ -387,6 +405,39 @@ public class ParameterDefinitionService {
             candidate = baseCode + "_" + suffix;
             suffix++;
         }
+    }
+
+    private ParameterGroup resolveTargetGroup(ParameterScope stepType, Long requestedGroupId) {
+        if (stepType == null) {
+            throw new IllegalArgumentException("stepType is required");
+        }
+
+        if (requestedGroupId != null) {
+            ParameterGroup selectedGroup = parameterGroupRepository.findById(requestedGroupId)
+                    .orElseThrow(() -> new EntityNotFoundException("ParameterGroup not found"));
+
+            if (selectedGroup.getStepType() != stepType) {
+                throw new IllegalArgumentException("Definition stepType must match selected group stepType");
+            }
+            return selectedGroup;
+        }
+
+        return parameterGroupRepository.findByStepTypeAndSystemGroupTrue(stepType)
+                .orElseGet(() -> createSystemUngroupedGroup(stepType));
+    }
+
+    private ParameterGroup createSystemUngroupedGroup(ParameterScope stepType) {
+        int nextOrder = parameterGroupRepository.findTopByStepTypeOrderByOrderIndexDesc(stepType)
+                .map(group -> group.getOrderIndex() == null ? 0 : group.getOrderIndex() + 1)
+                .orElse(0);
+
+        ParameterGroup group = new ParameterGroup();
+        group.setName("Ungrouped");
+        group.setStepType(stepType);
+        group.setOrderIndex(nextOrder);
+        group.setSystemGroup(true);
+
+        return parameterGroupRepository.save(group);
     }
 }
 

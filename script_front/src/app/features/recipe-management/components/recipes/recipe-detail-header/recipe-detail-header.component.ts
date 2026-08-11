@@ -13,6 +13,7 @@ import { Recipe } from '../../../../../core/models/recipe.model';
 export class RecipeDetailHeaderComponent {
   @Input() recipe!: Recipe;
 
+  @Output() exportXmlClicked = new EventEmitter<void>();
   @Output() editClicked = new EventEmitter<void>();
   @Output() deleteClicked = new EventEmitter<void>();
 }

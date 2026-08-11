@@ -76,10 +76,16 @@ export class RecipeStepFocusViewComponent {
   }
 
   toggleGroup(groupKey: string): void {
+    if (groupKey === 'ungrouped') {
+      return;
+    }
     this.collapsedByGroupKey[groupKey] = !this.isGroupCollapsed(groupKey);
   }
 
   isGroupCollapsed(groupKey: string): boolean {
+    if (groupKey === 'ungrouped') {
+      return false;
+    }
     return this.collapsedByGroupKey[groupKey] ?? false;
   }
 

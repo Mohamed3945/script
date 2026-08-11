@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Recipe } from '../models/recipe.model';
 import { Step } from '../models/step.model';
@@ -135,5 +136,17 @@ export class RecipeApiService {
 
   deleteStepEndpoint(stepId: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/steps/${stepId}/endpoint`);
+  }
+
+  exportRecipeXml(recipeId: number, machineId?: number | null): Observable<HttpResponse<Blob>> {
+    let params = new HttpParams();
+    if (machineId != null) {
+      params = params.set('machineId', String(machineId));
+    }
+    return this.http.get(`${this.baseUrl}/recipes/${recipeId}/export/xml`, {
+      params,
+      observe: 'response',
+      responseType: 'blob'
+    });
   }
 }
