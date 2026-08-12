@@ -7,8 +7,6 @@
       </div>
 
       <div class="page__actions">
-        <button class="btn btn--secondary" (click)="onOpenCapabilitiesCatalog()">Capabilities catalog</button>
-        <button class="btn btn--secondary" (click)="onCreateCapability()">New capability</button>
         <button class="btn" (click)="onCreateGolden()">New golden recipe</button>
       </div>
     </div>
@@ -29,5 +27,73 @@
         (deleteRecipe)="onDeleteRecipe($event)">
       </app-recipe-list-table>
     </ng-template>
+
+    <div class="modal-backdrop" *ngIf="showCreateGoldenModal" (click)="closeCreateGoldenModal()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Create golden recipe</h2>
+          <button class="icon-button" type="button" (click)="closeCreateGoldenModal()" [disabled]="!!(duplicateLoading$ | async)">×</button>
+        </div>
+
+        <div class="modal-body">
+          <p class="hint">Choose how to start this golden recipe.</p>
+
+          <label class="field-label" for="create-mode">Creation mode</label>
+          <select
+            id="create-mode"
+            class="input"
+            [(ngModel)]="createMode"
+            [disabled]="!!(duplicateLoading$ | async)">
+            <option value="SCRATCH">From scratch</option>
+            <option value="EXISTING">From existing golden</option>
+          </select>
+
+          <ng-container *ngIf="createMode === 'EXISTING'">
+            <label class="field-label" for="source-golden">Source golden</label>
+            <select
+              id="source-golden"
+              class="input"
+              [(ngModel)]="selectedSourceGoldenId"
+              [disabled]="!!(duplicateLoading$ | async)">
+              <option [ngValue]="null">Select a golden recipe</option>
+              <option *ngFor="let golden of availableGoldenRecipes" [ngValue]="golden.id">
+                {{ golden.name }}
+              </option>
+            </select>
+
+            <label class="field-label" for="target-golden-name">New golden name</label>
+            <input
+              id="target-golden-name"
+              type="text"
+              class="input"
+              [(ngModel)]="targetGoldenName"
+              [disabled]="!!(duplicateLoading$ | async)"
+              placeholder="Enter a unique golden name" />
+
+            <label class="checkbox-field">
+              <input type="checkbox" [(ngModel)]="includeFormulas" [disabled]="!!(duplicateLoading$ | async)" />
+              Duplicate computation formulas
+            </label>
+
+            <label class="checkbox-field">
+              <input type="checkbox" [(ngModel)]="includeRequiredCapabilities" [disabled]="!!(duplicateLoading$ | async)" />
+              Duplicate required capabilities
+            </label>
+
+            <label class="checkbox-field">
+              <input type="checkbox" [(ngModel)]="includeRequiredConfigurations" [disabled]="!!(duplicateLoading$ | async)" />
+              Duplicate required configurations
+            </label>
+          </ng-container>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn--secondary" type="button" (click)="closeCreateGoldenModal()" [disabled]="!!(duplicateLoading$ | async)">Cancel</button>
+          <button class="btn" type="button" (click)="confirmCreateGolden()" [disabled]="!canSubmitCreateGolden">
+            {{ (duplicateLoading$ | async) ? 'Duplicating...' : 'Continue' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </section>

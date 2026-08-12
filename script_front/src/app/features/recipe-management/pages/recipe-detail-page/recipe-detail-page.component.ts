@@ -1042,7 +1042,7 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     this.modalStepId = step.id;
     this.modalStepKind = step.stepKind;
     this.modalParentCandidates = [];
-    this.modalExcludedDefinitionIds = this.collectInstantiatedDefinitionIds(step.stepKind);
+    this.modalExcludedDefinitionIds = this.collectInstantiatedDefinitionIds(step.stepKind, step.id);
     this.showStepParameterModal = true;
 
     this.recipeApiService.getStepParameters(step.id).subscribe({
@@ -1062,17 +1062,31 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
 
   private latestRecipeMatrix: RecipeMatrix | null = null;
 
-  private collectInstantiatedDefinitionIds(stepKind: StepKind): number[] {
+  private collectInstantiatedDefinitionIds(stepKind: StepKind, anchorStepId?: number): number[] {
     const matrix = this.latestRecipeMatrix;
     if (!matrix) {
       return [];
     }
 
-    const scopedStepIds = new Set(
-      matrix.columns
-        .filter((column) => column.stepKind === stepKind)
-        .map((column) => column.stepId)
-    );
+    let scopedStepIds: Set<number>;
+
+    if (stepKind === 'PRESTEP' && anchorStepId) {
+      scopedStepIds = new Set([anchorStepId]);
+    } else {
+      scopedStepIds = new Set(
+        matrix.columns
+          .filter((column) => column.stepKind === stepKind)
+          .map((column) => column.stepId)
+      );
+
+      if (scopedStepIds.size === 0) {
+        scopedStepIds = new Set(
+          this.recipeBuilderService.stepsSnapshot
+            .filter((step) => step.stepKind === stepKind && Boolean(step.id))
+            .map((step) => step.id as number)
+        );
+      }
+    }
 
     if (scopedStepIds.size === 0) {
       return [];

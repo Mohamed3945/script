@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import st.tt.script_back.dto.RecipeDto;
 import st.tt.script_back.dto.StepDto;
 import st.tt.script_back.dto.StepParameterDto;
+import st.tt.script_back.dto.DuplicateGoldenRecipeRequestDto;
 import st.tt.script_back.enums.StepKind;
 import st.tt.script_back.services.RecipeService;
 import st.tt.script_back.services.StepParameterService;
@@ -59,6 +60,12 @@ public class RecipeCommandController {
             @RequestBody RecipeDto request,
             @RequestParam(required = false) Long resultProfileId) {
         return recipeService.createRecipe(request, resultProfileId);
+    }
+
+    @PostMapping("/recipes/duplicate-golden")
+    public RecipeDto duplicateGoldenRecipe(
+            @RequestBody DuplicateGoldenRecipeRequestDto request) {
+        return recipeService.duplicateGoldenRecipe(request);
     }
 
     /**

@@ -11,6 +11,15 @@ import { RecipeKind } from '../models/recipe-kind.model';
 import { StepKind } from '../models/step-kind.model';
 import { StepEndpoint } from '../models/step-endpoint.model';
 
+export interface DuplicateGoldenRecipePayload {
+  sourceGoldenRecipeId: number;
+  targetName: string;
+  creatorId?: number;
+  includeFormulas: boolean;
+  includeRequiredCapabilities: boolean;
+  includeRequiredConfigurations: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class RecipeApiService {
   private readonly baseUrl = 'http://localhost:8080/api';
@@ -34,6 +43,10 @@ export class RecipeApiService {
       params = params.set('resultProfileId', resultProfileId);
     }
     return this.http.post<Recipe>(`${this.baseUrl}/recipes`, payload, { params });
+  }
+
+  duplicateGoldenRecipe(payload: DuplicateGoldenRecipePayload): Observable<Recipe> {
+    return this.http.post<Recipe>(`${this.baseUrl}/recipes/duplicate-golden`, payload);
   }
 
   updateRecipe(id: number, payload: Recipe): Observable<Recipe> {

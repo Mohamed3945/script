@@ -262,9 +262,16 @@ function mapBackendDescriptionToMessage(description: string | undefined, status:
   if (
     normalized.includes('duplicate entry')
     || normalized.includes('already exists')
+    || normalized.includes('targetname must be different from source golden name')
     || normalized.includes('uq_pdr_source_trigger_required_target')
   ) {
-    return 'This dependency rule already exists. Choose another source/trigger/context/target combination.';
+    if (normalized.includes('targetname must be different from source golden name')) {
+      return 'The new golden name must be different from the source golden name.';
+    }
+    if (normalized.includes('uq_pdr_source_trigger_required_target')) {
+      return 'This dependency rule already exists. Choose another source/trigger/context/target combination.';
+    }
+    return 'A duplicate value already exists. Choose another value and try again.';
   }
 
   if (

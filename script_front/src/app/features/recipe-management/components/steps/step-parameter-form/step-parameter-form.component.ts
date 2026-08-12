@@ -32,6 +32,7 @@ export class StepParameterFormComponent implements OnChanges {
   selectedDefinition?: ParameterDefinition;
   loadingDefinitions = false;
   definitionLoadError = false;
+  private definitionsRequestSeq = 0;
 
   form: ReturnType<FormBuilder['group']>;
 
@@ -50,8 +51,6 @@ export class StepParameterFormComponent implements OnChanges {
       lockedByGolden: [false]
     });
 
-    this.loadDefinitions();
-
     this.form.get('definitionId')?.valueChanges.subscribe((definitionId) => {
       this.onDefinitionChanged(definitionId ?? null);
     });
@@ -61,12 +60,12 @@ export class StepParameterFormComponent implements OnChanges {
    * Handles the ngOnChanges workflow.
    */
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['visible']?.currentValue === true || changes['stepKind']) {
+    if (this.visible && (changes['visible']?.currentValue === true || changes['stepKind'])) {
       this.loadDefinitions();
       return;
     }
 
-    if (changes['excludedDefinitionIds']) {
+    if (this.visible && changes['excludedDefinitionIds']) {
       this.applyDefinitionFilter();
     }
   }
@@ -79,6 +78,15 @@ export class StepParameterFormComponent implements OnChanges {
    * Handles the loadDefinitions workflow.
    */
   loadDefinitions(): void {
+    if (!this.stepKind) {
+      this.allDefinitions = [];
+      this.definitions = [];
+      this.loadingDefinitions = false;
+      this.definitionLoadError = false;
+      return;
+    }
+
+    const requestSeq = ++this.definitionsRequestSeq;
     this.loadingDefinitions = true;
     this.definitionLoadError = false;
 
@@ -86,6 +94,10 @@ export class StepParameterFormComponent implements OnChanges {
 
     this.parameterDefinitionApiService.getDefinitions(stepType).subscribe({
       next: (definitions) => {
+        if (requestSeq !== this.definitionsRequestSeq) {
+          return;
+        }
+
         this.allDefinitions = [...definitions].sort((a, b) => a.name.localeCompare(b.name));
         this.applyDefinitionFilter();
 
@@ -96,6 +108,10 @@ export class StepParameterFormComponent implements OnChanges {
         this.loadingDefinitions = false;
       },
       error: (error) => {
+        if (requestSeq !== this.definitionsRequestSeq) {
+          return;
+        }
+
         console.error('Failed to load parameter definitions', error);
         this.allDefinitions = [];
         this.definitions = [];
