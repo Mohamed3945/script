@@ -10,6 +10,7 @@ import { RecipeMatrix } from '../models/recipe-matrix.model';
 import { RecipeKind } from '../models/recipe-kind.model';
 import { StepKind } from '../models/step-kind.model';
 import { StepEndpoint } from '../models/step-endpoint.model';
+import { RecipeCustomizationSummary } from '../models/recipe-customization-summary.model';
 
 export interface DuplicateGoldenRecipePayload {
   sourceGoldenRecipeId: number;
@@ -160,6 +161,13 @@ export class RecipeApiService {
       params,
       observe: 'response',
       responseType: 'blob'
+    });
+  }
+
+  getCustomizationSummary(recipeId: number, limit = 100): Observable<RecipeCustomizationSummary> {
+    const params = new HttpParams().set('limit', String(limit));
+    return this.http.get<RecipeCustomizationSummary>(`${this.baseUrl}/recipes/${recipeId}/customization-summary`, {
+      params
     });
   }
 }

@@ -25,6 +25,19 @@
   color: #607488;
 }
 
+.matrix-card__actions {
+  display: flex;
+  gap: 6px;
+}
+
+.matrix-card__header h3 {
+  margin: 0;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #607488;
+}
+
 .matrix-wrapper {
   overflow: auto;
   min-height: 0;

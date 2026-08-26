@@ -9,12 +9,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import st.tt.script_back.dto.RecipeDto;
+import st.tt.script_back.dto.RecipeCustomizationSummaryDto;
 import st.tt.script_back.dto.RecipeMatrixDto;
 import st.tt.script_back.dto.StepDto;
 import st.tt.script_back.dto.StepParameterDto;
 import st.tt.script_back.dto.StepParameterGridRowDto;
 import st.tt.script_back.enums.RecipeKind;
 import st.tt.script_back.enums.StepKind;
+import st.tt.script_back.services.RecipeCustomizationSummaryService;
 import st.tt.script_back.services.RecipeQueryService;
 
 /**
@@ -27,14 +29,18 @@ import st.tt.script_back.services.RecipeQueryService;
 public class RecipeController {
 
     private final RecipeQueryService recipeQueryService;
+    private final RecipeCustomizationSummaryService recipeCustomizationSummaryService;
 
     /**
      * Executes RecipeController.
      *
      * @param recipeQueryService input argument consumed by RecipeController.
      */
-    public RecipeController(RecipeQueryService recipeQueryService) {
+    public RecipeController(
+            RecipeQueryService recipeQueryService,
+            RecipeCustomizationSummaryService recipeCustomizationSummaryService) {
         this.recipeQueryService = recipeQueryService;
+        this.recipeCustomizationSummaryService = recipeCustomizationSummaryService;
     }
 
     /**
@@ -109,6 +115,11 @@ public class RecipeController {
         return recipeQueryService.getStepParameter(id);
     }
 
+    @GetMapping("/step-parameters/{id}/computed-dependents")
+    public List<Long> getComputedDependents(@PathVariable Long id) {
+        return recipeQueryService.getComputedDependentsByStepParameterId(id);
+    }
+
     /**
      * Executes getRecipeStepParameterGrid.
      *
@@ -129,5 +140,15 @@ public class RecipeController {
     @GetMapping("/recipes/{recipeId}/matrix")
     public RecipeMatrixDto getRecipeMatrix(@PathVariable Long recipeId) {
         return recipeQueryService.getRecipeMatrix(recipeId);
+    }
+
+    /**
+     * Returns a customization summary for derived recipes before XML export.
+     */
+    @GetMapping("/recipes/{recipeId}/customization-summary")
+    public RecipeCustomizationSummaryDto getCustomizationSummary(
+            @PathVariable Long recipeId,
+            @RequestParam(required = false, defaultValue = "100") Integer limit) {
+        return recipeCustomizationSummaryService.computeForRecipe(recipeId, limit);
     }
 }

@@ -1,6 +1,11 @@
 <div class="matrix-card">
   <div class="matrix-card__header">
     <h3>Recipe prestep view</h3>
+    <div class="matrix-card__actions" *ngIf="groupedRows.length > 0">
+      <button type="button" class="btn" (click)="toggleAllGroups()">
+        {{ areAllGroupsCollapsed ? 'Expand all' : 'Collapse all' }}
+      </button>
+    </div>
   </div>
 
   <div class="matrix-wrapper" [class.is-hidden]="!hasDisplayableMatrix">

@@ -57,6 +57,8 @@
               <app-recipe-matrix-view
                 *ngIf="viewMode === 'matrix'"
                 [matrix]="(stepsViewMatrix$ | async)"
+                [recomputedPulseStepParameterIds]="recomputedPulseStepParameterIds"
+                [recomputedPulseTick]="recomputedPulseTick"
                 [workspaceMode]="workspaceMode === 'golden' ? 'golden' : 'derived'"
                 (cellUpdated)="onMatrixCellUpdated($event)"
                 (stepHeaderContextRequested)="onStepHeaderContextRequested($event)"
@@ -176,7 +178,10 @@
           <section class="drawer-section" *ngIf="isDerivedWorkspace">
             <h4 class="drawer-section__title">Compatible machines</h4>
             <app-recipe-compatible-machines-panel
-              [compatibility]="(compatibility$ | async)">
+              [compatibility]="(compatibility$ | async)"
+              [loading]="compatibilityLoading"
+              [filteringHighlightActive]="compatibilityFilteringFeedbackActive"
+              [filteringPulseTick]="compatibilityFilteringFeedbackTick">
             </app-recipe-compatible-machines-panel>
           </section>
 
@@ -226,6 +231,8 @@
     [visible]="showXmlExportReviewModal"
     [recipeName]="recipe.name"
     [requirements]="(requirements$ | async)"
+    [customizationSummary]="xmlExportCustomizationSummary"
+    [loadingCustomizationSummary]="xmlExportLoadingCustomizationSummary"
     [compatibility]="(compatibility$ | async)"
     [selectedMachineId]="xmlExportSelectedMachineId"
     [selectedChamberId]="xmlExportSelectedChamberId"

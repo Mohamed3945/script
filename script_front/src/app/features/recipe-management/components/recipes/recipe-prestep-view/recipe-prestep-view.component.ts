@@ -365,6 +365,27 @@ export class RecipePrestepViewComponent {
 
   trackByOption = (_: number, option: any): number | string =>
     option?.id ?? option?.code ?? option?.label ?? _;
+  get areAllGroupsCollapsed(): boolean {
+    const collapsibleGroups = this.groupedRows.filter((group) => group.key !== 'ungrouped');
+    return collapsibleGroups.length > 0 && collapsibleGroups.every((group) => this.isGroupCollapsed(group.key));
+  }
+
+  toggleAllGroups(): void {
+    if (this.areAllGroupsCollapsed) {
+      for (const group of this.groupedRows) {
+        if (group.key !== 'ungrouped') {
+          this.collapsedByGroupKey[group.key] = false;
+        }
+      }
+      return;
+    }
+
+    for (const group of this.groupedRows) {
+      if (group.key !== 'ungrouped') {
+        this.collapsedByGroupKey[group.key] = true;
+      }
+    }
+  }
 
   private buildRowKey(row: RecipeMatrixRow): string {
     return [

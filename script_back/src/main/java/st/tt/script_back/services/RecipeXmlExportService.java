@@ -76,7 +76,7 @@ public class RecipeXmlExportService {
      * @param machineId id de la machine cible (détermine SoftMachineVersion)
      * @return String XML prêt à être écrit dans un fichier .xml
      */
-        public String export(Long recipeId, Long machineId) {
+    public String export(Long recipeId, Long machineId) {
 
         // ── 1. Charger recette ────────────────────────────────────────────────
         Recipe recipe = recipeRepository.findById(recipeId)
@@ -113,7 +113,7 @@ public class RecipeXmlExportService {
         return buildXml(recipe, softVersion, allSteps, paramsByStepId, endpointByStepId);
     }
 
-        private Machine resolveMachine(Long machineId) {
+    private Machine resolveMachine(Long machineId) {
                 if (machineId != null) {
                         return machineRepository.findById(machineId)
                                         .orElseThrow(() -> new EntityNotFoundException(

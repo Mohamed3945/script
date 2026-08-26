@@ -54,7 +54,8 @@ type MatrixCellVisualState =
   | 'golden-active'
   | 'golden-inactive'
   | 'editable-default'
-  | 'computed'
+  | 'computed-pending'
+  | 'computed-from-modified'
   | 'user-modified'
   | 'readonly-neutral';
 
@@ -68,6 +69,18 @@ type MatrixCellVisualState =
 export class RecipeMatrixViewComponent {
   @Input() workspaceMode: 'golden' | 'derived' = 'derived';
   @Input() endpointRow: RecipeMatrixEndpointCell[] | null = null;
+  @Input()
+  set recomputedPulseStepParameterIds(value: number[] | null) {
+    this.recomputedPulseStepParameterIdsSnapshot = (value ?? []).filter((id) => Number.isFinite(id));
+  }
+  @Input()
+  set recomputedPulseTick(value: number) {
+    if (!Number.isFinite(value) || value === this.lastPulseTick) {
+      return;
+    }
+    this.lastPulseTick = value;
+    this.triggerRecomputedPulse();
+  }
 
   @Input()
   set matrix(value: RecipeMatrix | null) {
@@ -98,6 +111,10 @@ export class RecipeMatrixViewComponent {
 
   private _matrix: RecipeMatrix | null = null;
   private lastRenderableMatrix: RecipeMatrix | null = null;
+  private recomputedPulseStepParameterIdsSnapshot: number[] = [];
+  private recomputedPulseStepParameterIdSet = new Set<number>();
+  private lastPulseTick = 0;
+  private pulseClearTimer: ReturnType<typeof setTimeout> | null = null;
   private collapsedByGroupKey: Record<string, boolean> = {};
   private readonly pinnedParameterOrder: string[] = [
     'name',
@@ -343,7 +360,10 @@ export class RecipeMatrixViewComponent {
     }
 
     if (cell.computed) {
-      return 'computed';
+      if (cell.computedFromModified || cell.userModified) {
+        return 'computed-from-modified';
+      }
+      return 'computed-pending';
     }
 
     if (cell.editable && cell.userModified) {
@@ -360,6 +380,13 @@ export class RecipeMatrixViewComponent {
   getCellStateClass(cell: RecipeMatrixCell): string {
     const visualState = this.computeCellDisplayState(cell);
     return `cell--${visualState}`;
+  }
+
+  getCellPulseClass(cell: RecipeMatrixCell): string {
+    if (cell.stepParameterId == null) {
+      return '';
+    }
+    return this.recomputedPulseStepParameterIdSet.has(cell.stepParameterId) ? 'cell--recomputed-pulse' : '';
   }
 
   onEnumChanged(cell: RecipeMatrixCell, selectedValue: string): void {
@@ -522,6 +549,23 @@ export class RecipeMatrixViewComponent {
       .replace(/\bEQ\b/g, OPERATOR_LABELS['EQ' as EndpointOperator])
       .replace(/\bLT\b/g, OPERATOR_LABELS['LT' as EndpointOperator])
       .replace(/\bGT\b/g, OPERATOR_LABELS['GT' as EndpointOperator]);
+  }
+
+  private triggerRecomputedPulse(): void {
+    if (this.pulseClearTimer) {
+      clearTimeout(this.pulseClearTimer);
+      this.pulseClearTimer = null;
+    }
+
+    this.recomputedPulseStepParameterIdSet = new Set(this.recomputedPulseStepParameterIdsSnapshot);
+    if (this.recomputedPulseStepParameterIdSet.size === 0) {
+      return;
+    }
+
+    this.pulseClearTimer = setTimeout(() => {
+      this.recomputedPulseStepParameterIdSet.clear();
+      this.pulseClearTimer = null;
+    }, 950);
   }
 
 }

@@ -19,5 +19,6 @@ export interface RecipeMatrixCell {
   lockedByGolden: boolean;
   editable: boolean;
   userModified: boolean;
+  computedFromModified: boolean;
   computed: boolean;
 }

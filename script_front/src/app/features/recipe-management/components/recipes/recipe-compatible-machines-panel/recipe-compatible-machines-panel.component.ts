@@ -14,6 +14,8 @@ import { RecipeCompatibilityResult } from '../../../../../core/models/recipe-com
 export class RecipeCompatibleMachinesPanelComponent {
   @Input() compatibility: RecipeCompatibilityResult | null = null;
   @Input() loading = false;
+  @Input() filteringHighlightActive = false;
+  @Input() filteringPulseTick = 0;
 
   trackMachineById = (_: number, item: CompatibleMachine): number => item.machineId;
   trackChamberById = (_: number, item: CompatibleChamber): number => item.chamberId;

@@ -39,5 +39,6 @@ public class RecipeMatrixCellDto {
     private boolean userModified;
     private ComputationStatus computationStatus;
     private Instant computedAt;
+    private boolean computedFromModified;
     private boolean computed;
 }

@@ -2,6 +2,7 @@ package st.tt.script_back.services;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -163,6 +164,63 @@ public class RecipeQueryService {
     }
 
     @Transactional(readOnly = true)
+    public List<Long> getComputedDependentsByStepParameterId(Long stepParameterId) {
+        StepParameter source = stepParameterRepository.findById(stepParameterId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "StepParameter with id " + stepParameterId + " not found"));
+
+        Long recipeId = source.getStep() != null && source.getStep().getRecipe() != null
+                ? source.getStep().getRecipe().getId()
+                : null;
+        if (recipeId == null) {
+            return List.of();
+        }
+
+        Long goldenRecipeId = resolveGoldenRecipeId(recipeId);
+        List<ComputationFormula> formulas = computationFormulaRepository.findByRecipeIdWithReferences(goldenRecipeId);
+        if (formulas.isEmpty()) {
+            return List.of();
+        }
+
+        Map<String, Set<String>> dependencyGraph = buildDependencyGraph(formulas);
+
+        String sourceStepCode = source.getStep() != null ? source.getStep().getCode() : null;
+        String sourceDefinitionPath = buildDefinitionPath(source);
+        if (sourceStepCode == null || sourceStepCode.isBlank()
+                || sourceDefinitionPath == null || sourceDefinitionPath.isBlank()) {
+            return List.of();
+        }
+
+        String sourceAddress = toStructuralAddress(sourceStepCode.trim(), sourceDefinitionPath);
+
+        Set<String> impactedAddresses = collectImpactedAddresses(Set.of(sourceAddress), dependencyGraph);
+
+        if (impactedAddresses.isEmpty()) {
+            return List.of();
+        }
+
+        Set<String> computedTargets = resolveComputedTargetsForRecipeId(recipeId);
+        List<StepParameter> recipeParameters = stepParameterRepository.findByRecipeIdWithStepAndDefinition(recipeId);
+
+        return recipeParameters.stream()
+                .filter(parameter -> {
+                    String stepCode = parameter.getStep() != null ? parameter.getStep().getCode() : null;
+                    String definitionPath = buildDefinitionPath(parameter);
+
+                    if (stepCode == null || stepCode.isBlank()
+                            || definitionPath == null || definitionPath.isBlank()) {
+                        return false;
+                    }
+
+                    String address = toStructuralAddress(stepCode.trim(), definitionPath);
+                    return impactedAddresses.contains(address) && computedTargets.contains(address);
+                })
+                .map(StepParameter::getId)
+                .filter(id -> id != null)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<StepParameterGridRowDto> getRecipeStepParameterGrid(Long recipeId) {
         ensureRecipeExists(recipeId);
 
@@ -213,6 +271,10 @@ public class RecipeQueryService {
         List<Long> stepIds = steps.stream().map(Step::getId).toList();
         List<StepParameter> parameters = stepParameterRepository.findByStepIdsWithDefinitionAndSelectedOption(stepIds);
         Set<String> computedTargets = resolveComputedTargetsForRecipeId(recipeId);
+        Set<String> computedFromModifiedTargets = resolveComputedTargetsFromModifiedSources(
+            recipeId,
+            parameters,
+            computedTargets);
         List<StepEndpoint> endpoints = stepEndpointRepository.findByStepIdsWithConditions(stepIds);
 
         Map<Long, StepEndpoint> endpointByStepId = new HashMap<>();
@@ -311,6 +373,7 @@ public class RecipeQueryService {
                                             false,
                                             null,
                                             null,
+                                            false,
                                             false);
                                 }
 
@@ -322,6 +385,8 @@ public class RecipeQueryService {
                                         && cellParameter.getActivationState() == ActivationState.ENABLED;
 
                                 boolean computed = isComputedParameter(cellParameter, computedTargets);
+                                boolean computedFromModified = computed
+                                    && isComputedParameter(cellParameter, computedFromModifiedTargets);
 
                                 return new RecipeMatrixCellDto(
                                         step.getId(),
@@ -339,6 +404,7 @@ public class RecipeQueryService {
                                         cellParameter.isUserModified(),
                                         cellParameter.getComputationStatus(),
                                         cellParameter.getComputedAt(),
+                                        computedFromModified,
                                         computed);
                             })
                             .toList();
@@ -535,6 +601,120 @@ public class RecipeQueryService {
         return current != null && current.getId() != null ? current.getId() : recipeId;
     }
 
+    private Set<String> resolveComputedTargetsFromModifiedSources(
+            Long recipeId,
+            List<StepParameter> parameters,
+            Set<String> computedTargets) {
+        if (recipeId == null || parameters == null || parameters.isEmpty()
+                || computedTargets == null || computedTargets.isEmpty()) {
+            return Set.of();
+        }
+
+        Set<String> sourceAddresses = new HashSet<>();
+        for (StepParameter parameter : parameters) {
+            if (parameter == null || !parameter.isUserModified() || isComputedParameter(parameter, computedTargets)) {
+                continue;
+            }
+
+            String stepCode = parameter.getStep() != null ? parameter.getStep().getCode() : null;
+            String definitionPath = buildDefinitionPath(parameter);
+            if (stepCode == null || stepCode.isBlank() || definitionPath == null || definitionPath.isBlank()) {
+                continue;
+            }
+
+            sourceAddresses.add(toStructuralAddress(stepCode.trim(), definitionPath));
+        }
+
+        if (sourceAddresses.isEmpty()) {
+            return Set.of();
+        }
+
+        Long goldenRecipeId = resolveGoldenRecipeId(recipeId);
+        List<ComputationFormula> formulas = computationFormulaRepository.findByRecipeIdWithReferences(goldenRecipeId);
+        if (formulas.isEmpty()) {
+            return Set.of();
+        }
+
+        Map<String, Set<String>> dependencyGraph = buildDependencyGraph(formulas);
+        if (dependencyGraph.isEmpty()) {
+            return Set.of();
+        }
+
+        Set<String> impactedAddresses = collectImpactedAddresses(sourceAddresses, dependencyGraph);
+        impactedAddresses.retainAll(computedTargets);
+        return impactedAddresses;
+    }
+
+    private Map<String, Set<String>> buildDependencyGraph(List<ComputationFormula> formulas) {
+        if (formulas == null || formulas.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<String, Set<String>> dependencyGraph = new HashMap<>();
+        for (ComputationFormula formula : formulas) {
+            String targetStepCode = formula.getTargetStepCode() == null ? null : formula.getTargetStepCode().trim();
+            String targetDefinitionPath = formula.getTargetDefinitionPath() == null
+                    ? null
+                    : formula.getTargetDefinitionPath().trim();
+            if (targetStepCode == null || targetStepCode.isBlank()
+                    || targetDefinitionPath == null || targetDefinitionPath.isBlank()) {
+                continue;
+            }
+
+            String targetAddress = toStructuralAddress(targetStepCode, targetDefinitionPath);
+            dependencyGraph.computeIfAbsent(targetAddress, ignored -> new HashSet<>());
+
+            if (formula.getReferences() == null) {
+                continue;
+            }
+
+            for (var reference : formula.getReferences()) {
+                String sourceStepCode = reference.getStepCode() == null ? null : reference.getStepCode().trim();
+                String sourceDefinitionPath = reference.getDefinitionPath() == null
+                        ? null
+                        : reference.getDefinitionPath().trim();
+
+                if (sourceStepCode == null || sourceStepCode.isBlank()
+                        || sourceDefinitionPath == null || sourceDefinitionPath.isBlank()) {
+                    continue;
+                }
+
+                String sourceAddress = toStructuralAddress(sourceStepCode, sourceDefinitionPath);
+                dependencyGraph.computeIfAbsent(sourceAddress, ignored -> new HashSet<>()).add(targetAddress);
+            }
+        }
+
+        return dependencyGraph;
+    }
+
+    private Set<String> collectImpactedAddresses(
+            Set<String> sourceAddresses,
+            Map<String, Set<String>> dependencyGraph) {
+        if (sourceAddresses == null || sourceAddresses.isEmpty() || dependencyGraph == null || dependencyGraph.isEmpty()) {
+            return Set.of();
+        }
+
+        Set<String> impactedAddresses = new HashSet<>();
+        ArrayDeque<String> queue = new ArrayDeque<>();
+        for (String sourceAddress : sourceAddresses) {
+            if (sourceAddress != null && !sourceAddress.isBlank()) {
+                queue.add(sourceAddress);
+            }
+        }
+
+        while (!queue.isEmpty()) {
+            String current = queue.removeFirst();
+            Set<String> targets = dependencyGraph.getOrDefault(current, Set.of());
+            for (String target : targets) {
+                if (impactedAddresses.add(target)) {
+                    queue.addLast(target);
+                }
+            }
+        }
+
+        return impactedAddresses;
+    }
+
     private boolean isComputedParameter(StepParameter parameter, Set<String> computedTargets) {
         if (parameter == null || computedTargets == null || computedTargets.isEmpty()) {
             return false;
@@ -574,6 +754,8 @@ public class RecipeQueryService {
     }
 
     private String toStructuralAddress(String stepCode, String definitionPath) {
-        return stepCode + "|" + definitionPath;
+        String normalizedStepCode = stepCode == null ? "" : stepCode.trim().toLowerCase();
+        String normalizedDefinitionPath = definitionPath == null ? "" : definitionPath.trim().toLowerCase();
+        return normalizedStepCode + "|" + normalizedDefinitionPath;
     }
 }

@@ -8,7 +8,7 @@
     <div class="modal-body">
       <p class="intro">
         You are about to export <strong>{{ recipeName || 'this recipe' }}</strong> for Soft Machine.
-        Please confirm target equipment and review compatibility evidence before downloading.
+        Please confirm target equipment before downloading.
       </p>
 
       <div class="selectors">
@@ -38,71 +38,74 @@
 
       <div class="grid">
         <section class="card">
-          <h4>Required capabilities by recipe</h4>
-          <ul *ngIf="(requirements?.requiredCapabilities?.length ?? 0) > 0; else noRequiredCaps">
-            <li *ngFor="let capability of requirements?.requiredCapabilities">
-              {{ capability.capabilityCode }} - {{ capability.capabilityLabel }}
-            </li>
-          </ul>
-          <ng-template #noRequiredCaps>
-            <p class="muted">No required capability declared.</p>
-          </ng-template>
-        </section>
+          <h4>Customization summary (derived recipe)</h4>
 
-        <section class="card">
-          <h4>Capabilities provided by selected chamber</h4>
-          <div *ngIf="selectedMachine && selectedChamberId; else noSelectedChamber">
-            <div *ngIf="loadingChamberDetail" class="muted">Loading chamber data...</div>
+          <div *ngIf="loadingCustomizationSummary" class="muted">Loading customization summary...</div>
 
-            <ul *ngIf="!loadingChamberDetail && (selectedChamberDetail?.capabilities?.length ?? 0) > 0">
-              <li *ngFor="let capability of selectedChamberDetail?.capabilities">
-                {{ capability.code }} - {{ capability.label }}
-              </li>
-            </ul>
+          <ng-container *ngIf="!loadingCustomizationSummary">
+            <ng-container *ngIf="customizationSummary; else noCustomizationSummary">
+              <p class="summary-score" [ngClass]="customizationSeverityClass">
+                {{ touchedCount }} / {{ modifiableCount }} modifiable Parameter customized
+                <span class="summary-score__badge">{{ customizationRatePercent }}%</span>
+              </p>
 
-            <p class="muted" *ngIf="!loadingChamberDetail && (selectedChamberDetail?.capabilities?.length ?? 0) === 0">
-              No capability found on selected chamber.
-            </p>
-          </div>
+              <ul class="summary-metrics">
+                <li>Modifiable Parameter: {{ modifiableCount }}</li>
+                <li>Touched Parameter: {{ touchedCount }}</li>
+                <li>Untouched modifiable Parameter: {{ untouchedCount }}</li>
+                <li>Untouched rate: {{ untouchedRatePercent }}%</li>
+                <li>Computed excluded: {{ computedExcludedCount }}</li>
+              </ul>
 
-          <ng-template #noSelectedChamber>
-            <p class="muted">Select machine and chamber to view provided capabilities.</p>
-          </ng-template>
-        </section>
+              <p class="policy-note" [ngClass]="customizationSeverityClass">
+                {{ strictPolicyMessage }}
+              </p>
+            </ng-container>
+          </ng-container>
 
-        <section class="card card--full">
-          <h4>Required configurations by recipe</h4>
-          <ul *ngIf="(requirements?.requiredConfigurations?.length ?? 0) > 0; else noRequiredConfigs">
-            <li *ngFor="let configuration of requirements?.requiredConfigurations">
-              {{ configuration.configurationDefinitionCode }} - {{ configuration.configurationDefinitionName }}
-            </li>
-          </ul>
-          <ng-template #noRequiredConfigs>
-            <p class="muted">No required configuration declared.</p>
+          <ng-template #noCustomizationSummary>
+            <p class="muted">No customization summary available.</p>
           </ng-template>
         </section>
 
         <section class="card card--full">
-          <h4>Configurations available on selected chamber</h4>
-          <div *ngIf="selectedMachine && selectedChamberId; else noSelectedChamberConfigs">
-            <div *ngIf="loadingChamberDetail" class="muted">Loading chamber data...</div>
+          <h4>Review required: modifiable Parameters left unchanged, grouped by step</h4>
 
-            <ul *ngIf="!loadingChamberDetail && (selectedChamberDetail?.configurations?.length ?? 0) > 0">
-              <li *ngFor="let configuration of selectedChamberDetail?.configurations">
-                {{ configuration.configurationDefinitionCode || configuration.chamberConfigurationCode }}
-                - {{ configuration.configurationDefinitionName || configuration.chamberConfigurationName }}
-              </li>
-            </ul>
+          <p class="warning-callout" *ngIf="!loadingCustomizationSummary && untouchedCount > 0">
+            This export still contains <strong>{{ untouchedCount }}</strong> modifiable Parameters that were not customized.
+            Review the steps below before confirming the XML download.
+          </p>
 
-            <p class="muted" *ngIf="!loadingChamberDetail && (selectedChamberDetail?.configurations?.length ?? 0) === 0">
-              No configuration found on selected chamber.
-            </p>
-          </div>
+          <div *ngIf="loadingCustomizationSummary" class="muted">Loading untouched Parameters list...</div>
 
-          <ng-template #noSelectedChamberConfigs>
-            <p class="muted">Select machine and chamber to view available configurations.</p>
+          <ng-container *ngIf="!loadingCustomizationSummary && groupedUntouchedModifiableItems.length > 0; else noUntouchedModifiableSp">
+            <div class="untouched-step-group" *ngFor="let group of groupedUntouchedModifiableItems">
+              <div class="untouched-step-group__header">
+                <div class="untouched-step-group__title">
+                  {{ group.stepCode || ('Step #' + group.stepId) }}
+                </div>
+                <div class="untouched-step-group__subtitle">
+                  {{ group.stepName || 'Unnamed step' }}
+                  <span *ngIf="group.stepKind">· {{ group.stepKind }}</span>
+                </div>
+              </div>
+
+              <div class="untouched-step-group__sp-list">
+                <span
+                  class="untouched-step-group__sp-chip"
+                  *ngFor="let item of group.items">
+                  <span class="untouched-step-group__sp-chip-name">{{ item.parameterName }}</span>
+                  <span *ngIf="item.parameterGroup" class="untouched-step-group__sp-chip-group">{{ item.parameterGroup }}</span>
+                </span>
+              </div>
+            </div>
+          </ng-container>
+
+          <ng-template #noUntouchedModifiableSp>
+            <p class="muted">No untouched modifiable Parameter detected.</p>
           </ng-template>
         </section>
+
       </div>
 
       <label class="confirm-check">

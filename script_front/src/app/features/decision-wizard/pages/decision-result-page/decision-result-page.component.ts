@@ -223,17 +223,7 @@ export class DecisionResultPageComponent {
   private buildLegendRows(): LegendMatrixRow[] {
     return [
       {
-        parameterName: 'Name',
-        cells: [
-          this.createLegendCell(1, 'STRING', 'ETCH_A', 'readonly-neutral'),
-          this.createLegendCell(2, 'STRING', 'ETCH_B', 'readonly-neutral'),
-          this.createLegendCell(3, 'STRING', 'ETCH_C', 'readonly-neutral'),
-          this.createLegendCell(4, 'STRING', 'ETCH_D', 'readonly-neutral'),
-          this.createLegendCell(5, 'STRING', 'ETCH_E', 'readonly-neutral')
-        ]
-      },
-      {
-        parameterName: 'Chamber',
+        parameterName: 'Param 1',
         cells: [
           this.createLegendCell(1, 'ENUM', 'CH_A', 'golden-active', { selectedOptionLabel: 'CH_A' }),
           this.createLegendCell(2, 'ENUM', 'CH_B', 'golden-inactive', { selectedOptionLabel: 'CH_B', activationState: 'DISABLED' }),
@@ -243,7 +233,7 @@ export class DecisionResultPageComponent {
         ]
       },
       {
-        parameterName: 'Max Time',
+        parameterName: 'Param 2',
         cells: [
           this.createLegendCell(1, 'NUMBER', '120', 'golden-active', { valueJson: '120' }),
           this.createLegendCell(2, 'NUMBER', '135', 'editable-default', { valueJson: '135', editable: true }),
@@ -253,7 +243,7 @@ export class DecisionResultPageComponent {
         ]
       },
       {
-        parameterName: 'RTC mode',
+        parameterName: 'Param 3',
         cells: [
           this.createLegendCell(1, 'ENUM', 'CONST_VOLTAGE', 'golden-active', { selectedOptionLabel: 'CONST_VOLTAGE' }),
           this.createLegendCell(2, 'ENUM', 'CONST_CURRENT', 'editable-default', { selectedOptionLabel: 'CONST_CURRENT', editable: true }),
@@ -263,7 +253,7 @@ export class DecisionResultPageComponent {
         ]
       },
       {
-        parameterName: 'Voltage control',
+        parameterName: 'Param 4',
         cells: [
           this.createLegendCell(1, 'ENUM', 'AUTO', 'golden-active', { selectedOptionLabel: 'AUTO' }),
           this.createLegendCell(2, 'ENUM', 'MANUAL', 'editable-default', { selectedOptionLabel: 'MANUAL', editable: true }),
@@ -291,6 +281,8 @@ export class DecisionResultPageComponent {
       'readonly-neutral': { lockedByGolden: false, activationState: 'ENABLED', editable: false, userModified: false, computed: false }
     };
 
+    const stateDefaults = defaultsByState[state];
+
     return {
       stepId,
       definitionId: stepId,
@@ -304,8 +296,12 @@ export class DecisionResultPageComponent {
       editable: false,
       userModified: false,
       computed: false,
-      ...defaultsByState[state],
-      ...overrides
+      ...stateDefaults,
+      ...overrides,
+      computedFromModified:
+        overrides?.computedFromModified ??
+        stateDefaults.computedFromModified ??
+        false
     };
   }
 }

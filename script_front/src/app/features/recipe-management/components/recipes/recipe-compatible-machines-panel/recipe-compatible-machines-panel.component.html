@@ -1,13 +1,25 @@
-<div class="panel">
+<div
+  class="panel"
+  [class.panel--filtering]="loading && filteringHighlightActive"
+  [class.panel--pulse]="!loading && filteringHighlightActive"
+  [attr.data-pulse-tick]="filteringPulseTick">
+  <div class="filter-feedback" *ngIf="filteringHighlightActive">
+    <span class="filter-feedback__spinner" [class.filter-feedback__spinner--active]="loading" aria-hidden="true"></span>
+    <div class="filter-feedback__text">
+      <strong>{{ loading ? 'Updating compatibility filter...' : 'Compatible machines list updated' }}</strong>
+      <span>{{ loading ? 'Re-evaluating machines and configs from your latest SP change.' : 'The machine list now reflects your SP edits.' }}</span>
+    </div>
+  </div>
+
   <ng-container *ngIf="compatibility as result; else loadingCompatibility">
     <div class="panel__header">
       <h3>Compatible machines</h3>
       <p>{{ result.compatibleMachineCount }} machine(s), {{ result.compatibleChamberCount }} chamber(s)</p>
     </div>
 
-  <div *ngIf="result.machines.length === 0" class="empty-state">
-    No compatible machine found.
-  </div>
+    <div *ngIf="result.machines.length === 0" class="empty-state">
+      No compatible machine found.
+    </div>
 
     <div class="machine-list" *ngIf="result.machines.length > 0">
       <div class="machine-card" *ngFor="let machine of result.machines">

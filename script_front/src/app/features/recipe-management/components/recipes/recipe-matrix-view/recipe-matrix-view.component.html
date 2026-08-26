@@ -31,7 +31,7 @@
           </td>
           <td
             *ngFor="let cell of row.cells; trackBy: trackByCell"
-            [ngClass]="getCellStateClass(cell)"
+            [ngClass]="[getCellStateClass(cell), getCellPulseClass(cell)]"
             [class.cell-readonly]="!isEditable(cell)"
             (contextmenu)="onCellContextMenu($event, cell)">
             <div class="cell-shell">
@@ -95,7 +95,7 @@
             </td>
             <td
               *ngFor="let cell of row.cells; trackBy: trackByCell"
-              [ngClass]="getCellStateClass(cell)"
+              [ngClass]="[getCellStateClass(cell), getCellPulseClass(cell)]"
               [class.cell-readonly]="!isEditable(cell)"
               (contextmenu)="onCellContextMenu($event, cell)">
               <div class="cell-shell">
