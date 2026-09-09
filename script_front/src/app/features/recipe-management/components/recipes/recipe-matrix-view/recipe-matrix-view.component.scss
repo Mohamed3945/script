@@ -95,6 +95,7 @@
   min-width: 165px;
   width: 165px;
   font-family: Consolas, 'Courier New', monospace;
+  cursor: pointer;
 }
 
 .param-name {
@@ -340,6 +341,22 @@ td.cell--user-modified {
 .btn {
   padding: 5px 8px;
   font-size: 11px;
+}
+
+.param-hover-tooltip {
+  position: fixed;
+  z-index: 90;
+  pointer-events: none;
+  padding: 5px 8px;
+  border: 1px solid #6f859a;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #f8fbff 0%, #dbe6f1 100%);
+  color: #243c52;
+  font-family: Consolas, 'Courier New', monospace;
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  box-shadow: 0 5px 12px rgba(12, 26, 39, 0.24);
+  white-space: nowrap;
 }
 
 // ...existing code...

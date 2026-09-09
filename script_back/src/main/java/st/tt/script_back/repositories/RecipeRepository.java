@@ -47,6 +47,8 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
 
     List<Recipe> findByRecipeKindOrderByReviseTimeDesc(RecipeKind recipeKind);
 
+    List<Recipe> findByRecipeKindAndCreatorIdOrderByReviseTimeDesc(RecipeKind recipeKind, Long creatorId);
+
     List<Recipe> findByRecipeKindNotOrderByReviseTimeDesc(RecipeKind recipeKind);
 
     List<Recipe> findByParentRecipeIdOrderByVersionDesc(Long parentRecipeId);

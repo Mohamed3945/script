@@ -23,7 +23,7 @@
 
       <tbody *ngIf="pinnedRows.length > 0">
         <tr *ngFor="let row of pinnedRows; trackBy: trackByPinnedRow" class="grouped-parameter-row">
-          <td class="matrix-table__param" (contextmenu)="onParameterRowContextMenu($event, row)">
+          <td class="matrix-table__param" (mouseenter)="onParameterRowHoverStart($event)" (mousemove)="onParameterRowHoverMove($event)" (mouseleave)="onParameterRowHoverEnd()" (click)="onParameterRowClick($event, row)" (contextmenu)="onParameterRowContextMenu($event, row)">
             <div class="param-name">{{row.parameterName }}</div>
           </td>
           <td
@@ -87,7 +87,7 @@
 
         <ng-container *ngIf="!isGroupCollapsed(group.key)">
           <tr *ngFor="let row of group.rows; trackBy: trackByGroupRow" class="grouped-parameter-row">
-            <td class="matrix-table__param" (contextmenu)="onParameterRowContextMenu($event, row)">
+            <td class="matrix-table__param" (mouseenter)="onParameterRowHoverStart($event)" (mousemove)="onParameterRowHoverMove($event)" (mouseleave)="onParameterRowHoverEnd()" (click)="onParameterRowClick($event, row)" (contextmenu)="onParameterRowContextMenu($event, row)">
               <div class="param-name">{{row.parameterName }}</div>
             </td>
             <td
@@ -141,4 +141,12 @@
   <ng-template #emptyState>
     <div class="empty-state">No PRESTEP parameters found.</div>
   </ng-template>
+
+  <div
+    class="param-hover-tooltip"
+    *ngIf="detailsTooltipVisible"
+    [style.left.px]="detailsTooltipX"
+    [style.top.px]="detailsTooltipY">
+    Show details
+  </div>
 </div>

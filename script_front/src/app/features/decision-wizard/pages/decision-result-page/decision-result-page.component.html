@@ -87,12 +87,10 @@
         <div class="machine-list" *ngIf="machineChoices.length > 0; else noMachine">
           <label
             class="machine-item"
-            *ngFor="let machine of machineChoices"
-            [class.machine-item--selected]="machine.id === selectedMachineId">
+            *ngFor="let machine of machineChoices">
             <input
               type="radio"
               name="machine-choice"
-              [checked]="machine.id === selectedMachineId"
               (change)="onMachineSelected(machine.id)" />
             <div class="machine-item__content">
               <div class="machine-item__code">{{ machine.code }}</div>

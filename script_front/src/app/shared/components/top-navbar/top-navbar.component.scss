@@ -171,6 +171,7 @@
   padding: 7px 8px;
   cursor: pointer;
   margin-bottom: 8px;
+  text-decoration: none;
 }
 
 .sidebar__user:hover {
@@ -183,6 +184,20 @@
 
 .sidebar__user-label {
   font-size: 12px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar__user-role {
+  margin-left: auto;
+  border-radius: 999px;
+  padding: 2px 6px;
+  background: rgba(216, 189, 123, 0.18);
+  color: #f7e7ba;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
 }
 
 .sidebar__foot-tag {
@@ -243,6 +258,7 @@
 }
 
 .sidebar.is-collapsed .sidebar__user-label,
+.sidebar.is-collapsed .sidebar__user-role,
 .sidebar.is-collapsed .sidebar__foot-tag {
   display: none;
 }

@@ -48,6 +48,7 @@ public class DecisionFinalizeService {
     private final StepParameterRepository stepParameterRepository;
     private final ParameterActivationService parameterActivationService;
     private final ComputationEvaluationService computationEvaluationService;
+    private final AuthService authService;
 
     public DecisionFinalizeService(
             DecisionResultProfileRepository decisionResultProfileRepository,
@@ -59,7 +60,8 @@ public class DecisionFinalizeService {
             StepEndpointRepository stepEndpointRepository,
             StepParameterRepository stepParameterRepository,
             ParameterActivationService parameterActivationService,
-            ComputationEvaluationService computationEvaluationService) {
+            ComputationEvaluationService computationEvaluationService,
+            AuthService authService) {
         this.decisionResultProfileRepository = decisionResultProfileRepository;
         this.decisionQuestionRepository = decisionQuestionRepository;
         this.decisionOptionRepository = decisionOptionRepository;
@@ -70,6 +72,7 @@ public class DecisionFinalizeService {
         this.stepParameterRepository = stepParameterRepository;
         this.parameterActivationService = parameterActivationService;
         this.computationEvaluationService = computationEvaluationService;
+        this.authService = authService;
     }
 
     @Transactional
@@ -99,18 +102,20 @@ public class DecisionFinalizeService {
                     "Validated recipe " + goldenRecipe.getId() + " is not a GOLDEN recipe");
         }
 
+        Long currentUserId = authService.getCurrentUserId();
+
         DecisionExecution execution = new DecisionExecution();
         execution.setResultProfile(resultProfile);
         execution.setValidatedGoldenRecipeId(request.getValidatedGoldenRecipeId());
         execution.setSelectedMachineId(request.getSelectedMachineId());
-        execution.setCreatorId(request.getCreatorId());
+        execution.setCreatorId(currentUserId);
 
         List<DecisionExecutionAnswer> answers = toDecisionExecutionAnswers(execution, request.getAnswers());
         execution.setAnswers(answers);
 
         DecisionExecution savedExecution = decisionExecutionRepository.save(execution);
 
-        Recipe derivedRecipe = createDerivedRecipeFromGolden(goldenRecipe, request.getCreatorId());
+        Recipe derivedRecipe = createDerivedRecipeFromGolden(goldenRecipe, currentUserId);
 
         savedExecution.setCreatedDerivedRecipeId(derivedRecipe.getId());
         decisionExecutionRepository.save(savedExecution);
@@ -311,9 +316,6 @@ public class DecisionFinalizeService {
         }
         if (request.getSelectedMachineId() == null) {
             throw new IllegalArgumentException("selectedMachineId is required");
-        }
-        if (request.getCreatorId() == null) {
-            throw new IllegalArgumentException("creatorId is required");
         }
         if (request.getAnswers() == null || request.getAnswers().isEmpty()) {
             throw new IllegalArgumentException("answers are required");

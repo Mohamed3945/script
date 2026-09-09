@@ -1,0 +1,793 @@
+======================================================================
+INVENTAIRE COMPLET - BASES VM DISTANTE / UNIX / LINUX / SSH
+======================================================================
+
+But :
+- Comprendre ce qu’est une VM distante
+- Comprendre SSH
+- Savoir naviguer dans Linux
+- Savoir manipuler fichiers, dossiers, permissions
+- Comprendre les services, processus, logs
+- Préparer le terrain pour déployer une application
+
+======================================================================
+1. DEFINITIONS DE BASE
+======================================================================
+
+1.1 VM (Virtual Machine)
+Une VM est une machine virtuelle.
+C’est un ordinateur distant qui tourne sur un serveur physique.
+Tu y accèdes comme si c’était une machine normale, mais à distance.
+
+1.2 Machine locale vs machine distante
+- Machine locale : ton PC
+- Machine distante : la VM
+Quand tu es connecté en SSH, les commandes s’exécutent sur la VM.
+
+1.3 SSH
+SSH = Secure Shell
+C’est le protocole de connexion sécurisé qui permet d’ouvrir un terminal sur la VM.
+
+Exemple de connexion :
+ssh utilisateur@serveur
+
+1.4 Shell
+Le shell est l’interpréteur de commandes.
+Il lit ce que tu tapes et exécute les commandes.
+Les shells courants :
+- bash
+- sh
+- zsh
+
+1.5 Prompt
+Exemple :
+[goldenscriptadm@cr2sx29362 ~]$
+
+Interprétation :
+- goldenscriptadm = utilisateur
+- cr2sx29362 = machine
+- ~ = dossier personnel
+- $ = utilisateur standard
+- # = super utilisateur root
+
+======================================================================
+2. PREMIERES COMMANDES A CONNAITRE
+======================================================================
+
+2.1 Savoir qui tu es
+whoami
+
+2.2 Voir le nom de la machine
+hostname
+
+2.3 Voir où tu es
+pwd
+
+2.4 Lister le contenu du dossier courant
+ls
+
+2.5 Lister avec détails
+ls -l
+
+2.6 Lister avec fichiers cachés
+ls -la
+
+2.7 Connaitre la distribution Linux
+cat /etc/os-release
+
+2.8 Voir la version noyau
+uname -a
+
+======================================================================
+3. NAVIGATION DANS LE SYSTEME DE FICHIERS
+======================================================================
+
+3.1 Aller dans un dossier
+cd nom_dossier
+
+3.2 Aller dans un chemin complet
+cd /tmp
+
+3.3 Revenir au home
+cd
+ou
+cd ~
+
+3.4 Remonter d’un niveau
+cd ..
+
+3.5 Revenir au dossier précédent
+cd -
+
+3.6 Symboles utiles
+- .   = dossier courant
+- ..  = dossier parent
+- ~   = home utilisateur
+- /   = racine du système
+
+3.7 Différence chemin absolu / relatif
+Chemin absolu :
+/home/goldenscriptadm/demo
+
+Chemin relatif :
+demo/test
+
+======================================================================
+4. DOSSIERS IMPORTANTS SOUS LINUX
+======================================================================
+
+/               = racine du système
+/home           = dossiers utilisateurs
+/home/user      = home d’un utilisateur
+/tmp            = fichiers temporaires
+/opt            = applications installées manuellement
+/etc            = fichiers de configuration
+/var            = données variables
+/var/log        = journaux système
+/var/www        = fichiers web
+/usr            = programmes et bibliothèques
+/bin            = commandes de base
+/sbin           = commandes système
+/dev            = périphériques
+/proc           = informations système et processus
+/root           = home de root
+
+======================================================================
+5. MANIPULATION DES FICHIERS ET DOSSIERS
+======================================================================
+
+5.1 Créer un fichier vide
+touch fichier.txt
+
+5.2 Créer un dossier
+mkdir mon_dossier
+
+5.3 Créer une arborescence
+mkdir -p /tmp/monapp/backend
+
+5.4 Copier un fichier
+cp source destination
+
+Exemple :
+cp a.txt b.txt
+
+5.5 Copier un dossier
+cp -r dossier1 dossier2
+
+5.6 Déplacer un fichier
+mv source destination
+
+5.7 Renommer un fichier
+mv ancien.txt nouveau.txt
+
+5.8 Supprimer un fichier
+rm fichier.txt
+
+5.9 Supprimer un dossier
+rm -r mon_dossier
+
+5.10 Supprimer de force
+rm -rf mon_dossier
+
+ATTENTION :
+rm -rf est dangereux.
+Toujours vérifier ce que tu supprimes.
+
+======================================================================
+6. LIRE UN FICHIER
+======================================================================
+
+6.1 Afficher tout le contenu
+cat fichier.txt
+
+6.2 Lire page par page
+less fichier.txt
+
+Quitter less :
+q
+
+6.3 Voir les premières lignes
+head fichier.txt
+
+6.4 Voir les dernières lignes
+tail fichier.txt
+
+6.5 Suivre un log en direct
+tail -f fichier.log
+
+======================================================================
+7. ECRIRE DANS UN FICHIER
+======================================================================
+
+7.1 Ecrire une ligne en remplaçant le contenu
+echo "bonjour" > fichier.txt
+
+7.2 Ajouter une ligne sans écraser
+echo "suite" >> fichier.txt
+
+Exemple :
+echo "hello" > test.txt
+echo "world" >> test.txt
+cat test.txt
+
+======================================================================
+8. EDITEURS DE TEXTE
+======================================================================
+
+8.1 nano
+Simple pour débuter
+nano fichier.txt
+
+Raccourcis principaux :
+- Ctrl + O : sauvegarder
+- Entrée : confirmer
+- Ctrl + X : quitter
+
+8.2 vi / vim
+Souvent déjà installé
+vi fichier.txt
+
+Bases minimales :
+- i      : passer en insertion
+- taper le texte
+- Esc    : sortir de l’insertion
+- :wq    : sauvegarder et quitter
+- :q!    : quitter sans sauvegarder
+
+======================================================================
+9. FICHIERS CACHES
+======================================================================
+
+Sous Linux, les fichiers qui commencent par un point sont cachés.
+Exemples :
+.bashrc
+.profile
+.ssh
+
+Pour les voir :
+ls -la
+
+======================================================================
+10. REDIRECTIONS ET PIPES
+======================================================================
+
+10.1 Redirection sortie vers fichier
+commande > fichier.txt
+
+10.2 Ajouter à la fin
+commande >> fichier.txt
+
+10.3 Pipe
+commande1 | commande2
+
+Exemples :
+ls -l | less
+ps -ef | grep java
+cat fichier.txt | grep erreur
+
+======================================================================
+11. RECHERCHE DE FICHIERS ET TEXTE
+======================================================================
+
+11.1 Rechercher un fichier
+find /tmp -name "monapp.jar"
+
+11.2 Rechercher du texte dans un fichier
+grep "mot" fichier.txt
+
+11.3 Rechercher dans plusieurs fichiers
+grep -R "spring" /opt/monapp
+
+11.4 Rechercher un processus
+ps -ef | grep java
+
+======================================================================
+12. DROITS ET PERMISSIONS
+======================================================================
+
+12.1 Voir les droits
+ls -l
+
+Exemple :
+-rw-r--r-- 1 user group 123 Aug 26 test.txt
+
+12.2 Interprétation
+- premier caractère :
+  - = fichier
+  d = dossier
+- ensuite groupes de 3 :
+  rwx rwx rwx
+  utilisateur / groupe / autres
+
+r = lecture
+w = écriture
+x = exécution
+
+12.3 Rendre exécutable
+chmod +x script.sh
+
+12.4 Changer propriétaire
+chown user:group fichier
+
+Exemple :
+sudo chown -R www-data:www-data /var/www/monapp
+
+======================================================================
+13. UTILISATEURS ET PRIVILEGES
+======================================================================
+
+13.1 Voir ton utilisateur
+whoami
+
+13.2 Voir ton identité complète
+id
+
+13.3 Exécuter en admin
+sudo commande
+
+Exemple :
+sudo apt update
+
+13.4 Voir tes droits sudo
+sudo -l
+
+13.5 Root
+Root est l’administrateur total de la machine.
+A utiliser avec prudence.
+
+======================================================================
+14. VARIABLES D’ENVIRONNEMENT
+======================================================================
+
+14.1 Voir les variables
+env
+
+14.2 Voir une variable
+echo $HOME
+echo $PATH
+
+14.3 Variables utiles
+HOME = dossier personnel
+PATH = liste des dossiers contenant les exécutables
+USER = nom utilisateur
+
+======================================================================
+15. PROCESSUS
+======================================================================
+
+15.1 Voir les processus
+ps -ef
+
+15.2 Chercher un processus Java
+ps -ef | grep java
+
+15.3 Vue interactive
+top
+
+Quitter :
+q
+
+15.4 Tuer un processus
+kill PID
+
+15.5 Tuer de force
+kill -9 PID
+
+ATTENTION :
+ne pas tuer un processus sans savoir lequel c’est.
+
+======================================================================
+16. SERVICES SYSTEMD
+======================================================================
+
+Les services sont des programmes gérés par le système.
+
+16.1 Voir le statut
+systemctl status nginx
+
+16.2 Démarrer
+sudo systemctl start nginx
+
+16.3 Arrêter
+sudo systemctl stop nginx
+
+16.4 Redémarrer
+sudo systemctl restart nginx
+
+16.5 Recharger une configuration
+sudo systemctl reload nginx
+
+16.6 Activer au démarrage
+sudo systemctl enable nginx
+
+16.7 Désactiver au démarrage
+sudo systemctl disable nginx
+
+======================================================================
+17. LOGS
+======================================================================
+
+17.1 Voir les logs d’un service
+journalctl -u nginx
+
+17.2 Suivre les logs d’un service
+journalctl -u nginx -f
+
+17.3 Voir les dernières lignes
+journalctl -u nginx -n 50
+
+17.4 Dossiers de logs
+/var/log
+
+Exemples :
+/var/log/syslog
+/var/log/messages
+/var/log/nginx/
+
+======================================================================
+18. RESEAU - BASES
+======================================================================
+
+18.1 Tester la résolution réseau
+ping serveur
+
+18.2 Tester HTTP
+curl http://localhost:8080
+
+18.3 Voir les ports ouverts
+ss -tuln
+
+18.4 Chercher un port précis
+ss -tuln | grep 8080
+
+18.5 Voir l’adresse IP
+ip a
+
+18.6 Voir les routes
+ip route
+
+======================================================================
+19. DISQUE ET MEMOIRE
+======================================================================
+
+19.1 Espace disque
+df -h
+
+19.2 Taille d’un dossier
+du -sh mon_dossier
+
+19.3 Mémoire RAM
+free -h
+
+19.4 Charge système
+uptime
+
+======================================================================
+20. PAQUETS ET INSTALLATION DE LOGICIELS
+======================================================================
+
+Sur Debian / Ubuntu :
+
+20.1 Mettre à jour la liste des paquets
+sudo apt update
+
+20.2 Installer un logiciel
+sudo apt install -y nginx
+
+20.3 Installer plusieurs logiciels
+sudo apt install -y nginx curl unzip openjdk-17-jdk
+
+20.4 Supprimer un logiciel
+sudo apt remove nom_paquet
+
+======================================================================
+21. ARCHIVES
+======================================================================
+
+21.1 Dézipper un zip
+unzip fichier.zip
+
+21.2 Créer une archive tar.gz
+tar -czf archive.tar.gz dossier/
+
+21.3 Extraire une archive tar.gz
+tar -xzf archive.tar.gz
+
+======================================================================
+22. COPIE DE FICHIERS ENTRE TON PC ET LA VM
+======================================================================
+
+22.1 SCP - copier un fichier vers la VM
+scp fichier.txt user@serveur:/tmp/
+
+22.2 SCP - copier un dossier
+scp -r dist/ user@serveur:/tmp/
+
+22.3 Copier depuis la VM vers ton PC
+scp user@serveur:/tmp/fichier.txt .
+
+22.4 RSYNC - synchronisation pratique
+rsync -avz dist/ user@serveur:/tmp/dist/
+
+======================================================================
+23. CLEFS SSH - NOTION DE BASE
+======================================================================
+
+SSH peut fonctionner :
+- avec mot de passe
+- avec clé publique / privée
+
+Dossier courant des clés :
+~/.ssh
+
+Fichiers typiques :
+- id_rsa
+- id_rsa.pub
+- authorized_keys
+
+Important :
+- la clé privée ne se partage jamais
+- la clé publique peut être déposée sur le serveur
+
+======================================================================
+24. COMMANDES D’AIDE
+======================================================================
+
+24.1 Manuel d’une commande
+man ls
+
+Quitter :
+q
+
+24.2 Aide rapide
+ls --help
+
+24.3 Trouver le chemin d’une commande
+which java
+which nginx
+
+======================================================================
+25. RACCourcis TERMINAL UTILES
+======================================================================
+
+Tab          : auto-complétion
+Flèche haut  : commande précédente
+Flèche bas   : commande suivante
+Ctrl + C     : interrompre la commande en cours
+Ctrl + D     : fermer la session / fin d’entrée
+Ctrl + L     : nettoyer l’écran
+clear        : nettoyer l’écran
+history      : voir l’historique des commandes
+
+======================================================================
+26. BONNES PRATIQUES EN ENVIRONNEMENT D’ENTREPRISE
+======================================================================
+
+- Toujours savoir sur quelle machine tu es
+- Toujours vérifier ton dossier courant avec pwd
+- Toujours lister avant de supprimer
+- Utiliser sudo seulement si nécessaire
+- Ne pas modifier /etc sans comprendre
+- Garder une trace des changements
+- Ne pas stocker de secrets en clair dans des scripts
+- Vérifier l’espace disque avant déploiement
+- Vérifier les logs après un changement
+- Utiliser des répertoires dédiés à l’application
+
+======================================================================
+27. CHECKLIST DE DECOUVERTE D’UNE NOUVELLE VM
+======================================================================
+
+Commandes à lancer :
+
+whoami
+hostname
+pwd
+ls -la
+cat /etc/os-release
+df -h
+free -h
+ip a
+sudo -l
+java -version
+nginx -v
+
+Objectif :
+- savoir qui tu es
+- savoir quelle machine c’est
+- savoir où tu es
+- connaitre l’OS
+- vérifier disque et mémoire
+- voir le réseau
+- vérifier tes droits sudo
+- voir si Java/Nginx sont installés
+
+======================================================================
+28. PETIT LABO SANS RISQUE
+======================================================================
+
+mkdir ~/demo_linux
+cd ~/demo_linux
+pwd
+touch test.txt
+echo "bonjour" > test.txt
+cat test.txt
+cp test.txt copie.txt
+mv copie.txt copie2.txt
+ls -l
+rm copie2.txt
+ls -l
+
+======================================================================
+29. COMMANDES IMPORTANTES POUR UN FUTUR DEPLOIEMENT
+======================================================================
+
+Vérifier Java :
+java -version
+
+Vérifier Maven :
+mvn -v
+
+Vérifier Node :
+node -v
+npm -v
+
+Vérifier Nginx :
+nginx -v
+systemctl status nginx
+
+Tester backend local :
+curl http://localhost:8080
+
+Voir les logs :
+journalctl -u monapp -f
+
+Voir les ports :
+ss -tuln | grep 8080
+
+======================================================================
+30. ORGANISATION TYPIQUE D’UNE APPLICATION
+======================================================================
+
+Exemple standard :
+/opt/monapp/backend/
+/opt/monapp/logs/
+/var/www/monapp/
+/etc/nginx/
+/etc/systemd/system/
+
+Interprétation :
+- /opt/monapp/backend/  : application backend
+- /opt/monapp/logs/     : logs applicatifs
+- /var/www/monapp/      : frontend statique
+- /etc/nginx/           : configuration reverse proxy
+- /etc/systemd/system/  : fichiers de service
+
+======================================================================
+31. ERREURS COURANTES DE DEBUTANT
+======================================================================
+
+- Se tromper de machine
+- Se tromper de dossier
+- Oublier sudo
+- Utiliser rm -rf trop vite
+- Modifier un fichier système sans sauvegarde
+- Oublier de vérifier les logs
+- Oublier de tester un service après changement
+- Confondre machine locale et machine distante
+- Chercher un fichier dans le mauvais chemin
+- Oublier que Linux est sensible à la casse
+
+======================================================================
+32. CE QUE TU DOIS MAITRISER EN PRIORITE
+======================================================================
+
+Niveau 1 :
+- whoami
+- pwd
+- ls
+- cd
+- mkdir
+- touch
+- cp
+- mv
+- rm
+- cat
+
+Niveau 2 :
+- nano ou vi
+- sudo
+- grep
+- find
+- ps
+- top
+- curl
+- scp
+
+Niveau 3 :
+- permissions
+- systemctl
+- journalctl
+- réseau
+- déploiement applicatif
+
+======================================================================
+33. MINI FICHE MEMO EXPRESS
+======================================================================
+
+Voir où tu es :
+pwd
+
+Voir le contenu :
+ls -la
+
+Changer de dossier :
+cd /chemin
+
+Retour home :
+cd
+
+Créer un dossier :
+mkdir test
+
+Créer un fichier :
+touch a.txt
+
+Lire un fichier :
+cat a.txt
+
+Copier :
+cp a.txt b.txt
+
+Déplacer/renommer :
+mv a.txt b.txt
+
+Supprimer :
+rm a.txt
+
+Editer :
+nano a.txt
+
+Admin :
+sudo commande
+
+Processus :
+ps -ef
+
+Service :
+systemctl status nginx
+
+Logs :
+journalctl -u nginx -f
+
+Copie via SSH :
+scp fichier user@serveur:/tmp/
+
+======================================================================
+34. CONCLUSION
+======================================================================
+
+Si tu débutes, l’essentiel est de comprendre ceci :
+
+1. Tu travailles sur une machine distante
+2. Tout se fait en ligne de commande
+3. Il faut d’abord savoir naviguer
+4. Puis manipuler fichiers et dossiers
+5. Puis comprendre sudo, services, logs
+6. Ensuite seulement déployer une application
+
+Ordre d’apprentissage conseillé :
+- navigation
+- fichiers
+- lecture/édition
+- permissions
+- sudo
+- processus
+- services
+- logs
+- réseau
+- déploiement
+
+======================================================================
+FIN DU DOCUMENT
+======================================================================

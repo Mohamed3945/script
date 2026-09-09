@@ -14,6 +14,7 @@ import { Recipe } from '../../../../../core/models/recipe.model';
  */
 export class RecipeListTableComponent {
   @Input() recipes: Recipe[] = [];
+  @Input() canManage = true;
 
   @Output() viewRecipe = new EventEmitter<Recipe>();
   @Output() editRecipe = new EventEmitter<Recipe>();

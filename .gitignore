@@ -3,6 +3,9 @@ node_modules
 # Local editor and generated artifacts at the repository root
 /.vscode/
 /db_backups/
+/UML/
+/sql/
+/VM_Configurations.rdg
 /B-I050-105A-MA-R.xml
 /Golden_SCRIPT_Note_Cadrage.pdf
 /goldendb1_1_dump.sql

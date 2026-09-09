@@ -21,6 +21,7 @@ import st.tt.script_back.entities.StepEndpointCondition;
 import st.tt.script_back.entities.StepParameter;
 import st.tt.script_back.enums.RecipeKind;
 import st.tt.script_back.enums.RecipeStatus;
+import st.tt.script_back.enums.RoleCode;
 import st.tt.script_back.repositories.ComputationFormulaRepository;
 import st.tt.script_back.repositories.DecisionExecutionRepository;
 import st.tt.script_back.mappers.RecipeMapper;
@@ -48,6 +49,7 @@ public class RecipeService {
     private final ParameterActivationService parameterActivationService;
     private final ComputationEvaluationService computationEvaluationService;
     private final ComputationFormulaRepository computationFormulaRepository;
+    private final AuthService authService;
 
     /**
      * Executes RecipeService.
@@ -66,7 +68,8 @@ public class RecipeService {
             StepEndpointRepository stepEndpointRepository,
             ParameterActivationService parameterActivationService,
             ComputationEvaluationService computationEvaluationService,
-            ComputationFormulaRepository computationFormulaRepository) {
+            ComputationFormulaRepository computationFormulaRepository,
+            AuthService authService) {
         this.recipeRepository = recipeRepository;
         this.decisionResultProfileRepository = decisionResultProfileRepository;
         this.decisionExecutionRepository = decisionExecutionRepository;
@@ -77,6 +80,7 @@ public class RecipeService {
         this.parameterActivationService = parameterActivationService;
         this.computationEvaluationService = computationEvaluationService;
         this.computationFormulaRepository = computationFormulaRepository;
+        this.authService = authService;
     }
 
     /**
@@ -102,6 +106,7 @@ public class RecipeService {
 
         Recipe recipe = recipeMapper.toEntity(request);
         recipe.setRecipeKind(kind);
+    recipe.setCreatorId(authService.getCurrentUserId());
         if (kind == RecipeKind.GOLDEN) {
             if (request.getParentRecipeId() != null) {
                 throw new IllegalArgumentException("GOLDEN recipe must not have a parentRecipeId");
@@ -139,7 +144,7 @@ public class RecipeService {
             throw new IllegalArgumentException("targetName must be different from source golden name");
         }
 
-        Recipe targetGolden = buildTargetGolden(sourceGolden, targetName, request.getCreatorId());
+        Recipe targetGolden = buildTargetGolden(sourceGolden, targetName, authService.getCurrentUserId());
         Recipe savedTargetGolden = recipeRepository.save(targetGolden);
 
         List<Step> sourceSteps = stepRepository.findByRecipeIdOrderByOrderIndexAsc(sourceGolden.getId());
@@ -202,6 +207,7 @@ public class RecipeService {
 
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new EntityNotFoundException("Recipe with id " + recipeId + " not found"));
+        ensureRecipeWritableByCurrentUser(recipe);
 
         if (request.getRecipeKind() != null && request.getRecipeKind() != recipe.getRecipeKind()) {
             throw new IllegalArgumentException("recipeKind cannot be changed");
@@ -220,7 +226,10 @@ public class RecipeService {
             throw new IllegalArgumentException("creatorId cannot be changed");
         }
 
+        Long existingCreatorId = recipe.getCreatorId();
         recipeMapper.updateEntityFromDto(request, recipe);
+        recipe.setCreatorId(existingCreatorId);
+        recipe.setRevisorId(authService.getCurrentUserId());
 
         if (recipe.getRecipeKind() == RecipeKind.GOLDEN) {
             recipe.setParentRecipe(null);
@@ -237,15 +246,26 @@ public class RecipeService {
      */
     @Transactional
     public void deleteRecipe(Long recipeId) {
-        if (!recipeRepository.existsById(recipeId)) {
-            throw new EntityNotFoundException("Recipe with id " + recipeId + " not found");
-        }
+        Recipe recipe = recipeRepository.findById(recipeId)
+                .orElseThrow(() -> new EntityNotFoundException("Recipe with id " + recipeId + " not found"));
+        ensureRecipeWritableByCurrentUser(recipe);
 
         // A derived recipe can be linked by historical decision executions.
         // Clear that optional link before deleting the recipe entity.
         decisionExecutionRepository.clearCreatedDerivedRecipeReference(recipeId);
 
         recipeRepository.deleteById(recipeId);
+    }
+
+    private void ensureRecipeWritableByCurrentUser(Recipe recipe) {
+        if (authService.hasRole(RoleCode.SUPER)) {
+            return;
+        }
+        Long currentUserId = authService.getCurrentUserId();
+        if (recipe.getRecipeKind() == RecipeKind.DERIVED && currentUserId.equals(recipe.getCreatorId())) {
+            return;
+        }
+        throw new EntityNotFoundException("Recipe with id " + recipe.getId() + " not found");
     }
 
     /**

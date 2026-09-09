@@ -1,0 +1,101 @@
+<section class="users-page">
+  <header class="users-header">
+    <div>
+      <span class="users-header__eyebrow">Administration</span>
+      <h1>Utilisateurs</h1>
+    </div>
+    <button type="button" class="btn btn--secondary" (click)="resetForm()">
+      <i class="ti ti-plus"></i>
+      <span>Nouvel utilisateur</span>
+    </button>
+  </header>
+
+  <div class="users-layout">
+    <article class="table-card">
+      <div class="table-card__header">
+        <h2>Comptes</h2>
+        <span>{{ users.length }} utilisateur(s)</span>
+      </div>
+
+      <div *ngIf="loading" class="empty-state">Chargement...</div>
+      <table *ngIf="!loading" class="users-table">
+        <thead>
+          <tr>
+            <th>Pseudo</th>
+            <th>Nom</th>
+            <th>Roles</th>
+            <th>Statut</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users">
+            <td>{{ user.username }}</td>
+            <td>{{ user.displayName || '-' }}</td>
+            <td>{{ user.roles.join(', ') }}</td>
+            <td>
+              <span class="status" [class.status--off]="!user.active">{{ user.active ? 'Actif' : 'Inactif' }}</span>
+            </td>
+            <td>
+              <button type="button" class="btn btn--ghost" (click)="editUser(user)">
+                <i class="ti ti-edit"></i>
+                <span>Editer</span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </article>
+
+    <article class="form-card">
+      <h2>{{ form.id ? 'Modifier le compte' : 'Creer un compte' }}</h2>
+      <form class="user-form" (ngSubmit)="saveUser()">
+        <label class="field">
+          <span>Pseudo</span>
+          <input name="username" type="text" [(ngModel)]="form.username" [disabled]="!!form.id" />
+        </label>
+
+        <label class="field">
+          <span>{{ form.id ? 'Nouveau mot de passe' : 'Mot de passe' }}</span>
+          <input name="password" type="password" [(ngModel)]="form.password" />
+        </label>
+
+        <button *ngIf="form.id" type="button" class="btn btn--secondary" (click)="changePassword()">
+          <i class="ti ti-key"></i>
+          <span>Changer le mot de passe</span>
+        </button>
+        <div *ngIf="passwordMessage" class="form-note">{{ passwordMessage }}</div>
+
+        <label class="field">
+          <span>Nom affiche</span>
+          <input name="displayName" type="text" [(ngModel)]="form.displayName" />
+        </label>
+
+        <label class="field">
+          <span>Email</span>
+          <input name="email" type="email" [(ngModel)]="form.email" />
+        </label>
+
+        <div class="roles-field">
+          <span>Roles</span>
+          <label *ngFor="let role of roleCodes" class="check-field">
+            <input type="checkbox" [name]="'role-' + role" [(ngModel)]="form.roles[role]" />
+            <span>{{ role }}</span>
+          </label>
+        </div>
+
+        <label class="check-field">
+          <input name="active" type="checkbox" [(ngModel)]="form.active" />
+          <span>Compte actif</span>
+        </label>
+
+        <div *ngIf="errorMessage" class="form-error">{{ errorMessage }}</div>
+
+        <button type="submit" class="btn" [disabled]="saving">
+          <i class="ti ti-device-floppy"></i>
+          <span>{{ saving ? 'Enregistrement...' : 'Enregistrer' }}</span>
+        </button>
+      </form>
+    </article>
+  </div>
+</section>

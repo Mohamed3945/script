@@ -5,10 +5,18 @@ import { PARAMETER_MANAGEMENT_ROUTES } from './features/parameter-management/par
 import { RECIPE_MANAGEMENT_ROUTES } from './features/recipe-management/recipe-management.routes';
 import { REFERENCE_DATA_MANAGEMENT_ROUTES } from './features/reference-data-management/reference-data-management.routes';
 import { RULES_MANAGEMENT_ROUTES } from './features/rules-management/rules-management.routes';
+import { authGuard } from './core/guards/auth.guard';
+import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
   {
+    path: 'login',
+    loadComponent: () => import('./features/auth/pages/login-page/login-page.component')
+      .then(m => m.LoginPageComponent)
+  },
+  {
     path: '',
+    canActivate: [authGuard],
     children: DECISION_WIZARD_ROUTES
   },
   {
@@ -128,22 +136,38 @@ export const routes: Routes = [
   },
   {
     path: 'recipes',
+    canActivate: [authGuard],
     children: RECIPE_MANAGEMENT_ROUTES
   },
   {
     path: 'parameters',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['SUPER'] },
     children: PARAMETER_MANAGEMENT_ROUTES
   },
   {
     path: 'rules',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['SUPER'] },
     children: RULES_MANAGEMENT_ROUTES
   },
   {
     path: 'reference-data',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['SUPER'] },
     children: REFERENCE_DATA_MANAGEMENT_ROUTES
   },
   {
+    path: 'users',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['SUPER'] },
+    loadChildren: () => import('./features/user-management/user-management.routes')
+      .then(m => m.USER_MANAGEMENT_ROUTES)
+  },
+  {
     path: '',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['SUPER'] },
     children: EQUIPMENT_MANAGEMENT_ROUTES
   },
   {

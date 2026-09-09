@@ -35,8 +35,8 @@
         <td>{{ recipe.parentRecipeId ?? '—' }}</td>
         <td class="actions">
           <button class="link-btn" (click)="viewRecipe.emit(recipe)">Open</button>
-          <button class="link-btn" (click)="editRecipe.emit(recipe)">Edit</button>
-          <button class="link-btn link-btn--danger" (click)="deleteRecipe.emit(recipe)">Delete</button>
+          <button *ngIf="canManage" class="link-btn" (click)="editRecipe.emit(recipe)">Edit</button>
+          <button *ngIf="canManage" class="link-btn link-btn--danger" (click)="deleteRecipe.emit(recipe)">Delete</button>
         </td>
         </tr>
       </tbody>
