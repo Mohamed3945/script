@@ -1,0 +1,50 @@
+package st.tt.script_back.security;
+
+import java.util.Collection;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import st.tt.script_back.entities.AppRole;
+import st.tt.script_back.entities.AppUser;
+
+public class AppUserDetails implements UserDetails {
+
+    private final AppUser user;
+
+    public AppUserDetails(AppUser user) {
+        this.user = user;
+    }
+
+    public Long getId() {
+        return user.getId();
+    }
+
+    public AppUser getUser() {
+        return user;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return user.getRoles().stream()
+                .map(AppRole::getCode)
+                .map(code -> new SimpleGrantedAuthority("ROLE_" + code.name()))
+                .toList();
+    }
+
+    @Override
+    public String getPassword() {
+        return user.getPasswordHash();
+    }
+
+    @Override
+    public String getUsername() {
+        return user.getUsername();
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return user.isActive();
+    }
+}

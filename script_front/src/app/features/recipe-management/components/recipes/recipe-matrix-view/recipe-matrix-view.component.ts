@@ -108,6 +108,9 @@ export class RecipeMatrixViewComponent {
 
   groupedRows: MatrixGroup[] = [];
   pinnedRows: RecipeMatrixRow[] = [];
+  detailsTooltipVisible = false;
+  detailsTooltipX = 0;
+  detailsTooltipY = 0;
 
   private _matrix: RecipeMatrix | null = null;
   private lastRenderableMatrix: RecipeMatrix | null = null;
@@ -312,7 +315,7 @@ export class RecipeMatrixViewComponent {
   }
 
   onParameterRowContextMenu(event: MouseEvent, row: RecipeMatrixRow): void {
-    if (!this.isGoldenWorkspace || !row.definitionId) {
+    if (!row.definitionId) {
       return;
     }
 
@@ -325,6 +328,39 @@ export class RecipeMatrixViewComponent {
       x: event.clientX,
       y: event.clientY
     });
+  }
+
+  onParameterRowClick(event: MouseEvent, row: RecipeMatrixRow): void {
+    if (!row.definitionId) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.parameterRowContextRequested.emit({
+      definitionId: row.definitionId,
+      parameterName: row.parameterName,
+      x: event.clientX,
+      y: event.clientY
+    });
+  }
+
+  onParameterRowHoverStart(event: MouseEvent): void {
+    this.detailsTooltipVisible = true;
+    this.updateDetailsTooltipPosition(event);
+  }
+
+  onParameterRowHoverMove(event: MouseEvent): void {
+    if (!this.detailsTooltipVisible) {
+      return;
+    }
+
+    this.updateDetailsTooltipPosition(event);
+  }
+
+  onParameterRowHoverEnd(): void {
+    this.detailsTooltipVisible = false;
   }
 
   onEndpointCellContextMenu(event: MouseEvent, endpointCell: RecipeMatrixEndpointCell): void {
@@ -497,6 +533,16 @@ export class RecipeMatrixViewComponent {
       row.parameterName ?? '',
       row.parameterGroup ?? ''
     ].join('|');
+  }
+
+  private updateDetailsTooltipPosition(event: MouseEvent): void {
+    const offsetX = 14;
+    const offsetY = 16;
+    const tooltipWidth = 120;
+    const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1280;
+
+    this.detailsTooltipX = Math.max(8, Math.min(event.clientX + offsetX, viewportWidth - tooltipWidth));
+    this.detailsTooltipY = event.clientY + offsetY;
   }
 
   private buildCellKey(cell: RecipeMatrixCell): string {

@@ -104,7 +104,16 @@
           (click)="$event.stopPropagation()">
           <button
             type="button"
+            class="context-menu__action"
+            (click)="onShowParameterDetailsFromContext()">
+            <span class="menu-action__icon" aria-hidden="true">INF</span>
+            <span>Details</span>
+          </button>
+          <button
+            type="button"
             class="context-menu__action context-menu__action--danger"
+            *ngIf="isGoldenWorkspace"
+            [disabled]="!canDeleteRecipeWideParameterFromContext"
             (click)="onDeleteRecipeWideParameterFromContext()">
             <span class="menu-action__icon" aria-hidden="true">DEL</span>
             <span>Delete parameter</span>
@@ -246,4 +255,26 @@
     (understandChanged)="onXmlExportUnderstandChanged($event)"
     (downloadRequested)="onXmlExportDownloadConfirmed()">
   </app-recipe-xml-export-review-modal>
+
+  <div class="pd-details-modal-backdrop" *ngIf="showParameterDetailsModal" (click)="closeParameterDetailsModal()">
+    <section class="pd-details-modal" role="dialog" aria-modal="true" aria-labelledby="pd-details-title" (click)="$event.stopPropagation()">
+      <header class="pd-details-modal__header">
+        <h2 id="pd-details-title">Parameter definition details</h2>
+        <button type="button" class="pd-details-modal__close" (click)="closeParameterDetailsModal()" aria-label="Close">×</button>
+      </header>
+
+      <div class="pd-details-modal__body" *ngIf="!parameterDetailsLoading; else pdDetailsLoading">
+        <p class="pd-details-modal__name">{{ parameterDetailsName }}</p>
+        <p class="pd-details-modal__meta" *ngIf="parameterDetailsCode">Code: {{ parameterDetailsCode }}</p>
+        <p class="pd-details-modal__meta" *ngIf="parameterDetailsAlias">Alias: {{ parameterDetailsAlias }}</p>
+        <div class="pd-details-modal__description">
+          {{ parameterDetailsDescription?.trim() || 'No description is defined for this parameter definition.' }}
+        </div>
+      </div>
+
+      <ng-template #pdDetailsLoading>
+        <div class="pd-details-modal__loading">Loading parameter definition details...</div>
+      </ng-template>
+    </section>
+  </div>
 </section>

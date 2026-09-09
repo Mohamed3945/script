@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -47,6 +48,7 @@ import st.tt.script_back.enums.RecipeStatus;
 import st.tt.script_back.enums.RecipeWaferMode;
 import st.tt.script_back.enums.RecipeIapcMode;
 import st.tt.script_back.enums.RecipeResumableMode;
+import st.tt.script_back.enums.RoleCode;
 import st.tt.script_back.enums.StepKind;
 import st.tt.script_back.enums.ComputationStatus;
 import st.tt.script_back.enums.XmlSection;
@@ -93,6 +95,9 @@ class RecipeQueryServiceTest {
 
     @Mock
     private StepParameterMapper stepParameterMapper;
+
+    @Mock
+    private AuthService authService;
 
     @InjectMocks
     private RecipeQueryService recipeQueryService;
@@ -194,6 +199,9 @@ class RecipeQueryServiceTest {
                 false,
                 null,
                 Instant.parse("2026-08-20T00:00:03Z"));
+
+            lenient().when(authService.isSuperUser()).thenReturn(true);
+            lenient().when(authService.hasRole(RoleCode.SUPER)).thenReturn(true);
     }
 
     @Test
@@ -250,6 +258,22 @@ class RecipeQueryServiceTest {
     }
 
     @Test
+    void getRecipes_shouldReturnOnlyCurrentUserDerivedRecipesForSimpleUser() {
+        List<Recipe> recipes = List.of(derivedRecipe);
+        when(authService.isSuperUser()).thenReturn(false);
+        when(authService.getCurrentUserId()).thenReturn(7L);
+        when(recipeRepository.findByRecipeKindAndCreatorIdOrderByReviseTimeDesc(RecipeKind.DERIVED, 7L))
+                .thenReturn(recipes);
+        when(recipeMapper.toDtoList(recipes)).thenReturn(List.of(recipeDto(2L)));
+
+        List<RecipeDto> result = recipeQueryService.getRecipes(RecipeKind.GOLDEN, true);
+
+        assertEquals(1, result.size());
+        verify(recipeRepository).findByRecipeKindAndCreatorIdOrderByReviseTimeDesc(RecipeKind.DERIVED, 7L);
+        verify(recipeRepository, never()).findByRecipeKindOrderByReviseTimeDesc(RecipeKind.GOLDEN);
+    }
+
+    @Test
     void getRecipe_shouldReturnMappedRecipe() {
         when(recipeRepository.findById(derivedRecipe.getId())).thenReturn(Optional.of(derivedRecipe));
         RecipeDto dto = recipeDto(derivedRecipe.getId());
@@ -289,7 +313,7 @@ class RecipeQueryServiceTest {
 
     @Test
     void getRecipeSteps_shouldReturnMappedStepsAndApplyStepKindFilter() {
-        when(recipeRepository.existsById(derivedRecipe.getId())).thenReturn(true);
+        when(recipeRepository.findById(derivedRecipe.getId())).thenReturn(Optional.of(derivedRecipe));
         List<Step> filteredSteps = List.of(sourceStep);
         when(stepRepository.findByRecipeIdAndStepKindOrderByOrderIndexAsc(derivedRecipe.getId(), StepKind.PRESTEP))
                 .thenReturn(filteredSteps);
@@ -303,7 +327,7 @@ class RecipeQueryServiceTest {
 
     @Test
     void getRecipeSteps_shouldThrowWhenRecipeIsMissing() {
-        when(recipeRepository.existsById(999L)).thenReturn(false);
+        when(recipeRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> recipeQueryService.getRecipeSteps(999L, null));
     }
@@ -370,7 +394,7 @@ class RecipeQueryServiceTest {
 
     @Test
     void getRecipeStepParameterGrid_shouldSortAndProjectRows() {
-        when(recipeRepository.existsById(derivedRecipe.getId())).thenReturn(true);
+        when(recipeRepository.findById(derivedRecipe.getId())).thenReturn(Optional.of(derivedRecipe));
         when(stepRepository.findByRecipeIdOrderByOrderIndexAsc(derivedRecipe.getId()))
                 .thenReturn(List.of(sourceStep, targetStep, secondaryStep));
 
@@ -405,7 +429,6 @@ class RecipeQueryServiceTest {
 
     @Test
     void getRecipeMatrix_shouldBuildColumnsRowsAndEndpointSummaries() {
-        when(recipeRepository.existsById(derivedRecipe.getId())).thenReturn(true);
         stubRecipeHierarchyForDerivedContext();
         when(stepRepository.findByRecipeIdOrderByOrderIndexAsc(derivedRecipe.getId()))
                 .thenReturn(List.of(sourceStep, targetStep, secondaryStep));

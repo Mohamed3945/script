@@ -15,7 +15,7 @@
     </div>
   </div>
 
-  <nav class="sidebar__tree" aria-label="Feature tree">
+  <nav class="sidebar__tree" aria-label="Feature tree" *ngIf="currentUser$ | async as currentUser">
     <div class="sidebar__section">
       <div class="sidebar__section-title">Decision</div>
       <a routerLink="/" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" class="sidebar__node sidebar__node--root" title="Home">
@@ -28,19 +28,19 @@
       <div class="sidebar__section-title">Recipes</div>
       <a routerLink="/recipes" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" class="sidebar__node sidebar__node--root" title="Recipe Management">
         <i class="ti ti-file-description"></i>
-        <span class="sidebar__label">Recipe Management</span>
+        <span class="sidebar__label">{{ isSuperUser ? 'Recipe Management' : 'My Recipes' }}</span>
       </a>
-      <a routerLink="/parameters" routerLinkActive="is-active" class="sidebar__node sidebar__node--leaf" title="Parameter Management">
+      <a *ngIf="isSuperUser" routerLink="/parameters" routerLinkActive="is-active" class="sidebar__node sidebar__node--leaf" title="Parameter Management">
         <i class="ti ti-adjustments"></i>
         <span class="sidebar__label">Parameter Management</span>
       </a>
-      <a routerLink="/rules" routerLinkActive="is-active" class="sidebar__node sidebar__node--leaf" title="Rules Management">
+      <a *ngIf="isSuperUser" routerLink="/rules" routerLinkActive="is-active" class="sidebar__node sidebar__node--leaf" title="Rules Management">
         <i class="ti ti-git-branch"></i>
         <span class="sidebar__label">Rules Management</span>
       </a>
     </div>
 
-    <div class="sidebar__section">
+    <div class="sidebar__section" *ngIf="isSuperUser">
       <div class="sidebar__section-title">Equipment</div>
       <a routerLink="/machines" routerLinkActive="is-active" class="sidebar__node sidebar__node--root" title="Machines & Chambers">
         <i class="ti ti-cpu"></i>
@@ -55,13 +55,28 @@
         <span class="sidebar__label">Configurations Catalog</span>
       </a>
     </div>
+
+    <div class="sidebar__section" *ngIf="isSuperUser">
+      <div class="sidebar__section-title">Admin</div>
+      <a routerLink="/users" routerLinkActive="is-active" class="sidebar__node sidebar__node--root" title="User Management">
+        <i class="ti ti-users"></i>
+        <span class="sidebar__label">User Management</span>
+      </a>
+    </div>
   </nav>
 
   <div class="sidebar__foot">
-    <button type="button" class="sidebar__user" title="User account">
+    <button *ngIf="currentUser$ | async as currentUser; else loginLink" type="button" class="sidebar__user" title="Logout" (click)="logout()">
       <i class="ti ti-user-circle"></i>
-      <span class="sidebar__user-label">User Account</span>
+      <span class="sidebar__user-label">{{ currentUser.displayName || currentUser.username }}</span>
+      <span class="sidebar__user-role">{{ currentUser.roles.join(', ') }}</span>
     </button>
+    <ng-template #loginLink>
+      <a routerLink="/login" class="sidebar__user" title="Login">
+        <i class="ti ti-login-2"></i>
+        <span class="sidebar__user-label">Connexion</span>
+      </a>
+    </ng-template>
     <div class="sidebar__foot-tag">STMicroelectronics</div>
   </div>
 </aside>

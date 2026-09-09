@@ -37,6 +37,7 @@ import st.tt.script_back.entities.StepParameter;
 import st.tt.script_back.enums.ActivationState;
 import st.tt.script_back.enums.ParameterValueType;
 import st.tt.script_back.enums.RecipeKind;
+import st.tt.script_back.enums.RoleCode;
 import st.tt.script_back.enums.StepKind;
 import st.tt.script_back.mappers.ParameterOptionMapper;
 import st.tt.script_back.mappers.RecipeMapper;
@@ -68,6 +69,7 @@ public class RecipeQueryService {
     private final ParameterOptionMapper parameterOptionMapper;
     private final StepMapper stepMapper;
     private final StepParameterMapper stepParameterMapper;
+    private final AuthService authService;
 
     public RecipeQueryService(
             RecipeRepository recipeRepository,
@@ -79,7 +81,8 @@ public class RecipeQueryService {
             ParameterOptionRepository parameterOptionRepository,
             ParameterOptionMapper parameterOptionMapper,
             StepMapper stepMapper,
-            StepParameterMapper stepParameterMapper) {
+            StepParameterMapper stepParameterMapper,
+            AuthService authService) {
         this.recipeRepository = recipeRepository;
         this.stepRepository = stepRepository;
         this.stepEndpointRepository = stepEndpointRepository;
@@ -90,10 +93,17 @@ public class RecipeQueryService {
         this.parameterOptionMapper = parameterOptionMapper;
         this.stepMapper = stepMapper;
         this.stepParameterMapper = stepParameterMapper;
+        this.authService = authService;
     }
 
     @Transactional(readOnly = true)
     public List<RecipeDto> getRecipes(RecipeKind recipeKind, Boolean golden) {
+        if (!authService.isSuperUser()) {
+            return recipeMapper.toDtoList(recipeRepository.findByRecipeKindAndCreatorIdOrderByReviseTimeDesc(
+                    RecipeKind.DERIVED,
+                    authService.getCurrentUserId()));
+        }
+
         List<Recipe> recipes;
 
         if (recipeKind != null) {
@@ -113,6 +123,7 @@ public class RecipeQueryService {
     public RecipeDto getRecipe(Long recipeId) {
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new EntityNotFoundException("Recipe with id " + recipeId + " not found"));
+        ensureRecipeAccessible(recipe);
         return recipeMapper.toDto(recipe);
     }
 
@@ -527,9 +538,20 @@ public class RecipeQueryService {
     }
 
     private void ensureRecipeExists(Long recipeId) {
-        if (!recipeRepository.existsById(recipeId)) {
-            throw new EntityNotFoundException("Recipe with id " + recipeId + " not found");
+        Recipe recipe = recipeRepository.findById(recipeId)
+                .orElseThrow(() -> new EntityNotFoundException("Recipe with id " + recipeId + " not found"));
+        ensureRecipeAccessible(recipe);
+    }
+
+    private void ensureRecipeAccessible(Recipe recipe) {
+        if (authService.hasRole(RoleCode.SUPER)) {
+            return;
         }
+        Long currentUserId = authService.getCurrentUserId();
+        if (recipe.getRecipeKind() == RecipeKind.DERIVED && currentUserId.equals(recipe.getCreatorId())) {
+            return;
+        }
+        throw new EntityNotFoundException("Recipe with id " + recipe.getId() + " not found");
     }
 
     private void ensureStepExists(Long stepId) {

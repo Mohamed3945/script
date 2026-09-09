@@ -9,6 +9,7 @@ import { DuplicateGoldenRecipePayload, RecipeApiService } from '../../../../core
 import { buildRecipeDetailRouteByKind } from '../../../../core/utils/recipe-route.util';
 import { RecipeListTableComponent } from '../../components/recipes/recipe-list-table/recipe-list-table.component';
 import { RecipeListFiltersComponent } from '../../components/recipes/recipe-list-filters/recipe-list-filters.component';
+import { AuthSessionService } from '../../../../core/services/auth-session.service';
 
 @Component({
   selector: 'app-recipe-list-page',
@@ -39,8 +40,17 @@ export class RecipeListPageComponent implements OnInit {
 
   constructor(
     private recipeApiService: RecipeApiService,
-    private router: Router
+    private router: Router,
+    private authSession: AuthSessionService
   ) {}
+
+  get canManageRecipes(): boolean {
+    return this.authSession.hasRole('SUPER');
+  }
+
+  get canEditListedRecipes(): boolean {
+    return this.authSession.hasAnyRole(['SIMPLE', 'SUPER']);
+  }
 
   /**
    * Handles the ngOnInit workflow.
@@ -81,6 +91,7 @@ export class RecipeListPageComponent implements OnInit {
    * Handles the onCreateGolden workflow.
    */
   onCreateGolden(): void {
+    if (!this.canManageRecipes) return;
     this.openCreateGoldenModal();
   }
 
@@ -177,6 +188,7 @@ export class RecipeListPageComponent implements OnInit {
    * Handles the onEditRecipe workflow.
    */
   onEditRecipe(recipe: Recipe): void {
+    if (!this.canEditListedRecipes) return;
     if (!recipe.id) return;
     this.router.navigate(['/recipes', recipe.id, 'edit']);
   }
@@ -185,6 +197,7 @@ export class RecipeListPageComponent implements OnInit {
    * Handles the onDeleteRecipe workflow.
    */
   onDeleteRecipe(recipe: Recipe): void {
+    if (!this.canEditListedRecipes) return;
     if (!recipe.id) return;
 
     const confirmed = window.confirm(`Delete recipe "${recipe.name}"?`);

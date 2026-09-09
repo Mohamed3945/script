@@ -1,0 +1,28 @@
+<main class="login-page">
+  <section class="login-panel">
+    <div class="login-panel__header">
+      <span class="login-panel__eyebrow">Golden SCRIPT</span>
+      <h1>Connexion</h1>
+      <p>Accedez a votre espace selon votre profil utilisateur.</p>
+    </div>
+
+    <form class="login-form" (ngSubmit)="login()">
+      <label class="field">
+        <span>Pseudo</span>
+        <input name="username" type="text" autocomplete="username" [(ngModel)]="username" />
+      </label>
+
+      <label class="field">
+        <span>Mot de passe</span>
+        <input name="password" type="password" autocomplete="current-password" [(ngModel)]="password" />
+      </label>
+
+      <div *ngIf="errorMessage" class="login-error">{{ errorMessage }}</div>
+
+      <button class="btn" type="submit" [disabled]="loading">
+        <i class="ti ti-login-2"></i>
+        <span>{{ loading ? 'Connexion...' : 'Se connecter' }}</span>
+      </button>
+    </form>
+  </section>
+</main>

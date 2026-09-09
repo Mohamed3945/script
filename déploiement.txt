@@ -1,0 +1,668 @@
+======================================================================
+BILAN HISTORIQUE - PREPARATION DEPLOIEMENT SPRING BOOT / ANGULAR
+VM DISTANTE RHEL 9.6 VIA SSH
+======================================================================
+
+Date:
+- A compléter
+
+Contexte:
+- Première prise en main d’une VM distante Linux/Unix via SSH
+- Objectif final : déployer une application Spring Boot + Angular
+- VM d’entreprise STMicroelectronics
+- Accès via terminal distant dans RDM / SSH
+
+======================================================================
+1. OBJECTIF GLOBAL
+======================================================================
+
+Le but de cette préparation était de :
+- comprendre l’environnement de la VM
+- vérifier les droits d’administration
+- vérifier les ressources disponibles
+- installer les composants nécessaires au déploiement
+- préparer l’arborescence applicative
+- configurer Nginx pour servir le frontend
+- préparer le terrain pour le backend Spring Boot
+
+Architecture cible retenue :
+- Frontend Angular servi par Nginx
+- Backend Spring Boot exécuté comme service systemd
+- Reverse proxy Nginx pour acheminer /api vers le backend
+
+Schéma cible :
+- navigateur -> nginx -> frontend Angular
+- navigateur -> nginx -> /api -> backend Spring Boot (port 8080)
+
+======================================================================
+2. INFORMATIONS DE BASE DE LA VM
+======================================================================
+
+Distribution :
+- Red Hat Enterprise Linux 9.6 (Plow)
+
+Commande utilisée :
+cat /etc/os-release
+
+Pourquoi :
+- Identifier la distribution Linux
+- Déterminer le gestionnaire de paquets à utiliser
+- Savoir si on est sur Ubuntu/Debian ou RHEL/CentOS/Rocky/etc.
+
+Résultat :
+- OS confirmé : RHEL 9.6
+- Conséquence : utilisation de dnf, systemctl, SELinux, firewalld
+
+======================================================================
+3. VERIFICATION DES RESSOURCES
+======================================================================
+
+Commandes utilisées :
+df -h
+free -h
+
+Pourquoi :
+- Vérifier l’espace disque disponible
+- Vérifier la mémoire disponible
+- Savoir si la VM peut accueillir un backend Java, Nginx, logs, artefacts
+
+Résultats principaux :
+- /         : 10G total, environ 7.2G libres
+- /opt      : 2.0G total, environ 1.2G libres
+- /var      : 5.0G total, environ 3.9G libres
+- /tmp      : 2.0G total, environ 1.9G libres
+- RAM       : 7.5 GiB
+- disponible: ~6.8 GiB
+- swap      : 4 GiB
+
+Conclusion :
+- La VM a suffisamment de mémoire
+- Le stockage est suffisant pour un premier déploiement
+- /opt doit être utilisé proprement car il ne dispose pas d’un espace énorme
+
+======================================================================
+4. VERIFICATION DES DROITS ADMINISTRATEUR
+======================================================================
+
+Commande utilisée :
+sudo -l
+
+Pourquoi :
+- Vérifier si l’utilisateur courant peut utiliser sudo
+- Savoir si on a le droit d’installer des paquets, créer des services, modifier Nginx
+
+Résultat :
+(root) NOPASSWD: ALL
+
+Conclusion :
+- L’utilisateur goldenscriptadm possède tous les droits sudo sans mot de passe
+- Cela permet une préparation complète de la VM
+
+======================================================================
+5. VERIFICATION DE JAVA ET NGINX
+======================================================================
+
+Commandes utilisées au début :
+java -version
+nginx -V
+which java
+which nginx
+
+Pourquoi :
+- Vérifier si Java est déjà installé
+- Vérifier si Nginx est déjà installé
+- Préparer l’environnement requis pour Spring Boot + Angular
+
+Résultat initial :
+- java : command not found
+- nginx : command not found
+
+Conclusion initiale :
+- Java absent
+- Nginx absent
+- Installation nécessaire
+
+======================================================================
+6. INFORMATIONS ISSUES DU PROJET BACKEND
+======================================================================
+
+Fichier étudié :
+pom.xml
+
+Informations identifiées :
+- Projet Maven
+- Spring Boot 3.5.14
+- groupId : st.tt
+- artifactId : script_back
+- version : 0.0.1-SNAPSHOT
+- Java cible : 21
+- dépendances DB : MariaDB
+- migrations : Flyway
+- dépendances web/security/jpa/validation/actuator
+
+Conséquences :
+- Il faut installer Java 21 sur la VM
+- Le jar généré s’appellera probablement :
+  script_back-0.0.1-SNAPSHOT.jar
+- Le backend nécessitera probablement une configuration DB pour fonctionner
+- Le backend devra tourner sur un port applicatif, recommandé : 8080
+
+======================================================================
+7. VERIFICATION SELINUX / FIREWALL / PORTS
+======================================================================
+
+Commandes utilisées :
+getenforce
+sudo systemctl status firewalld
+sudo ss -tuln
+
+Pourquoi :
+- SELinux peut bloquer certaines communications Nginx -> backend
+- Le firewall système peut bloquer les ports
+- Il faut vérifier si les ports 80 / 8080 sont déjà utilisés
+
+Résultats :
+- SELinux : Permissive
+- firewalld : inactive (dead)
+- ports actifs : 22, 25, 111, 44321 locaux
+- ports 80 et 8080 non occupés au départ
+
+Conclusion :
+- Environnement favorable au déploiement
+- Pas de blocage SELinux strict
+- Pas de firewall actif
+- Ports 80 et 8080 disponibles
+
+======================================================================
+8. CREATION DE L’ARBORESCENCE DE DEPLOIEMENT
+======================================================================
+
+Choix réalisés :
+- /opt/script_back pour le backend
+- /var/www/script_front pour le frontend
+
+Commandes exécutées :
+sudo mkdir -p /opt/script_back/backend
+sudo mkdir -p /opt/script_back/config
+sudo mkdir -p /opt/script_back/logs
+sudo mkdir -p /var/www/script_front
+
+Pourquoi :
+- Séparer clairement backend et frontend
+- Préparer un répertoire applicatif maintenable
+- Respecter une organisation Linux classique
+- Prévoir un emplacement pour les futures configurations et logs
+
+Signification des dossiers :
+- /opt/script_back/backend : jar backend Spring Boot
+- /opt/script_back/config  : fichiers de configuration
+- /opt/script_back/logs    : répertoire potentiel pour logs applicatifs
+- /var/www/script_front    : fichiers statiques du frontend Angular
+
+======================================================================
+9. CREATION D’UN UTILISATEUR SYSTEME DEDIE
+======================================================================
+
+Commande exécutée :
+sudo useradd -r -s /sbin/nologin scriptback
+
+Pourquoi :
+- Ne pas exécuter le backend Java en root
+- Suivre une bonne pratique de sécurité
+- Isoler les droits de l’application backend
+
+Commandes de vérification :
+id scriptback
+
+Résultat :
+- utilisateur système scriptback créé
+- shell /sbin/nologin
+- usage destiné uniquement à l’exécution du service
+
+======================================================================
+10. ATTRIBUTION DES DROITS SUR LE BACKEND
+======================================================================
+
+Commande exécutée :
+sudo chown -R scriptback:scriptback /opt/script_back
+
+Pourquoi :
+- Permettre à l’utilisateur scriptback de posséder et utiliser les dossiers backend
+- Préparer le futur lancement du service systemd sous cet utilisateur
+
+Effet constaté :
+- /opt/script_back est devenu propriété de scriptback
+- L’utilisateur goldenscriptadm ne pouvait plus lister les sous-dossiers sans sudo
+- Cela a entraîné un apprentissage utile sur les permissions
+
+Ajustement fait ensuite :
+sudo chmod 755 /opt/script_back
+sudo chmod 755 /opt/script_back/backend /opt/script_back/config /opt/script_back/logs
+
+Pourquoi :
+- Rendre la traversée/lecture plus simple pour l’utilisateur d’administration
+- Conserver le propriétaire scriptback pour le backend
+- Faciliter l’inspection manuelle des dossiers
+
+======================================================================
+11. INSTALLATION DE JAVA 21
+======================================================================
+
+Commande exécutée :
+sudo dnf install -y java-21-openjdk java-21-openjdk-headless
+
+Pourquoi :
+- Le projet Spring Boot cible Java 21
+- Le backend ne peut pas fonctionner sans Java compatible
+- Java runtime est nécessaire pour exécuter le jar
+
+Commande de vérification :
+java -version
+
+Résultat :
+openjdk version "21.0.9" LTS
+
+Conclusion :
+- Java 21 correctement installé
+- La VM est compatible avec le backend Spring Boot
+
+======================================================================
+12. INSTALLATION DE NGINX
+======================================================================
+
+Commande exécutée :
+sudo dnf install -y nginx
+
+Pourquoi :
+- Servir le frontend Angular
+- Fournir un point d’entrée HTTP unique
+- Utiliser Nginx comme reverse proxy pour le backend Spring Boot
+
+Commande de vérification :
+nginx -V
+
+Résultat :
+- Nginx installé avec succès
+- version 1.20.1
+
+======================================================================
+13. DEMARRAGE DU SERVICE NGINX
+======================================================================
+
+Commandes exécutées :
+sudo systemctl enable nginx
+sudo systemctl start nginx
+sudo systemctl status nginx
+
+Pourquoi :
+- Démarrer Nginx
+- Le rendre disponible au démarrage de la VM
+- Vérifier son état
+
+Résultat :
+- Nginx est actif
+- curl http://localhost répond
+
+Première réponse observée :
+- page de test par défaut Red Hat Enterprise Linux
+
+Signification :
+- Nginx fonctionne
+- mais sert encore sa racine par défaut : /usr/share/nginx/html
+
+======================================================================
+14. CREATION D’UNE PAGE DE TEST FRONTEND
+======================================================================
+
+Commande exécutée :
+echo '<html><body><h1>script_front OK</h1></body></html>' | sudo tee /var/www/script_front/index.html
+
+Pourquoi :
+- Vérifier rapidement que Nginx peut servir un contenu personnalisé
+- Préparer un test simple avant de déployer le vrai build Angular
+
+Vérification :
+sudo cat /var/www/script_front/index.html
+
+Résultat :
+- index.html créé dans /var/www/script_front
+
+======================================================================
+15. PREMIERE TENTATIVE DE CONFIGURATION NGINX VIA conf.d
+======================================================================
+
+Fichier créé :
+/etc/nginx/conf.d/script_front.conf
+
+Contenu voulu :
+- server sur port 80
+- root /var/www/script_front
+- location / avec try_files pour Angular
+- location /api/ avec proxy_pass vers 127.0.0.1:8080
+
+But :
+- servir le frontend Angular
+- préparer le reverse proxy backend
+
+Erreur rencontrée :
+unknown directive "server_name_" in /etc/nginx/conf.d/script_front.conf
+
+Cause :
+- faute de syntaxe dans la directive :
+  server_name _;
+  devait contenir un espace entre "server_name" et "_"
+
+Correction :
+- le fichier a été corrigé avec la bonne syntaxe
+
+======================================================================
+16. CONFLIT DE SERVER NGINX
+======================================================================
+
+Après correction, Nginx affichait :
+conflicting server name "_" on 0.0.0.0:80, ignored
+
+Pourquoi :
+- un bloc server existait déjà dans /etc/nginx/nginx.conf
+- le nouveau bloc dans conf.d utilisait aussi :
+  server_name _;
+
+Conséquence :
+- la configuration personnalisée était ignorée
+- le bloc server principal par défaut gardait la main
+
+Diagnostic réalisé avec :
+grep -n "server {" /etc/nginx/nginx.conf
+grep -n "root" /etc/nginx/nginx.conf
+grep -n "include" /etc/nginx/nginx.conf
+grep -R "root" /etc/nginx 2>/dev/null
+
+Constat :
+- le server principal de /etc/nginx/nginx.conf servait :
+  root /usr/share/nginx/html;
+
+======================================================================
+17. CHOIX TECHNIQUE RETENU POUR NGINX
+======================================================================
+
+Choix retenu :
+- modifier directement le bloc server principal dans /etc/nginx/nginx.conf
+- désactiver le fichier conflictuel script_front.conf
+
+Pourquoi ce choix :
+- c’est plus simple dans le contexte RHEL actuel
+- la config par défaut de nginx.conf prend déjà la main
+- cela évite le conflit entre plusieurs server_name _ sur le port 80
+
+======================================================================
+18. MODIFICATION DE /etc/nginx/nginx.conf
+======================================================================
+
+Action réalisée :
+- sauvegarde du fichier d’origine
+- édition du bloc server principal
+
+Commande de sauvegarde :
+sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.before_script_front
+
+Objectif de la modification :
+- changer root de /usr/share/nginx/html vers /var/www/script_front
+- conserver listen 80
+- ajouter index index.html
+- ajouter un bloc location / avec try_files
+- ajouter un bloc location /api/ pointant vers 127.0.0.1:8080
+
+Pourquoi :
+- servir le frontend Angular
+- préparer le reverse proxy pour l’API
+- utiliser un unique point d’entrée HTTP
+
+======================================================================
+19. DESACTIVATION DE LA CONFIG EN CONFLIT
+======================================================================
+
+Commande exécutée :
+sudo mv /etc/nginx/conf.d/script_front.conf /etc/nginx/conf.d/script_front.conf.disabled
+
+Pourquoi :
+- Nginx charge uniquement les fichiers .conf dans conf.d
+- renommer le fichier supprime le conflit sans le détruire
+- permet de garder une trace de la tentative précédente
+
+Effet :
+- la configuration en conflit est mise de côté
+- le bloc server principal dans nginx.conf devient la seule configuration active pour ce site
+
+======================================================================
+20. AJUSTEMENT DES PERMISSIONS FRONTEND
+======================================================================
+
+Permissions constatées initialement :
+- /var/www/script_front appartenait à root:root
+- droits trop restrictifs pour une lecture simple par Nginx
+
+Commandes exécutées :
+sudo chmod 755 /var/www
+sudo chmod 755 /var/www/script_front
+sudo chmod 755 /var/www/script_front/index.html
+
+Remarque :
+- pour un fichier HTML, 644 serait plus standard
+- 755 a néanmoins permis le test
+
+Pourquoi :
+- permettre à Nginx de traverser /var/www et /var/www/script_front
+- permettre la lecture du fichier index.html
+
+Vérification finale pratique :
+curl http://localhost
+
+Résultat :
+<html><body><h1>script_front OK</h1></body></html>
+
+Conclusion :
+- Nginx sert maintenant correctement le contenu de /var/www/script_front
+
+=============================================
+23. CHOIX D’ARCHITECTURE RETENUS
+======================================================================
+
+Choix retenu pour le déploiement :
+- Frontend Angular servi par Nginx
+- Backend Spring Boot servi séparément en Java
+- Reverse proxy Nginx vers le backend
+
+Pourquoi ce choix :
+- architecture standard et propre
+- Angular est mieux servi comme fichiers statiques
+- Spring Boot tourne indépendamment comme service
+- plus maintenable et plus proche d’un déploiement professionnel
+
+Ports retenus :
+- 80 pour Nginx
+- 8080 pour Spring Boot
+
+Emplacements retenus :
+- /opt/script_back/backend pour le backend
+- /opt/script_back/config pour la configuration
+- /opt/script_back/logs pour les logs/app support
+- /var/www/script_front pour le frontend
+
+Utilisateur système :
+- scriptback
+
+======================================================================
+24. ETAT ACTUEL DE LA VM A LA FIN DE CETTE ETAPE
+======================================================================
+
+Ce qui est prêt :
+- accès SSH fonctionnel
+- sudo complet disponible
+- Java 21 installé
+- Nginx installé
+- Nginx configuré pour servir /var/www/script_front
+- page frontend de test en place
+- arborescence backend créée
+- utilisateur système scriptback créé
+- environnement système globalement prêt
+
+Ce qui n’est pas encore finalisé :
+- le vrai jar backend n’est pas encore déployé
+- le vrai build Angular n’est pas encore déployé
+- le service systemd final du backend n’a pas encore été mis en service effectif
+- la configuration Spring de production (DB / profils / secrets) n’est pas encore posée
+- le test réel de /api n’est pas encore possible
+======================================================================
+29. PREPARATION DU SERVICE SYSTEMD BACKEND
+======================================================================
+
+Fichier créé :
+- /etc/systemd/system/script_back.service
+
+Contenu :
+[Unit]
+Description=Spring Boot Backend script_back
+After=network.target
+
+[Service]
+User=scriptback
+Group=scriptback
+WorkingDirectory=/opt/script_back/backend
+ExecStart=/usr/bin/java -jar /opt/script_back/backend/script_back.jar --server.port=8080
+SuccessExitStatus=143
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
+Pourquoi :
+- exécuter le backend Spring Boot comme service système
+- permettre un démarrage/arrêt via systemctl
+- éviter un lancement manuel dans le terminal
+- faire tourner le backend sous un utilisateur dédié non-root
+
+Commandes utilisées :
+sudo nano /etc/systemd/system/script_back.service
+sudo systemctl daemon-reload
+sudo systemctl cat script_back
+sudo systemctl status script_back
+which java
+
+Résultats :
+- le service est correctement reconnu par systemd
+- Java est disponible dans /usr/bin/java
+- le service est inactif tant que le jar n’est pas présent, ce qui est normal
+
+Conclusion :
+- le socle backend côté service système est prêt
+- il ne reste qu’à copier le jar puis démarrer le service
+
+======================================================================
+31. TEST DE CONNECTIVITE VERS LA BASE DE DONNEES
+======================================================================
+
+Contexte :
+- Le profil prod du backend cible la base MariaDB :
+  cr2sx20347.cr2.st.com:3308 / golden_script
+- Avant le premier démarrage, un test réseau a été réalisé depuis la VM
+
+Commandes utilisées :
+nc -vz cr2sx20347.cr2.st.com 3308
+curl telnet://cr2sx20347.cr2.st.com:3308
+
+Résultats :
+- timeout sur le port 3308
+- la base n’est pas joignable depuis la VM au moment du test
+
+Interprétation :
+- le backend ne pourra pas démarrer correctement en profil prod tant que la connectivité DB n’est pas rétablie
+- l’échec peut venir d’un filtrage réseau, d’un port fermé ou d’une configuration incorrecte côté base
+
+Conséquence :
+- le déploiement backend en production est temporairement bloqué au stade du démarrage
+- la préparation système reste néanmoins valide
+
+Action recommandée :
+- confirmer avec l’équipe DBA / infra que la VM cr2sx29362 est autorisée à joindre cr2sx20347.cr2.st.com:3308
+- confirmer le host, le port et les règles réseau
+
+======================================================================
+32. DURCISSEMENT DU SERVICE BACKEND
+======================================================================
+
+Contexte :
+- Spring Security est désactivé dans l’application
+- Il est préférable que le backend ne soit pas exposé directement sur le réseau
+
+Choix retenu :
+- faire écouter Spring Boot sur 127.0.0.1 seulement
+
+Modification recommandée :
+Ancienne ligne :
+ExecStart=/usr/bin/java -jar /opt/script_back/backend/script_back.jar --server.port=8080
+
+Nouvelle ligne :
+ExecStart=/usr/bin/java -jar /opt/script_back/backend/script_back.jar --server.address=127.0.0.1 --server.port=8080
+
+Pourquoi :
+- limiter l’exposition réseau du backend
+- imposer Nginx comme point d’entrée unique
+- réduire le risque lié à l’absence d’authentification Spring Security
+
+======================================================================
+34. CONNECTIVITE DB RETABLIE
+======================================================================
+
+Contexte :
+- Les premiers tests depuis la VM vers cr2sx20347.cr2.st.com:3308 retournaient un timeout
+- La connexion entre les deux machines était pas permise (politique IT interne)
+- Demande d'ouverture accès par l'infra
+- Un nouveau test a ensuite été effectué
+
+Commande utilisée :
+curl telnet://cr2sx20347.cr2.st.com:3308
+
+Résultat :
+- message d’avertissement sur une sortie binaire :
+  "Binary output can mess up your terminal"
+
+Interprétation :
+- la connexion TCP au port 3308 a réussi
+- le service distant répond
+- le protocole MariaDB étant binaire, curl affiche un avertissement au lieu d’un contenu lisible
+
+Conclusion :
+- la connectivité réseau entre la VM et la base est désormais fonctionnelle
+- le backend Spring Boot peut maintenant être préparé pour un vrai démarrage
+
+======================================================================
+37. BUILD BACKEND REUSSI
+======================================================================
+
+Commande utilisée :
+.\mvnw.cmd package
+
+Pourquoi :
+- produire le jar exécutable Spring Boot
+- contourner le problème de verrou Windows sur la phase clean
+
+Résultat :
+- BUILD SUCCESS
+- tests exécutés avec succès
+- un seul test skipped
+- jar exécutable généré dans :
+  target/script_back-0.0.1-SNAPSHOT.jar
+
+Taille du jar :
+- 66296812 octets (~66 Mo)
+
+Observations :
+- l’avertissement Mockito/ByteBuddy sous Java 21 concerne les tests
+- ce point n’est pas bloquant pour le déploiement
+
+Conclusion :
+- le backend est empaqueté et prêt à être transféré sur la VM
+======================================================================
+FIN DU DOCUMENT
+======================================================================

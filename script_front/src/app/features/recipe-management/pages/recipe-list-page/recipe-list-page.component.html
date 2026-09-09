@@ -2,16 +2,17 @@
   <div class="page__container">
     <div class="page__header">
       <div>
-        <h1>Recipes</h1>
-        <p>Browse golden and derived recipes, inspect their steps and parameter grid.</p>
+        <h1>{{ canManageRecipes ? 'Recipes' : 'My derived recipes' }}</h1>
+        <p>{{ canManageRecipes ? 'Browse golden and derived recipes, inspect their steps and parameter grid.' : 'Open the derived recipes created from your wizard runs.' }}</p>
       </div>
 
-      <div class="page__actions">
+      <div class="page__actions" *ngIf="canManageRecipes">
         <button class="btn" (click)="onCreateGolden()">New golden recipe</button>
       </div>
     </div>
 
     <app-recipe-list-filters
+      *ngIf="canManageRecipes"
       (filtersChanged)="onFiltersChanged($event)">
     </app-recipe-list-filters>
 
@@ -22,6 +23,7 @@
     <ng-template #recipeTable>
       <app-recipe-list-table
         [recipes]="(recipes$ | async) || []"
+        [canManage]="canEditListedRecipes"
         (viewRecipe)="onViewRecipe($event)"
         (editRecipe)="onEditRecipe($event)"
         (deleteRecipe)="onDeleteRecipe($event)">

@@ -4,6 +4,7 @@ import { RecipeCreatePageComponent } from './pages/recipe-create-page/recipe-cre
 import { RecipeDetailPageComponent } from './pages/recipe-detail-page/recipe-detail-page.component';
 import { RecipeEditPageComponent } from './pages/recipe-edit-page/recipe-edit-page.component';
 import { RecipeListPageComponent } from './pages/recipe-list-page/recipe-list-page.component';
+import { roleGuard } from '../../core/guards/role.guard';
 
 export const RECIPE_MANAGEMENT_ROUTES: Routes = [
   {
@@ -12,6 +13,8 @@ export const RECIPE_MANAGEMENT_ROUTES: Routes = [
   },
   {
     path: 'new',
+    canActivate: [roleGuard],
+    data: { roles: ['SUPER'] },
     component: RecipeCreatePageComponent
   },
   {
@@ -20,13 +23,15 @@ export const RECIPE_MANAGEMENT_ROUTES: Routes = [
   },
   {
     path: 'golden/:id/formulas',
+    canActivate: [roleGuard],
+    data: { workspaceMode: 'golden', roles: ['SUPER'] },
     component: ComputationFormulaPageComponent,
-    data: { workspaceMode: 'golden' }
   },
   {
     path: 'golden/:id',
+    canActivate: [roleGuard],
+    data: { workspaceMode: 'golden', roles: ['SUPER'] },
     component: RecipeDetailPageComponent,
-    data: { workspaceMode: 'golden' }
   },
   {
     path: 'derived/:id',

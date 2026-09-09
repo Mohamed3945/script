@@ -22,6 +22,7 @@ import { StepParameter } from '../../../../core/models/step-parameter.model';
 import { ChamberCapabilityApiService } from '../../../../core/services/chamber-capability-api.service';
 import { ChamberApiService } from '../../../../core/services/chamber-api.service';
 import { ConfigurationDefinitionApiService } from '../../../../core/services/configuration-definition-api.service';
+import { ParameterDefinitionApiService } from '../../../../core/services/parameter-definition-api.service';
 import { RecipeCompatibilityApiService } from '../../../../core/services/recipe-compatibility-api.service';
 import { RecipeCompatibilityRefreshService } from '../../../../core/services/recipe-compatibility-refresh.service';
 import { RecipeApiService } from '../../../../core/services/recipe-api.service';
@@ -156,6 +157,13 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     parameterName: null
   };
 
+  showParameterDetailsModal = false;
+  parameterDetailsLoading = false;
+  parameterDetailsName = '';
+  parameterDetailsCode: string | null = null;
+  parameterDetailsAlias: string | null = null;
+  parameterDetailsDescription: string | null = null;
+
   compatibility: RecipeCompatibilityResult | null = null;
   compatibilityLoading = false;
   compatibilityFilteringFeedbackActive = false;
@@ -182,6 +190,7 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     private chamberCapabilityApiService: ChamberCapabilityApiService,
     private chamberApiService: ChamberApiService,
     private configurationDefinitionApiService: ConfigurationDefinitionApiService,
+    private parameterDefinitionApiService: ParameterDefinitionApiService,
     private recipeCompatibilityApiService: RecipeCompatibilityApiService,
     private recipeCompatibilityRefreshService: RecipeCompatibilityRefreshService
   ) {
@@ -588,10 +597,6 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
   }
 
   onParameterRowContextRequested(request: RecipeMatrixParameterRowContextRequest): void {
-    if (!this.isGoldenWorkspace) {
-      return;
-    }
-
     this.closeStepContextMenu();
     this.closeCellActionBar();
 
@@ -622,10 +627,6 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
   }
 
   onPrestepParameterRowContextRequested(request: PrestepParameterRowContextRequest): void {
-    if (!this.isGoldenWorkspace) {
-      return;
-    }
-
     this.closeStepContextMenu();
     this.closeCellActionBar();
 
@@ -754,6 +755,26 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     });
   }
 
+  onShowParameterDetailsFromContext(): void {
+    const definitionId = this.parameterRowContextMenu.definitionId;
+    if (!definitionId) {
+      return;
+    }
+
+    const fallbackName = this.parameterRowContextMenu.parameterName;
+    this.closeParameterRowContextMenu();
+    this.openParameterDetailsModal(definitionId, fallbackName);
+  }
+
+  closeParameterDetailsModal(): void {
+    this.showParameterDetailsModal = false;
+    this.parameterDetailsLoading = false;
+    this.parameterDetailsName = '';
+    this.parameterDetailsCode = null;
+    this.parameterDetailsAlias = null;
+    this.parameterDetailsDescription = null;
+  }
+
   openStepModal(): void {
     if (!this.isGoldenWorkspace) {
       return;
@@ -801,6 +822,10 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
 
   get canDeleteStepFromContext(): boolean {
     return this.isGoldenWorkspace && Boolean(this.stepContextMenu.stepId);
+  }
+
+  get canDeleteRecipeWideParameterFromContext(): boolean {
+    return this.isGoldenWorkspace && Boolean(this.parameterRowContextMenu.definitionId);
   }
 
   get canToggleGoldenFromContext(): boolean {
@@ -1119,6 +1144,30 @@ export class RecipeDetailPageComponent implements OnInit, OnDestroy {
     }
 
     return Array.from(usedDefinitionIds);
+  }
+
+  private openParameterDetailsModal(definitionId: number, fallbackName: string | null): void {
+    this.showParameterDetailsModal = true;
+    this.parameterDetailsLoading = true;
+    this.parameterDetailsName = fallbackName ?? `Parameter #${definitionId}`;
+    this.parameterDetailsCode = null;
+    this.parameterDetailsAlias = null;
+    this.parameterDetailsDescription = null;
+
+    this.parameterDefinitionApiService.getDefinition(definitionId).subscribe({
+      next: (definition) => {
+        this.parameterDetailsName = definition.name || this.parameterDetailsName;
+        this.parameterDetailsCode = definition.code ?? null;
+        this.parameterDetailsAlias = definition.alias ?? null;
+        this.parameterDetailsDescription = definition.description ?? null;
+        this.parameterDetailsLoading = false;
+      },
+      error: (error) => {
+        console.error('Failed to load parameter definition details', error);
+        this.parameterDetailsDescription = 'Description unavailable for this parameter definition.';
+        this.parameterDetailsLoading = false;
+      }
+    });
   }
 
   private loadRequirementsForWorkspace(recipe: Recipe): void {
