@@ -1,0 +1,127 @@
+<div class="modal-backdrop" *ngIf="visible">
+  <div class="modal-card modal-card--large">
+    <div class="modal-card__header">
+      <h3>Export XML review</h3>
+      <button class="close-btn" (click)="closed.emit()">x</button>
+    </div>
+
+    <div class="modal-body">
+      <p class="intro">
+        You are about to export <strong>{{ recipeName || 'this recipe' }}</strong> for Soft Machine.
+        Please confirm target equipment before downloading.
+      </p>
+
+      <div class="selectors">
+        <div class="field">
+          <label>Target machine</label>
+          <select [value]="selectedMachineId ?? ''" (change)="onMachineSelect($any($event.target).value)">
+            <option value="">Select machine</option>
+            <option *ngFor="let machine of machines" [value]="machine.machineId">
+              {{ machine.machineCode }} - {{ machine.machineName }}
+            </option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Target chamber</label>
+          <select
+            [disabled]="!selectedMachine"
+            [value]="selectedChamberId ?? ''"
+            (change)="onChamberSelect($any($event.target).value)">
+            <option value="">Select chamber</option>
+            <option *ngFor="let chamber of selectedMachine?.compatibleChambers ?? []" [value]="chamber.chamberId">
+              {{ chamber.chamberCode }} - {{ chamber.chamberName }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid">
+        <section class="card">
+          <h4>Customization summary (derived recipe)</h4>
+
+          <div *ngIf="loadingCustomizationSummary" class="muted">Loading customization summary...</div>
+
+          <ng-container *ngIf="!loadingCustomizationSummary">
+            <ng-container *ngIf="customizationSummary; else noCustomizationSummary">
+              <p class="summary-score" [ngClass]="customizationSeverityClass">
+                {{ touchedCount }} / {{ modifiableCount }} modifiable Parameter customized
+                <span class="summary-score__badge">{{ customizationRatePercent }}%</span>
+              </p>
+
+              <ul class="summary-metrics">
+                <li>Modifiable Parameter: {{ modifiableCount }}</li>
+                <li>Touched Parameter: {{ touchedCount }}</li>
+                <li>Untouched modifiable Parameter: {{ untouchedCount }}</li>
+                <li>Untouched rate: {{ untouchedRatePercent }}%</li>
+                <li>Computed excluded: {{ computedExcludedCount }}</li>
+              </ul>
+
+              <p class="policy-note" [ngClass]="customizationSeverityClass">
+                {{ strictPolicyMessage }}
+              </p>
+            </ng-container>
+          </ng-container>
+
+          <ng-template #noCustomizationSummary>
+            <p class="muted">No customization summary available.</p>
+          </ng-template>
+        </section>
+
+        <section class="card card--full">
+          <h4>Review required: modifiable Parameters left unchanged, grouped by step</h4>
+
+          <p class="warning-callout" *ngIf="!loadingCustomizationSummary && untouchedCount > 0">
+            This export still contains <strong>{{ untouchedCount }}</strong> modifiable Parameters that were not customized.
+            Review the steps below before confirming the XML download.
+          </p>
+
+          <div *ngIf="loadingCustomizationSummary" class="muted">Loading untouched Parameters list...</div>
+
+          <ng-container *ngIf="!loadingCustomizationSummary && groupedUntouchedModifiableItems.length > 0; else noUntouchedModifiableSp">
+            <div class="untouched-step-group" *ngFor="let group of groupedUntouchedModifiableItems">
+              <div class="untouched-step-group__header">
+                <div class="untouched-step-group__title">
+                  {{ group.stepCode || ('Step #' + group.stepId) }}
+                </div>
+                <div class="untouched-step-group__subtitle">
+                  {{ group.stepName || 'Unnamed step' }}
+                  <span *ngIf="group.stepKind">· {{ group.stepKind }}</span>
+                </div>
+              </div>
+
+              <div class="untouched-step-group__sp-list">
+                <span
+                  class="untouched-step-group__sp-chip"
+                  *ngFor="let item of group.items">
+                  <span class="untouched-step-group__sp-chip-name">{{ item.parameterName }}</span>
+                  <span *ngIf="item.parameterGroup" class="untouched-step-group__sp-chip-group">{{ item.parameterGroup }}</span>
+                </span>
+              </div>
+            </div>
+          </ng-container>
+
+          <ng-template #noUntouchedModifiableSp>
+            <p class="muted">No untouched modifiable Parameter detected.</p>
+          </ng-template>
+        </section>
+
+      </div>
+
+      <label class="confirm-check">
+        <input
+          type="checkbox"
+          [checked]="understandChecked"
+          (change)="onUnderstandToggle($any($event.target).checked)" />
+        I understand this is an informational check and I remain responsible for target machine suitability.
+      </label>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn--secondary" type="button" (click)="closed.emit()">Cancel</button>
+      <button class="btn" type="button" [disabled]="!canDownload" (click)="downloadRequested.emit()">
+        {{ downloading ? 'Downloading...' : 'Download XML' }}
+      </button>
+    </div>
+  </div>
+</div>

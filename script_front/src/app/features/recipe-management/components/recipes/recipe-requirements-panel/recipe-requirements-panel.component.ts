@@ -16,7 +16,6 @@ export class RecipeRequirementsPanelComponent {
   @Input() availableCapabilities: ChamberCapability[] = [];
   @Input() availableConfigurationDefinitions: ConfigurationDefinition[] = [];
   @Input() readOnly = false;
-  @Input() sourceHint = '';
 
   @Output() addCapability = new EventEmitter<number>();
   @Output() removeCapability = new EventEmitter<number>();

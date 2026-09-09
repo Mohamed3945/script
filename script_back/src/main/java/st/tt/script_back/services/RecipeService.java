@@ -1,20 +1,34 @@
 package st.tt.script_back.services;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 import st.tt.script_back.dto.RecipeDto;
+import st.tt.script_back.dto.DuplicateGoldenRecipeRequestDto;
+import st.tt.script_back.entities.ComputationFormula;
+import st.tt.script_back.entities.FormulaReference;
 import st.tt.script_back.entities.DecisionResultProfile;
 import st.tt.script_back.entities.Recipe;
+import st.tt.script_back.entities.Step;
+import st.tt.script_back.entities.StepEndpoint;
+import st.tt.script_back.entities.StepEndpointCondition;
+import st.tt.script_back.entities.StepParameter;
 import st.tt.script_back.enums.RecipeKind;
 import st.tt.script_back.enums.RecipeStatus;
+import st.tt.script_back.repositories.ComputationFormulaRepository;
 import st.tt.script_back.repositories.DecisionExecutionRepository;
 import st.tt.script_back.mappers.RecipeMapper;
 import st.tt.script_back.repositories.DecisionResultProfileRepository;
 import st.tt.script_back.repositories.RecipeRepository;
+import st.tt.script_back.repositories.StepEndpointRepository;
+import st.tt.script_back.repositories.StepParameterRepository;
+import st.tt.script_back.repositories.StepRepository;
 
 /**
  * RecipeService class for the backend domain.
@@ -28,6 +42,12 @@ public class RecipeService {
     private final DecisionResultProfileRepository decisionResultProfileRepository;
     private final DecisionExecutionRepository decisionExecutionRepository;
     private final RecipeMapper recipeMapper;
+    private final StepRepository stepRepository;
+    private final StepParameterRepository stepParameterRepository;
+    private final StepEndpointRepository stepEndpointRepository;
+    private final ParameterActivationService parameterActivationService;
+    private final ComputationEvaluationService computationEvaluationService;
+    private final ComputationFormulaRepository computationFormulaRepository;
 
     /**
      * Executes RecipeService.
@@ -40,11 +60,23 @@ public class RecipeService {
             RecipeRepository recipeRepository,
             DecisionResultProfileRepository decisionResultProfileRepository,
             DecisionExecutionRepository decisionExecutionRepository,
-            RecipeMapper recipeMapper) {
+            RecipeMapper recipeMapper,
+            StepRepository stepRepository,
+            StepParameterRepository stepParameterRepository,
+            StepEndpointRepository stepEndpointRepository,
+            ParameterActivationService parameterActivationService,
+            ComputationEvaluationService computationEvaluationService,
+            ComputationFormulaRepository computationFormulaRepository) {
         this.recipeRepository = recipeRepository;
         this.decisionResultProfileRepository = decisionResultProfileRepository;
         this.decisionExecutionRepository = decisionExecutionRepository;
         this.recipeMapper = recipeMapper;
+        this.stepRepository = stepRepository;
+        this.stepParameterRepository = stepParameterRepository;
+        this.stepEndpointRepository = stepEndpointRepository;
+        this.parameterActivationService = parameterActivationService;
+        this.computationEvaluationService = computationEvaluationService;
+        this.computationFormulaRepository = computationFormulaRepository;
     }
 
     /**
@@ -88,6 +120,58 @@ public class RecipeService {
 
         Recipe saved = recipeRepository.save(recipe);
         return recipeMapper.toDto(saved);
+    }
+
+    @Transactional
+    public RecipeDto duplicateGoldenRecipe(DuplicateGoldenRecipeRequestDto request) {
+        validateDuplicateRequest(request);
+
+        Recipe sourceGolden = recipeRepository.findByIdWithRequirements(request.getSourceGoldenRecipeId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Golden recipe with id " + request.getSourceGoldenRecipeId() + " not found"));
+
+        if (sourceGolden.getRecipeKind() != RecipeKind.GOLDEN) {
+            throw new IllegalArgumentException("sourceGoldenRecipeId must reference a GOLDEN recipe");
+        }
+
+        String targetName = request.getTargetName().trim();
+        if (sourceGolden.getName() != null && sourceGolden.getName().trim().equalsIgnoreCase(targetName)) {
+            throw new IllegalArgumentException("targetName must be different from source golden name");
+        }
+
+        Recipe targetGolden = buildTargetGolden(sourceGolden, targetName, request.getCreatorId());
+        Recipe savedTargetGolden = recipeRepository.save(targetGolden);
+
+        List<Step> sourceSteps = stepRepository.findByRecipeIdOrderByOrderIndexAsc(sourceGolden.getId());
+        Map<Long, Step> clonedStepBySourceStepId = cloneSteps(savedTargetGolden, sourceSteps);
+        for (Step sourceStep : sourceSteps) {
+            Step clonedStep = clonedStepBySourceStepId.get(sourceStep.getId());
+            cloneStepParameters(sourceStep, clonedStep);
+            cloneStepEndpoint(sourceStep, clonedStep);
+        }
+
+        if (request.isIncludeRequiredCapabilities()) {
+            savedTargetGolden.getRequiredCapabilities().addAll(sourceGolden.getRequiredCapabilities());
+        }
+        if (request.isIncludeRequiredConfigurations()) {
+            savedTargetGolden.getRequiredConfigurationDefinitions()
+                    .addAll(sourceGolden.getRequiredConfigurationDefinitions());
+        }
+        if (request.isIncludeRequiredCapabilities() || request.isIncludeRequiredConfigurations()) {
+            recipeRepository.save(savedTargetGolden);
+        }
+
+        if (request.isIncludeFormulas()) {
+            cloneComputationFormulas(sourceGolden, savedTargetGolden);
+        }
+
+        parameterActivationService.recalculateRecipeActivationStates(savedTargetGolden.getId());
+        computationEvaluationService.recomputeRecipeComputedParameters(savedTargetGolden.getId());
+
+        Recipe reloadedTarget = recipeRepository.findById(savedTargetGolden.getId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Duplicated golden recipe with id " + savedTargetGolden.getId() + " not found"));
+        return recipeMapper.toDto(reloadedTarget);
     }
 
     /**
@@ -211,5 +295,165 @@ public class RecipeService {
             return 1;
         }
         return versions.get(0).getVersion() + 1;
+    }
+
+    private Recipe buildTargetGolden(Recipe sourceGolden, String targetName, Long creatorId) {
+        Recipe target = new Recipe();
+        target.setRecipeKind(RecipeKind.GOLDEN);
+        target.setParentRecipe(null);
+        target.setName(targetName);
+        target.setDescription(sourceGolden.getDescription());
+        target.setCreatorId(creatorId != null ? creatorId : sourceGolden.getCreatorId());
+        target.setRevisorId(null);
+        target.setProcessFamily(sourceGolden.getProcessFamily());
+        target.setStatus(RecipeStatus.DRAFT);
+        target.setVersion(1);
+        target.setFrozen(false);
+        target.setWafer(sourceGolden.getWafer());
+        target.setIapc(sourceGolden.getIapc());
+        target.setResumable(sourceGolden.getResumable());
+        target.setChamberType(sourceGolden.getChamberType());
+        target.setAccessDisplayGroups(sourceGolden.getAccessDisplayGroups());
+        target.setAccessModifyGroups(sourceGolden.getAccessModifyGroups());
+        target.setUdaFile(sourceGolden.getUdaFile());
+        target.setType(sourceGolden.getType());
+        target.setMaxTime(sourceGolden.getMaxTime());
+        target.setTemplate(sourceGolden.getTemplate());
+        return target;
+    }
+
+    private Map<Long, Step> cloneSteps(Recipe targetGolden, List<Step> sourceSteps) {
+        Map<Long, Step> cloneBySourceStepId = new HashMap<>();
+        for (Step sourceStep : sourceSteps) {
+            Step clonedStep = new Step();
+            clonedStep.setRecipe(targetGolden);
+            clonedStep.setStepKind(sourceStep.getStepKind());
+            clonedStep.setOrderIndex(sourceStep.getOrderIndex());
+            clonedStep.setName(sourceStep.getName());
+            clonedStep.setCode(sourceStep.getCode());
+
+            Step savedStep = stepRepository.save(clonedStep);
+            cloneBySourceStepId.put(sourceStep.getId(), savedStep);
+        }
+        return cloneBySourceStepId;
+    }
+
+    private void cloneStepParameters(Step sourceStep, Step clonedStep) {
+        List<StepParameter> sourceParameters = stepParameterRepository
+                .findByStepIdOrderByParentOrderScopeAscOrderIndexAsc(sourceStep.getId());
+
+        Map<Long, StepParameter> clonedBySourceParameterId = new HashMap<>();
+        List<StepParameter> pendingParameters = new ArrayList<>(sourceParameters);
+
+        while (!pendingParameters.isEmpty()) {
+            int pendingBefore = pendingParameters.size();
+
+            for (int i = pendingParameters.size() - 1; i >= 0; i--) {
+                StepParameter sourceParameter = pendingParameters.get(i);
+                StepParameter sourceParent = sourceParameter.getParentStepParameter();
+                if (sourceParent != null && !clonedBySourceParameterId.containsKey(sourceParent.getId())) {
+                    continue;
+                }
+
+                StepParameter clonedParameter = new StepParameter();
+                clonedParameter.setStep(clonedStep);
+                clonedParameter.setDefinition(sourceParameter.getDefinition());
+                clonedParameter.setParentStepParameter(
+                        sourceParent == null ? null : clonedBySourceParameterId.get(sourceParent.getId()));
+                clonedParameter.setOrderIndex(sourceParameter.getOrderIndex());
+                clonedParameter.setLabelOverride(sourceParameter.getLabelOverride());
+                clonedParameter.setValueJson(sourceParameter.getValueJson());
+                clonedParameter.setSelectedOption(sourceParameter.getSelectedOption());
+                clonedParameter.setActivationState(sourceParameter.getActivationState());
+                clonedParameter.setLockedByGolden(sourceParameter.isLockedByGolden());
+                clonedParameter.setUserModified(sourceParameter.isUserModified());
+                clonedParameter.setComputationStatus(sourceParameter.getComputationStatus());
+                clonedParameter.setComputedAt(sourceParameter.getComputedAt());
+
+                StepParameter savedClonedParameter = stepParameterRepository.save(clonedParameter);
+                clonedBySourceParameterId.put(sourceParameter.getId(), savedClonedParameter);
+                pendingParameters.remove(i);
+            }
+
+            if (pendingParameters.size() == pendingBefore) {
+                throw new IllegalStateException(
+                        "Cannot clone step parameter hierarchy for step " + sourceStep.getId()
+                                + ": parent relationship is inconsistent");
+            }
+        }
+    }
+
+    private void cloneStepEndpoint(Step sourceStep, Step clonedStep) {
+        StepEndpoint sourceEndpoint = stepEndpointRepository.findByStepIdWithConditions(sourceStep.getId())
+                .orElse(null);
+        if (sourceEndpoint == null) {
+            return;
+        }
+
+        StepEndpoint clonedEndpoint = new StepEndpoint();
+        clonedEndpoint.setStep(clonedStep);
+        clonedEndpoint.setClause(sourceEndpoint.getClause());
+        clonedEndpoint.setLockedByGolden(sourceEndpoint.isLockedByGolden());
+
+        StepEndpoint savedEndpoint = stepEndpointRepository.save(clonedEndpoint);
+        List<StepEndpointCondition> sourceConditions = sourceEndpoint.getConditions() == null
+                ? List.of()
+                : sourceEndpoint.getConditions();
+
+        for (StepEndpointCondition sourceCondition : sourceConditions) {
+            StepEndpointCondition clonedCondition = new StepEndpointCondition();
+            clonedCondition.setEndpoint(savedEndpoint);
+            clonedCondition.setEndpointParameter(sourceCondition.getEndpointParameter());
+            clonedCondition.setValueJson(sourceCondition.getValueJson());
+            clonedCondition.setSelectedOption(sourceCondition.getSelectedOption());
+            clonedCondition.setOperator(sourceCondition.getOperator());
+            clonedCondition.setOrderIndex(sourceCondition.getOrderIndex());
+            savedEndpoint.getConditions().add(clonedCondition);
+        }
+
+        stepEndpointRepository.save(savedEndpoint);
+    }
+
+    private void cloneComputationFormulas(Recipe sourceGolden, Recipe targetGolden) {
+        List<ComputationFormula> sourceFormulas = computationFormulaRepository
+                .findByRecipeIdWithReferences(sourceGolden.getId());
+
+        for (ComputationFormula sourceFormula : sourceFormulas) {
+            ComputationFormula clonedFormula = new ComputationFormula();
+            clonedFormula.setRecipe(targetGolden);
+            clonedFormula.setTargetStepCode(sourceFormula.getTargetStepCode());
+            clonedFormula.setTargetDefinitionPath(sourceFormula.getTargetDefinitionPath());
+            clonedFormula.setExpression(sourceFormula.getExpression());
+            clonedFormula.setRoundingMode(sourceFormula.getRoundingMode());
+            clonedFormula.setDecimals(sourceFormula.getDecimals());
+            clonedFormula.setLabel(sourceFormula.getLabel());
+
+            List<FormulaReference> sourceReferences = sourceFormula.getReferences() == null
+                    ? List.of()
+                    : sourceFormula.getReferences();
+
+            for (FormulaReference sourceReference : sourceReferences) {
+                FormulaReference clonedReference = new FormulaReference();
+                clonedReference.setFormula(clonedFormula);
+                clonedReference.setSlot(sourceReference.getSlot());
+                clonedReference.setStepCode(sourceReference.getStepCode());
+                clonedReference.setDefinitionPath(sourceReference.getDefinitionPath());
+                clonedFormula.getReferences().add(clonedReference);
+            }
+
+            computationFormulaRepository.save(clonedFormula);
+        }
+    }
+
+    private void validateDuplicateRequest(DuplicateGoldenRecipeRequestDto request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Duplicate golden payload is required");
+        }
+        if (request.getSourceGoldenRecipeId() == null) {
+            throw new IllegalArgumentException("sourceGoldenRecipeId is required");
+        }
+        if (request.getTargetName() == null || request.getTargetName().trim().isEmpty()) {
+            throw new IllegalArgumentException("targetName is required");
+        }
     }
 }

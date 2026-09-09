@@ -9,9 +9,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -43,6 +46,16 @@ public class Machine {
     @Enumerated(EnumType.STRING)
     @Column(name = "platform_type", nullable = false)
     private PlatformType platformType = PlatformType.CENTURA;
+
+    /**
+     * Version de Soft Machine installée sur cet équipement.
+     * Détermine les métadonnées XML (Format, xmlns, ChamberType par défaut)
+     * utilisées lors de l'export d'une recette vers cet équipement.
+     * Nullable : si non renseignée, l'export utilise les valeurs par défaut.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "soft_machine_version_id")
+    private SoftMachineVersion softMachineVersion;
 
     @Column(name = "create_time", nullable = false, updatable = false)
     private Instant createTime;

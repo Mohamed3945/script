@@ -18,4 +18,7 @@ export interface RecipeMatrixCell {
   activationState?: ActivationState | null;
   lockedByGolden: boolean;
   editable: boolean;
+  userModified: boolean;
+  computedFromModified: boolean;
+  computed: boolean;
 }

@@ -1,5 +1,6 @@
 package st.tt.script_back.dto;
 
+import java.time.Instant;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -7,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import st.tt.script_back.enums.ActivationState;
+import st.tt.script_back.enums.ComputationStatus;
 import st.tt.script_back.enums.ParameterValueType;
 
 /**
@@ -34,4 +36,9 @@ public class RecipeMatrixCellDto {
     private ActivationState activationState;
     private boolean lockedByGolden;
     private boolean editable;
+    private boolean userModified;
+    private ComputationStatus computationStatus;
+    private Instant computedAt;
+    private boolean computedFromModified;
+    private boolean computed;
 }

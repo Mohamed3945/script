@@ -3,44 +3,42 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { ParameterDefinition } from '../../../../core/models/parameter-definition.model';
-import { StepType } from '../../../../core/models/step-type.model';
+import { ParameterScope } from '../../../../core/models/parameter-scope.model';
 import { ParameterDefinitionApiService } from '../../../../core/services/parameter-definition-api.service';
+import { ParameterDefinitionStructureManagerComponent } from '../../components/parameter-definitions/parameter-definition-structure-manager/parameter-definition-structure-manager.component';
 import { ParameterDefinitionTableComponent } from '../../components/parameter-definitions/parameter-definition-table/parameter-definition-table.component';
 
-type ParameterDefinitionFilter = 'ALL' | StepType;
+type ParameterDefinitionFilter = 'ALL' | ParameterScope;
+type ParameterDefinitionViewMode = 'table' | 'structure';
 
 @Component({
   selector: 'app-parameter-definition-list-page',
   standalone: true,
-  imports: [NgIf, AsyncPipe, ParameterDefinitionTableComponent],
+  imports: [NgIf, AsyncPipe, ParameterDefinitionTableComponent, ParameterDefinitionStructureManagerComponent],
   templateUrl: './parameter-definition-list-page.component.html',
   styleUrl: './parameter-definition-list-page.component.scss'
 })
-/**
- * ParameterDefinitionListPageComponent coordinates UI logic for this feature.
- */
 export class ParameterDefinitionListPageComponent implements OnInit {
   definitions$ = new BehaviorSubject<ParameterDefinition[]>([]);
   loading$ = new BehaviorSubject<boolean>(false);
-  readonly availableFilters: ParameterDefinitionFilter[] = ['ALL', 'STEP', 'PRESTEP'];
+  readonly availableFilters: ParameterDefinitionFilter[] = ['ALL', 'STEP', 'PRESTEP', 'ENDPOINT'];
   selectedFilter: ParameterDefinitionFilter = 'ALL';
+  viewMode: ParameterDefinitionViewMode = 'table';
 
   constructor(
     private parameterDefinitionApiService: ParameterDefinitionApiService,
     private router: Router
   ) {}
 
-  /**
-   * Handles the ngOnInit workflow.
-   */
   ngOnInit(): void {
     this.loadDefinitions();
   }
 
-  /**
-   * Handles the loadDefinitions workflow.
-   */
   loadDefinitions(): void {
+    if (this.viewMode === 'structure') {
+      return;
+    }
+
     this.loading$.next(true);
     const stepType = this.selectedFilter === 'ALL' ? undefined : this.selectedFilter;
 
@@ -57,11 +55,8 @@ export class ParameterDefinitionListPageComponent implements OnInit {
     });
   }
 
-  /**
-   * Handles the onFilterChanged workflow.
-   */
   onFilterChanged(rawValue: string): void {
-    if (rawValue !== 'ALL' && rawValue !== 'STEP' && rawValue !== 'PRESTEP') {
+    if (rawValue !== 'ALL' && rawValue !== 'STEP' && rawValue !== 'PRESTEP' && rawValue !== 'ENDPOINT') {
       return;
     }
 
@@ -69,32 +64,31 @@ export class ParameterDefinitionListPageComponent implements OnInit {
     this.loadDefinitions();
   }
 
-  /**
-   * Handles the onCreate workflow.
-   */
-  onCreate(): void {
-    this.router.navigate(['/recipes/parameter/new']);
+  onViewModeChanged(rawValue: string): void {
+    if (rawValue !== 'table' && rawValue !== 'structure') {
+      return;
+    }
+
+    this.viewMode = rawValue;
+    if (this.viewMode === 'table') {
+      this.loadDefinitions();
+    }
   }
 
-  /**
-   * Handles the onView workflow.
-   */
+  onCreate(): void {
+    this.router.navigate(['/parameters/new']);
+  }
+
   onView(definition: ParameterDefinition): void {
     if (!definition.id) return;
-    this.router.navigate(['/recipes/parameter', definition.id]);
+    this.router.navigate(['/parameters', definition.id]);
   }
 
-  /**
-   * Handles the onEdit workflow.
-   */
   onEdit(definition: ParameterDefinition): void {
     if (!definition.id) return;
-    this.router.navigate(['/recipes/parameter', definition.id, 'edit']);
+    this.router.navigate(['/parameters', definition.id, 'edit']);
   }
 
-  /**
-   * Handles the onDelete workflow.
-   */
   onDelete(definition: ParameterDefinition): void {
     if (!definition.id) return;
 
@@ -107,4 +101,3 @@ export class ParameterDefinitionListPageComponent implements OnInit {
     });
   }
 }
-

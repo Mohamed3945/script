@@ -33,12 +33,12 @@ export class CapabilityListPageComponent implements OnInit {
   }
 
   createCapability(): void {
-    this.router.navigate(['/chamber-capabilities/new']);
+    this.router.navigate(['/reference-data/capabilities/new']);
   }
 
   editCapability(capability: ChamberCapability): void {
     if (!capability.id) return;
-    this.router.navigate(['/chamber-capabilities', capability.id, 'edit']);
+    this.router.navigate(['/reference-data/capabilities', capability.id, 'edit']);
   }
 
   deleteCapability(capability: ChamberCapability): void {

@@ -1,5 +1,6 @@
 <form [formGroup]="form" class="form-card" (ngSubmit)="onSubmit()">
   <div class="form-grid">
+
     <div class="field field--full">
       <label>Configuration definition</label>
       <select formControlName="configurationDefinitionId">
@@ -10,9 +11,26 @@
       </select>
     </div>
 
+    <!-- Variant code : select si controllers disponibles, input libre sinon -->
     <div class="field">
       <label>Variant code</label>
-      <input type="text" formControlName="chamberConfigurationCode" />
+
+      <select
+        *ngIf="availableControllerCodes.length > 0"
+        formControlName="chamberConfigurationCode">
+        <option value="">Select controller</option>
+        <option
+          *ngFor="let ctrl of availableControllerCodes"
+          [value]="ctrl.value">
+          {{ ctrl.label }}
+        </option>
+      </select>
+
+      <input
+        *ngIf="availableControllerCodes.length === 0"
+        type="text"
+        formControlName="chamberConfigurationCode"
+        placeholder="No linked parameters — enter code manually" />
     </div>
 
     <div class="field">
@@ -34,6 +52,7 @@
       <label>Max value</label>
       <input type="number" formControlName="maxValue" />
     </div>
+
   </div>
 
   <div class="actions">

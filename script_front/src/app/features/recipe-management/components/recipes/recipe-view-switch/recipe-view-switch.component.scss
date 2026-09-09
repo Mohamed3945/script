@@ -1,20 +1,20 @@
 .switch {
   display: inline-flex;
-  gap: 4px;
+  gap: 2px;
   background: #f3f6f9;
   border: 1px solid var(--border-soft);
-  border-radius: 10px;
-  padding: 4px;
+  border-radius: 8px;
+  padding: 2px;
 }
 
 .switch__btn {
   border: 1px solid transparent;
   background: transparent;
-  border-radius: 8px;
-  padding: 6px 11px;
+  border-radius: 6px;
+  padding: 4px 8px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-soft);
   transition: all 140ms var(--transition);
 }

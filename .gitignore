@@ -1,1 +1,16 @@
 node_modules
+
+# Local editor and generated artifacts at the repository root
+/.vscode/
+/db_backups/
+/B-I050-105A-MA-R.xml
+/Golden_SCRIPT_Note_Cadrage.pdf
+/goldendb1_1_dump.sql
+/goldendb1_dump.before_insert_ignore_20260811.sql
+/goldendb1_dump.before_reorder_20260811.sql
+/goldendb1_dump.sql
+/goldendb1_data.sql
+/script_back/goldendb1_data.sql
+/tmp_cleanup_previous_dump.sql
+/tmp_note_cadrage.txt
+/script_front/test-stelar.js

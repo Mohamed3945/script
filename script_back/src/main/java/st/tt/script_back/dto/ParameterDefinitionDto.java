@@ -5,13 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import st.tt.script_back.enums.ParameterValueType;
-import st.tt.script_back.enums.StepType;
+import st.tt.script_back.enums.ParameterScope;
+import st.tt.script_back.enums.XmlSection;
 
-/**
- * ParameterDefinitionDto class for the backend domain.
- * <p>
- * This type exposes behavior used by the application service layer.
- */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,9 +21,17 @@ public class ParameterDefinitionDto {
     private String description;
     private ParameterValueType valueType;
     private boolean requiredOnStep;
-    private StepType stepType;
+    private ParameterScope stepType;
+    private XmlSection xmlSection;
     private String defaultValueJson;
+
+    private Long parameterGroupId;
+    private String parameterGroupName;
+    private Integer parameterGroupOrder;
+    private Integer orderIndexInGroup;
+
     private Long configurationDefinitionId;
     private String configurationDefinitionCode;
     private String configurationDefinitionName;
 }
+

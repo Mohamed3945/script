@@ -1,0 +1,158 @@
+<div class="modal-backdrop" *ngIf="visible" (click)="close()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <header class="modal-card__header">
+      <div>
+        <h3>Step endpoint editor</h3>
+        <p *ngIf="stepId != null">Step #{{ stepId }}</p>
+      </div>
+
+      <div class="modal-card__header-actions">
+        <span class="state-pill" [ngClass]="isReadOnly ? 'state-pill--locked' : 'state-pill--editable'">
+          {{ isReadOnly ? 'Read only (locked by golden)' : 'Editable' }}
+        </span>
+        <button type="button" class="close-btn" (click)="close()">x</button>
+      </div>
+    </header>
+
+    <div class="modal-card__body" *ngIf="!loading; else loadingState">
+      <p class="error" *ngIf="errorMessage as error">{{ error }}</p>
+
+      <div class="modal-grid">
+        <section class="panel panel--definitions">
+          <h4>Endpoint parameters</h4>
+          <p class="hint">Drag a parameter name to Conditions.</p>
+
+          <ul class="definition-list" *ngIf="endpointDefinitions.length > 0; else noDefinitionState">
+            <li
+              *ngFor="let def of availableDefinitionsForNewCondition"
+              draggable="true"
+              (dragstart)="onDefinitionDragStart($event, def)">
+              <span>{{ def.alias }}</span>
+            </li>
+          </ul>
+
+          <p class="hint" *ngIf="endpointDefinitions.length > 0 && availableDefinitionsForNewCondition.length === 0">
+            All endpoint parameters are already used in conditions.
+          </p>
+
+          <ng-template #noDefinitionState>
+            <p class="hint">No ENDPOINT parameter definitions are available.</p>
+          </ng-template>
+        </section>
+
+        <section
+          class="panel panel--conditions"
+          [ngClass]="{ 'panel--drop-active': conditionDropActive }"
+          (dragover)="onConditionPanelDragOver($event)"
+          (dragleave)="onConditionPanelDragLeave()"
+          (drop)="onConditionPanelDrop($event)">
+          <div class="panel__head">
+            <h4>Conditions</h4>
+            <button
+              type="button"
+              class="btn btn--light"
+              [disabled]="!canAddCondition"
+              (click)="addCondition()">
+              Add condition
+            </button>
+          </div>
+
+          <label class="clause-row" *ngIf="conditions.length > 1">
+            <span>Clause</span>
+            <select [(ngModel)]="clause" [disabled]="isReadOnly">
+              <option value="AND">AND</option>
+              <option value="OR">OR</option>
+            </select>
+          </label>
+
+          <div class="condition-list" *ngIf="conditions.length > 0; else emptyConditionState">
+            <article class="condition" *ngFor="let condition of conditions; index as i">
+              <header>
+                <strong>Condition {{ i + 1 }}</strong>
+                <button
+                  type="button"
+                  class="btn btn--danger"
+                  [disabled]="isReadOnly"
+                  (click)="removeCondition(i)">
+                  Remove
+                </button>
+              </header>
+
+              <div class="condition-grid">
+                <label>
+                  <span>Parameter</span>
+                  <select
+                    [ngModel]="condition.endpointParameterId"
+                    (ngModelChange)="onEndpointParameterChanged(condition, $event)"
+                    (dragover)="allowDropOnCondition($event)"
+                    (drop)="onConditionDefinitionDrop($event, condition)"
+                    [disabled]="isReadOnly">
+                    <option [ngValue]="null">Select parameter</option>
+                    <option *ngFor="let def of getSelectableDefinitions(condition)" [ngValue]="def.id">
+                      {{ def.name }}
+                    </option>
+                  </select>
+                </label>
+
+                <label>
+                  <span>Operator</span>
+                  <select [(ngModel)]="condition.operator" [disabled]="isReadOnly">
+                    <option *ngFor="let op of operatorOptions" [ngValue]="op"> {{ operatorLabels[op] }}</option>
+                  </select>
+                </label>
+
+                <ng-container [ngSwitch]="condition.valueType">
+                  <label *ngSwitchCase="'ENUM'">
+                    <span>Option</span>
+                    <select [(ngModel)]="condition.selectedOptionId" [disabled]="isReadOnly">
+                      <option [ngValue]="null">Select option</option>
+                      <option *ngFor="let option of condition.availableOptions" [ngValue]="option.id">
+                        {{ option.label }}
+                      </option>
+                    </select>
+                  </label>
+
+                  <label *ngSwitchDefault>
+                    <span>Value</span>
+                    <input
+                      type="text"
+                      [(ngModel)]="condition.valueInput"
+                      [disabled]="isReadOnly"
+                      placeholder="Enter comparison value" />
+                  </label>
+                </ng-container>
+              </div>
+            </article>
+          </div>
+
+          <ng-template #emptyConditionState>
+            <p class="hint">No condition configured. This step is time-based when saved.</p>
+          </ng-template>
+        </section>
+      </div>
+    </div>
+
+    <ng-template #loadingState>
+      <div class="loading-state">Loading endpoint data...</div>
+    </ng-template>
+
+    <footer class="modal-card__footer">
+      <button type="button" class="btn btn--light" (click)="close()" [disabled]="saving || deleting">Cancel</button>
+      <button
+        type="button"
+        class="btn btn--danger"
+        *ngIf="canDeleteEndpoint"
+        [disabled]="isReadOnly || deleting || saving"
+        (click)="deleteEndpoint()">
+        {{ deleting ? 'Deleting...' : 'Delete endpoint' }}
+      </button>
+      <button
+        type="button"
+        class="btn btn--primary"
+        [disabled]="isReadOnly || saving || deleting || loading"
+        (click)="save()">
+        {{ saving ? 'Saving...' : 'Save endpoint' }}
+      </button>
+    </footer>
+  </div>
+</div>

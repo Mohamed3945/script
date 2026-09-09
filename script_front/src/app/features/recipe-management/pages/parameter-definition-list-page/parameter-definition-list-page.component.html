@@ -8,33 +8,50 @@
 
       <button class="btn" (click)="onCreate()">New definition</button>
     </div>
-
+    TESTING
     <div class="filters">
       <div class="filters__group">
+        <label>View</label>
+        <select [value]="viewMode" (change)="onViewModeChanged($any($event.target).value)">
+          <option value="table">Table</option>
+          <option value="structure">Structure</option>
+        </select>
+      </div>
+
+      <div class="filters__group" *ngIf="viewMode === 'table'">
         <label>Step type</label>
         <select [value]="selectedFilter" (change)="onFilterChanged($any($event.target).value)">
           <option value="ALL">All</option>
           <option value="STEP">STEP</option>
           <option value="PRESTEP">PRESTEP</option>
+          <option value="ENDPOINT">ENDPOINT</option>
         </select>
       </div>
 
-      <div class="filters__actions">
+      <div class="filters__actions" *ngIf="viewMode === 'table'">
         <button class="btn btn--secondary" (click)="onFilterChanged('ALL')">Reset</button>
       </div>
     </div>
 
-    <div class="card" *ngIf="loading$ | async; else tableSection">
-      Loading parameter definitions...
-    </div>
+    <ng-container *ngIf="viewMode === 'structure'; else tableView">
+      <div class="card">
+        <app-parameter-definition-structure-manager></app-parameter-definition-structure-manager>
+      </div>
+    </ng-container>
 
-    <ng-template #tableSection>
-      <app-parameter-definition-table
-        [definitions]="(definitions$ | async) || []"
-        (viewDefinition)="onView($event)"
-        (editDefinition)="onEdit($event)"
-        (deleteDefinition)="onDelete($event)">
-      </app-parameter-definition-table>
+    <ng-template #tableView>
+      <div class="card" *ngIf="loading$ | async; else tableSection">
+        Loading parameter definitions...
+      </div>
+
+      <ng-template #tableSection>
+        <app-parameter-definition-table
+          [definitions]="(definitions$ | async) || []"
+          (viewDefinition)="onView($event)"
+          (editDefinition)="onEdit($event)"
+          (deleteDefinition)="onDelete($event)">
+        </app-parameter-definition-table>
+      </ng-template>
     </ng-template>
   </div>
 </section>

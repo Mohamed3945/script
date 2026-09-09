@@ -3,9 +3,11 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfigurationDefinition } from '../../../../../core/models/configuration-definition.model';
 import { ParameterDefinition } from '../../../../../core/models/parameter-definition.model';
+import { ParameterGroup } from '../../../../../core/models/parameter-group.model';
 import { ParameterValueType } from '../../../../../core/models/parameter-value-type.model';
-import { StepType } from '../../../../../core/models/step-type.model';
+import { ParameterScope } from '../../../../../core/models/parameter-scope.model';
 import { ConfigurationDefinitionApiService } from '../../../../../core/services/configuration-definition-api.service';
+import { ParameterGroupApiService } from '../../../../../core/services/parameter-group-api.service';
 
 @Component({
   selector: 'app-parameter-definition-form',
@@ -14,9 +16,6 @@ import { ConfigurationDefinitionApiService } from '../../../../../core/services/
   templateUrl: './parameter-definition-form.component.html',
   styleUrl: './parameter-definition-form.component.scss'
 })
-/**
- * ParameterDefinitionFormComponent coordinates UI logic for this feature.
- */
 export class ParameterDefinitionFormComponent implements OnInit {
   @Input() initialValue: ParameterDefinition | null = null;
   @Input() mode: 'create' | 'edit' = 'create';
@@ -24,14 +23,17 @@ export class ParameterDefinitionFormComponent implements OnInit {
   @Output() submitted = new EventEmitter<ParameterDefinition>();
 
   readonly valueTypes: ParameterValueType[] = ['STRING', 'NUMBER', 'BOOLEAN', 'ENUM', 'JSON'];
-  readonly stepTypes: StepType[] = ['STEP', 'PRESTEP'];
+  readonly stepTypes: ParameterScope[] = ['STEP', 'PRESTEP', 'ENDPOINT'];
+
   configurationDefinitions: ConfigurationDefinition[] = [];
+  parameterGroups: ParameterGroup[] = [];
 
   form: ReturnType<FormBuilder['group']>;
 
   constructor(
     private fb: FormBuilder,
-    private configurationDefinitionApiService: ConfigurationDefinitionApiService
+    private configurationDefinitionApiService: ConfigurationDefinitionApiService,
+    private parameterGroupApiService: ParameterGroupApiService
   ) {
     this.form = this.fb.group({
       name: ['', Validators.required],
@@ -40,15 +42,13 @@ export class ParameterDefinitionFormComponent implements OnInit {
       description: [''],
       valueType: ['STRING' as ParameterValueType, Validators.required],
       requiredOnStep: [true],
-      stepType: ['STEP' as StepType, Validators.required],
+      stepType: ['STEP' as ParameterScope, Validators.required],
       defaultValueJson: [''],
+      parameterGroupId: [null as number | null],
       configurationDefinitionId: [null as number | null]
     });
   }
 
-  /**
-   * Handles the ngOnInit workflow.
-   */
   ngOnInit(): void {
     this.configurationDefinitionApiService.getDefinitions().subscribe({
       next: (definitions) => {
@@ -60,6 +60,13 @@ export class ParameterDefinitionFormComponent implements OnInit {
       }
     });
 
+    this.form.get('stepType')?.valueChanges.subscribe((stepType) => {
+      this.loadGroups(stepType ?? 'STEP');
+    });
+
+    const initialStepType = this.initialValue?.stepType ?? 'STEP';
+    this.loadGroups(initialStepType);
+
     if (this.initialValue) {
       this.form.patchValue({
         name: this.initialValue.name,
@@ -70,14 +77,12 @@ export class ParameterDefinitionFormComponent implements OnInit {
         requiredOnStep: this.initialValue.requiredOnStep,
         stepType: this.initialValue.stepType,
         defaultValueJson: this.initialValue.defaultValueJson || '',
+        parameterGroupId: this.initialValue.parameterGroupId ?? null,
         configurationDefinitionId: this.initialValue.configurationDefinitionId ?? null
       });
     }
   }
 
-  /**
-   * Handles the onSubmit workflow.
-   */
   onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -85,9 +90,11 @@ export class ParameterDefinitionFormComponent implements OnInit {
     }
 
     const raw = this.form.getRawValue();
+    const selectedGroup = this.parameterGroups.find(group => group.id === (raw.parameterGroupId ?? null));
 
     this.submitted.emit({
       id: this.initialValue?.id,
+      code: this.initialValue?.code,
       name: raw.name || '',
       alias: raw.alias || '',
       unit: raw.unit || null,
@@ -96,8 +103,27 @@ export class ParameterDefinitionFormComponent implements OnInit {
       requiredOnStep: !!raw.requiredOnStep,
       stepType: raw.stepType!,
       defaultValueJson: raw.defaultValueJson || null,
+      parameterGroupId: raw.parameterGroupId ?? null,
+      parameterGroupName: selectedGroup?.name ?? null,
+      parameterGroupOrder: selectedGroup?.orderIndex ?? null,
+      orderIndexInGroup: this.initialValue?.orderIndexInGroup ?? null,
       configurationDefinitionId: raw.configurationDefinitionId ?? null
     });
   }
-}
 
+  private loadGroups(stepType: ParameterScope): void {
+    this.parameterGroupApiService.getGroups(stepType).subscribe({
+      next: (groups) => {
+        this.parameterGroups = groups;
+        const selectedGroupId = this.form.get('parameterGroupId')?.value ?? null;
+        if (selectedGroupId != null && !groups.some(group => group.id === selectedGroupId)) {
+          this.form.patchValue({ parameterGroupId: null }, { emitEvent: false });
+        }
+      },
+      error: (error) => {
+        console.error('Failed to load parameter groups', error);
+        this.parameterGroups = [];
+      }
+    });
+  }
+}

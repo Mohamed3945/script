@@ -1,6 +1,6 @@
 ﻿.page {
-  padding: 14px 18px 18px;
-  min-height: calc(100vh - 58px);
+  padding: 6px 8px 8px;
+  min-height: calc(100vh - 48px);
 }
 
 .page__container {
@@ -8,7 +8,7 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
 }
 
 .workspace {
@@ -16,17 +16,17 @@
   grid-template-columns: minmax(0, 1fr) 0;
   grid-template-areas: 'main drawer';
   gap: 0;
-  height: calc(100vh - 142px);
-  min-height: 640px;
+  height: calc(100vh - 84px);
+  min-height: 560px;
   border: 1px solid var(--border-soft);
-  border-radius: 10px;
+  border-radius: 8px;
   background: #f4f7fa;
   overflow: hidden;
   transition: grid-template-columns 300ms ease;
 }
 
 .workspace--drawer-open {
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr) 250px;
 }
 
 .workspace__main {
@@ -37,7 +37,7 @@
   min-height: 0;
   background: #f9fbfd;
   border-right: 1px solid var(--border-soft);
-  padding: 10px;
+  padding: 6px;
 }
 
 .workspace__main-topbar {
@@ -47,22 +47,22 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 6px;
+  margin-bottom: 6px;
   border: 1px solid var(--border-soft);
-  border-radius: 8px;
+  border-radius: 6px;
   background: #eef3f7;
-  padding: 8px;
+  padding: 4px 6px;
 }
 
 .workspace__main-topbar-child {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   border: 1px solid var(--border-soft);
-  border-radius: 7px;
+  border-radius: 6px;
   background: #f8fbfe;
-  padding: 6px 8px;
+  padding: 4px 6px;
 }
 
 .workspace__drawer {
@@ -76,19 +76,24 @@
 
 .drawer__body {
   height: 100%;
+  min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
   background: #f2f5f8;
   display: flex;
   flex-direction: column;
+  gap: 8px;
+  padding: 8px;
 }
 
 .drawer__toggle-tab {
   position: absolute;
-  left: -28px;
+  left: -24px;
   top: 50%;
   transform: translateY(-50%);
-  width: 28px;
-  height: 64px;
+  width: 24px;
+  height: 56px;
   border-radius: 8px 0 0 8px;
   background: #dde5ee;
   border: 1px solid var(--border-soft);
@@ -116,19 +121,35 @@
 }
 
 .drawer__toggle-glyph {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   color: #32465a;
   line-height: 1;
 }
 
 .drawer-section {
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 8px;
+  min-height: 220px;
+  max-height: calc(50% - 4px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  background: #fff;
+}
+
+.drawer-section:only-child {
+  min-height: 0;
+  max-height: none;
+  flex: 1 1 auto;
 }
 
 .drawer-section__title {
-  margin: 0 0 6px;
+  margin: 0 0 2px;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
@@ -148,20 +169,22 @@
   align-items: center;
   gap: 8px;
   width: 100%;
-  padding: 6px 8px;
+  min-height: 34px;
+  padding: 5px 6px;
+  border: 1px solid var(--border-soft);
   border-radius: 4px;
+  background: #fff;
+  color: var(--text-main);
   font-size: 12px;
   font-weight: 600;
   font-family: Consolas, 'Courier New', monospace;
-  background: #fff;
-  border: 1px solid var(--border-soft);
-  color: var(--text-main);
+  text-align: left;
   cursor: pointer;
-  transition: background 120ms ease, border-color 120ms ease;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 
 .drawer-action + .drawer-action {
-  margin-top: 4px;
+  margin-top: 3px;
 }
 
 .drawer-action:hover:not([disabled]) {
@@ -182,7 +205,10 @@
 
 .drawer-action__icon {
   width: 28px;
-  display: inline-block;
+  flex: 0 0 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 10px;
   letter-spacing: 0.05em;
   color: #4c6278;
@@ -196,21 +222,21 @@
 }
 
 .drawer-action__label {
-  text-align: left;
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .machine-pill {
-  margin-top: 4px;
-  border: 1px solid var(--border-soft);
-  border-radius: 4px;
-  background: #fff;
-  padding: 6px 8px;
+  margin-top: 3px;
   display: flex;
   flex-direction: column;
   gap: 2px;
+  padding: 5px 6px;
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  background: #fff;
 }
 
 .machine-pill__code {
@@ -229,14 +255,14 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: calc(100vh - 210px);
-  background: #fff;
+  min-height: calc(100vh - 140px);
   border: 1px solid var(--border-soft);
-  border-radius: 8px;
+  border-radius: 6px;
+  background: #fff;
 }
 
 .steps-shell__toolbar-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -246,36 +272,138 @@
 
 .steps-shell__content {
   flex: 1;
-  overflow: auto;
   min-height: 0;
-  padding: 10px;
+  overflow: auto;
+  padding: 4px;
 }
 
 :host ::ng-deep app-recipe-detail-header .actions {
-  display: none;
+  display: flex;
 }
 
 :host ::ng-deep app-recipe-detail-header .header-card {
-  border-radius: 8px;
-  padding: 14px 16px;
+  border-radius: 6px;
+  padding: 8px 10px;
   box-shadow: none;
 }
 
 :host ::ng-deep app-recipe-detail-header .header-card h1 {
-  font-size: 20px;
   margin: 0;
+  font-size: 16px;
+  line-height: 1.2;
 }
 
 :host ::ng-deep app-recipe-detail-header .header-card p {
-  margin: 4px 0 0;
-  font-size: 12px;
+  margin: 2px 0 0;
+  font-size: 11px;
   font-family: Consolas, 'Courier New', monospace;
 }
+
+/* Context overlays */
+
+.context-menu,
+.cell-action-bar {
+  position: fixed;
+  z-index: 40;
+  border: 1px solid #71859a;
+  background: #dbe4ec;
+  box-shadow: 0 6px 14px rgba(8, 18, 28, 0.3);
+}
+
+.context-menu {
+  min-width: 190px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 5px;
+  border-radius: 3px;
+}
+
+.context-menu__action,
+.cell-action-bar__action {
+  appearance: none;
+  border: 1px solid #8da1b6;
+  background: linear-gradient(180deg, #f6fafc 0%, #d6e0e9 100%);
+  color: #1f3346;
+  font-family: Consolas, 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.context-menu__action {
+  border-radius: 2px;
+  padding: 7px 8px;
+  text-align: left;
+}
+
+.cell-action-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 3px;
+  padding: 5px;
+  border-radius: 3px;
+  min-width: 190px;
+}
+
+.cell-action-bar__action {
+  border-radius: 2px;
+  padding: 7px 8px;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-align: left;
+}
+
+.context-menu__action:hover:not(:disabled),
+.cell-action-bar__action:hover:not(:disabled) {
+  background: linear-gradient(180deg, #ffffff 0%, #c8d5e2 100%);
+  border-color: #6e8499;
+}
+
+.context-menu__action--danger {
+  color: #8f2f2a;
+  border-color: #b88f8d;
+  background: linear-gradient(180deg, #fef6f5 0%, #ead4d2 100%);
+}
+
+.context-menu__action--danger:hover:not(:disabled) {
+  background: linear-gradient(180deg, #fffefe 0%, #ddc0bd 100%);
+  border-color: #ac7b77;
+}
+
+.menu-action__icon {
+  width: 28px;
+  flex: 0 0 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #8aa0b4;
+  border-radius: 2px;
+  background: #ebf1f6;
+  color: #324b63;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  padding: 3px 0;
+}
+
+.context-menu__action:disabled,
+.cell-action-bar__action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Responsive */
 
 @media (max-width: 1280px) {
   .workspace,
   .workspace--drawer-open {
-    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-columns: minmax(0, 1fr) 230px;
   }
 }
 
@@ -310,6 +438,16 @@
 
   .workspace__drawer {
     min-height: 0;
+  }
+
+  .drawer__body {
+    height: auto;
+    max-height: min(65vh, 560px);
+  }
+
+  .drawer-section {
+    min-height: 180px;
+    max-height: 280px;
   }
 
   .drawer__toggle-tab,

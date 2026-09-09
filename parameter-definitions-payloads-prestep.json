@@ -1,0 +1,502 @@
+﻿[
+    {
+        "name":  "RTC Controller",
+        "alias":  "RTC_TempCtrl",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation"
+    },
+    {
+        "name":  "Auto PreExec Recipe",
+        "alias":  "PreExec_RcpName",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation"
+    },
+    {
+        "name":  "Auto PreExec After",
+        "alias":  "PreExec_RcpTime",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "s"
+    },
+    {
+        "name":  "Neutralization Recipe",
+        "alias":  "Neutr_RcpName",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation"
+    },
+    {
+        "name":  "Skip Neutralization",
+        "alias":  "Neutr_Trigger",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation"
+    },
+    {
+        "name":  "Lamps Out Table",
+        "alias":  "LampOut_Table",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation"
+    },
+    {
+        "name":  "Peak Temp Detection Enabled",
+        "alias":  "Temp_PeakIntlk",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation"
+    },
+    {
+        "name":  "Mean Peak Temp Upper Limit",
+        "alias":  "Temp_MeanUpper",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "degC"
+    },
+    {
+        "name":  "Mean Peak Temp Lower Limit",
+        "alias":  "Temp_MeanLower",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "degC"
+    },
+    {
+        "name":  "Mean Peak Temp Sharpness Upper Limit",
+        "alias":  "Temp_SharpnessUpper",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "s"
+    },
+    {
+        "name":  "Mean Peak Temp Sharpness Lower Limit",
+        "alias":  "Temp_SharpnessLower",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "s"
+    },
+    {
+        "name":  "P1MNOM Usage Mode",
+        "alias":  "HdrP1MNOMMode",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation"
+    },
+    {
+        "name":  "Include Probe 1",
+        "alias":  "Temp_Probe1",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation"
+    },
+    {
+        "name":  "Include Probe 2",
+        "alias":  "Temp_Probe2",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation"
+    },
+    {
+        "name":  "Include Probe 3",
+        "alias":  "Temp_Probe3",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation"
+    },
+    {
+        "name":  "Include Probe 4",
+        "alias":  "Temp_Probe4",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation"
+    },
+    {
+        "name":  "Include Probe 5",
+        "alias":  "Temp_Probe5",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation"
+    },
+    {
+        "name":  "Include Probe 6",
+        "alias":  "Temp_Probe6",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation"
+    },
+    {
+        "name":  "Include Probe 7",
+        "alias":  "Temp_Probe7",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation"
+    },
+    {
+        "name":  "Temp Offset Table 1",
+        "alias":  "TempOffsetTable",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation"
+    },
+    {
+        "name":  "Temp Offset 1",
+        "alias":  "TempOff_Offset01",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "degC"
+    },
+    {
+        "name":  "Temp Offset 2",
+        "alias":  "TempOff_Offset02",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "degC"
+    },
+    {
+        "name":  "Temp Offset 3",
+        "alias":  "TempOff_Offset03",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "degC"
+    },
+    {
+        "name":  "Temp Offset 4",
+        "alias":  "TempOff_Offset04",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "degC"
+    },
+    {
+        "name":  "Temp Offset 5",
+        "alias":  "TempOff_Offset05",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "degC"
+    },
+    {
+        "name":  "Temp Offset 6",
+        "alias":  "TempOff_Offset06",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "degC"
+    },
+    {
+        "name":  "Temp Offset 7",
+        "alias":  "TempOff_Offset07",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "degC"
+    },
+    {
+        "name":  "Temp Offset 8",
+        "alias":  "TempOff_Offset08",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "degC"
+    },
+    {
+        "name":  "Temp Offset Table 2",
+        "alias":  "TempOffsetTable2",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation"
+    },
+    {
+        "name":  "Proc Uniformity Ctrl",
+        "alias":  "Uni_Ctrl",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation"
+    },
+    {
+        "name":  "1st Outer Zone Index",
+        "alias":  "Uni_1stIndex",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation"
+    },
+    {
+        "name":  "Uniformity Fault Tol",
+        "alias":  "Uni_FaultTol",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Uniformity Warning Tol",
+        "alias":  "Uni_WarnTol",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Pressure Offset Table",
+        "alias":  "PresOffsetTable",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation"
+    },
+    {
+        "name":  "O2 Recipe Ctrl",
+        "alias":  "HdrO2An_CtrlMode",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation"
+    },
+    {
+        "name":  "O2 Warning Level",
+        "alias":  "HdrO2An_WarnLevel",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "ppm"
+    },
+    {
+        "name":  "O2 Fault Level",
+        "alias":  "HdrO2An_FaultLevel",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "ppm"
+    },
+    {
+        "name":  "O2 Flow Low",
+        "alias":  "HdrO2An_FlowLow",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "sccm"
+    },
+    {
+        "name":  "O2 Flow High",
+        "alias":  "HdrO2An_FlowHigh",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "sccm"
+    },
+    {
+        "name":  "Entry Power On Mode",
+        "alias":  "EntryPowerOn",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation"
+    },
+    {
+        "name":  "Heat on Pins Time",
+        "alias":  "Preheat_Time",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "s"
+    },
+    {
+        "name":  "Wafer Load Delay Time",
+        "alias":  "LoadDelay_Time",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "s"
+    },
+    {
+        "name":  "Heat on Pins Power Zone 1",
+        "alias":  "VoltPre_Zone01",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Heat on Pins Power Zone 2",
+        "alias":  "VoltPre_Zone02",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Heat on Pins Power Zone 3",
+        "alias":  "VoltPre_Zone03",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Heat on Pins Power Zone 4",
+        "alias":  "VoltPre_Zone04",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Heat on Pins Power Zone 5",
+        "alias":  "VoltPre_Zone05",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Heat on Pins Power Zone 6",
+        "alias":  "VoltPre_Zone06",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Heat on Pins Power Zone 7",
+        "alias":  "VoltPre_Zone07",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Heat on Pins Power Zone 8",
+        "alias":  "VoltPre_Zone08",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Heat on Pins Power Zone 9",
+        "alias":  "VoltPre_Zone09",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Heat on Pins Power Zone 10",
+        "alias":  "VoltPre_Zone10",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Heat on Pins Power Zone 11",
+        "alias":  "VoltPre_Zone11",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Heat on Pins Power Zone 12",
+        "alias":  "VoltPre_Zone12",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Heat on Pins Power Zone 13",
+        "alias":  "VoltPre_Zone13",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Heat on Pins Power Zone 14",
+        "alias":  "VoltPre_Zone14",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Heat on Pins Power Zone 15",
+        "alias":  "VoltPre_Zone15",
+        "valueType":  "NUMBER",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation",
+        "unit":  "percent"
+    },
+    {
+        "name":  "Rotation Home Control",
+        "alias":  "MagLev_HomeRotCmd",
+        "valueType":  "ENUM",
+        "requiredOnStep":  true,
+        "stepType":  "PRESTEP",
+        "description":  "Inferred from provided PRESTEP PARAM instantiation"
+    }
+]

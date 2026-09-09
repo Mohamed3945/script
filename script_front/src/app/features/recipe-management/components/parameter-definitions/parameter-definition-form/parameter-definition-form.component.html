@@ -28,15 +28,18 @@
     </div>
 
     <div class="field field--full">
-      <label>Default value JSON</label>
+      <label>Default value</label>
       <textarea rows="4" formControlName="defaultValueJson"></textarea>
     </div>
 
-    <div class="field checkbox-field">
-      <label>
-        <input type="checkbox" formControlName="requiredOnStep" />
-        Required on step
-      </label>
+    <div class="field">
+      <label>Group</label>
+      <select formControlName="parameterGroupId">
+        <option [ngValue]="null">None</option>
+        <option *ngFor="let group of parameterGroups" [ngValue]="group.id ?? null">
+          {{ group.name }}
+        </option>
+      </select>
     </div>
 
     <div class="field">
@@ -44,6 +47,13 @@
       <select formControlName="stepType">
         <option *ngFor="let type of stepTypes" [value]="type">{{ type }}</option>
       </select>
+    </div>
+
+    <div class="field checkbox-field">
+      <label>
+        <input type="checkbox" formControlName="requiredOnStep" />
+        Required on step
+      </label>
     </div>
 
     <div class="field field--full">

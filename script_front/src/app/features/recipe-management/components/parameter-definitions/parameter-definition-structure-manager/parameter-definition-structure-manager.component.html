@@ -1,0 +1,91 @@
+<section class="structure-page">
+  <div class="structure-toolbar">
+    <div class="structure-toolbar__left">
+      <label>Step type</label>
+      <select [ngModel]="stepType" (ngModelChange)="onStepTypeChanged($event)">
+        <option value="STEP">STEP</option>
+        <option value="PRESTEP">PRESTEP</option>
+        <option value="ENDPOINT">ENDPOINT</option>
+      </select>
+    </div>
+
+    <div class="structure-toolbar__right">
+      <input
+        type="text"
+        [(ngModel)]="newGroupName"
+        placeholder="New group name" />
+      <button type="button" class="btn" (click)="onCreateGroup()">Add group</button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="structure-loading">
+    Loading structure...
+  </div>
+
+  <div class="group-list" *ngIf="!loading">
+    <div class="group-card" *ngFor="let groupVm of groups; let groupIndex = index">
+      <div class="group-card__header">
+        <div class="group-card__title">
+          <span>{{ groupVm.group.name }}</span>
+        </div>
+
+        <div class="group-card__actions">
+          <button type="button" class="btn btn--secondary btn--tiny" (click)="moveGroupUp(groupIndex)">
+            ↑
+          </button>
+          <button type="button" class="btn btn--secondary btn--tiny" (click)="moveGroupDown(groupIndex)">
+            ↓
+          </button>
+        </div>
+      </div>
+
+      <div class="definition-list">
+        <div
+          class="definition-row"
+          [class.definition-row--dragging]="draggingDefinitionId === definition.id"
+          draggable="true"
+          (dragstart)="onDefinitionDragStart(groupVm, definition)"
+          (dragover)="onDefinitionDragOver($event)"
+          (drop)="onDefinitionDrop(groupVm, defIndex)"
+          (dragend)="onDefinitionDragEnd()"
+          *ngFor="let definition of groupVm.definitions; let defIndex = index">
+          <div class="definition-row__main">
+            <span class="definition-row__drag-handle" aria-hidden="true">⋮⋮</span>
+            <span class="definition-row__name">{{ definition.name }}</span>
+            <span class="definition-row__meta">{{ definition.valueType }}</span>
+          </div>
+
+          <div class="definition-row__actions">
+            <button type="button" class="btn btn--secondary btn--tiny" (click)="moveDefinitionUp(groupVm, defIndex)">
+              ↑
+            </button>
+            <button type="button" class="btn btn--secondary btn--tiny" (click)="moveDefinitionDown(groupVm, defIndex)">
+              ↓
+            </button>
+
+            <select
+              class="definition-row__move-select"
+              [ngModel]="moveTargetsByDefinitionId[definition.id!] ?? null"
+              (ngModelChange)="moveTargetsByDefinitionId[definition.id!] = $event">
+              <option [ngValue]="null">Move to group</option>
+              <option *ngFor="let target of availableTargetGroups(groupVm.group.id)" [ngValue]="target.id ?? null">
+                {{ target.name }}
+              </option>
+            </select>
+
+            <button
+              type="button"
+              class="btn btn--secondary btn--tiny"
+              (click)="moveDefinitionToGroup(definition, groupVm)">
+              Move
+            </button>
+          </div>
+        </div>
+
+        <div class="definition-row definition-row--empty" *ngIf="groupVm.definitions.length === 0">
+          No definition in this group.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -33,12 +33,12 @@ export class DefinitionListPageComponent implements OnInit {
   }
 
   createDefinition(): void {
-    this.router.navigate(['/configuration-definitions/new']);
+    this.router.navigate(['/reference-data/configuration-definitions/new']);
   }
 
   editDefinition(definition: ConfigurationDefinition): void {
     if (!definition.id) return;
-    this.router.navigate(['/configuration-definitions', definition.id, 'edit']);
+    this.router.navigate(['/reference-data/configuration-definitions', definition.id, 'edit']);
   }
 
   deleteDefinition(definition: ConfigurationDefinition): void {

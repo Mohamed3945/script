@@ -32,6 +32,9 @@ public class StepParameterGridRowDto {
 
     private Long parameterDefinitionId;
     private String parameterDefinitionName;
+    private String parameterGroup;
+    private Integer parameterGroupOrder;
+    private String parameterDefinitionPath;
     private ParameterValueType parameterValueType;
 
     private String labelOverride;

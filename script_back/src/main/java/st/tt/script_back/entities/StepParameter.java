@@ -24,6 +24,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import st.tt.script_back.enums.ActivationState;
+import st.tt.script_back.enums.ComputationStatus;
 import st.tt.script_back.enums.ParameterValueType;
 import java.util.ArrayList;
 import java.util.List;
@@ -88,6 +89,16 @@ public class StepParameter {
     @Column(name = "locked_by_golden", nullable = false)
     private boolean lockedByGolden = false;
 
+    @Column(name = "user_modified", nullable = false)
+    private boolean userModified = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "computation_status")
+    private ComputationStatus computationStatus;
+
+    @Column(name = "computed_at")
+    private Instant computedAt;
+
     @Column(name = "create_time", nullable = false, updatable = false)
     private Instant createTime;
 
@@ -127,6 +138,10 @@ public class StepParameter {
 
         if (this.valueJson != null && this.definition.getValueType() == ParameterValueType.ENUM) {
             throw new IllegalStateException("ENUM parameters must use selected_option_id, not value_json.");
+        }
+
+        if (this.computationStatus != null && this.lockedByGolden) {
+            throw new IllegalStateException("Un parametre calcule ne peut pas etre lockedByGolden.");
         }
 
         Instant now = Instant.now();

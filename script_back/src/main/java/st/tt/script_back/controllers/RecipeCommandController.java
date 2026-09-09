@@ -12,9 +12,12 @@ import org.springframework.web.bind.annotation.RestController;
 import st.tt.script_back.dto.RecipeDto;
 import st.tt.script_back.dto.StepDto;
 import st.tt.script_back.dto.StepParameterDto;
+import st.tt.script_back.dto.DuplicateGoldenRecipeRequestDto;
+import st.tt.script_back.enums.StepKind;
 import st.tt.script_back.services.RecipeService;
 import st.tt.script_back.services.StepParameterService;
 import st.tt.script_back.services.StepService;
+import java.util.List;
 
 /**
  * RecipeCommandController class for the backend domain.
@@ -59,6 +62,12 @@ public class RecipeCommandController {
         return recipeService.createRecipe(request, resultProfileId);
     }
 
+    @PostMapping("/recipes/duplicate-golden")
+    public RecipeDto duplicateGoldenRecipe(
+            @RequestBody DuplicateGoldenRecipeRequestDto request) {
+        return recipeService.duplicateGoldenRecipe(request);
+    }
+
     /**
      * Executes updateRecipe.
      *
@@ -98,6 +107,20 @@ public class RecipeCommandController {
     }
 
     /**
+     * Creates one step parameter across all steps of a recipe filtered by step kind.
+     *
+     * Example:
+     * POST /api/recipes/12/step-parameters/propagate?stepKind=STEP
+     * POST /api/recipes/12/step-parameters/propagate?stepKind=PRESTEP
+     */
+    @PostMapping("/recipes/{recipeId}/step-parameters/propagate")
+    public List<StepParameterDto> propagateStepParameterToRecipeSteps(
+            @PathVariable Long recipeId,
+            @RequestParam StepKind stepKind,
+            @RequestBody StepParameterDto request) {
+        return stepParameterService.createRecipeWideStepParameter(recipeId, stepKind, request);
+    }
+    /**
      * Executes updateStep.
      *
      * @param stepId input argument consumed by updateStep.
@@ -136,6 +159,20 @@ public class RecipeCommandController {
     }
 
     /**
+     * Executes createStepParametersBulk.
+     *
+     * @param stepId input argument consumed by createStepParametersBulk.
+     * @param requests input argument consumed by createStepParametersBulk.
+     * @return computed List<StepParameterDto> result returned by createStepParametersBulk.
+     */
+    @PostMapping("/steps/{stepId}/parameters/bulk")
+    public List<StepParameterDto> createStepParametersBulk(
+            @PathVariable Long stepId,
+            @RequestBody List<StepParameterDto> requests) {
+        return stepParameterService.createStepParametersBulk(stepId, requests);
+    }
+
+    /**
      * Executes updateStepParameter.
      *
      * @param stepParameterId input argument consumed by updateStepParameter.
@@ -157,5 +194,18 @@ public class RecipeCommandController {
     @DeleteMapping("/step-parameters/{stepParameterId}")
     public void deleteStepParameter(@PathVariable Long stepParameterId) {
         stepParameterService.deleteStepParameter(stepParameterId);
+    }
+
+    /**
+     * Executes deleteRecipeWideStepParameter.
+     *
+     * @param recipeId input argument consumed by deleteRecipeWideStepParameter.
+     * @param definitionId input argument consumed by deleteRecipeWideStepParameter.
+     */
+    @DeleteMapping("/recipes/{recipeId}/parameter-definitions/{definitionId}")
+    public void deleteRecipeWideStepParameter(
+            @PathVariable Long recipeId,
+            @PathVariable Long definitionId) {
+        stepParameterService.deleteRecipeWideStepParameter(recipeId, definitionId);
     }
 }

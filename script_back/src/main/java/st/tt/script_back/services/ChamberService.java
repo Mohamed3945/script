@@ -19,7 +19,6 @@ import st.tt.script_back.mappers.ChamberCapabilityMapper;
 import st.tt.script_back.mappers.ChamberConfigurationMapper;
 import st.tt.script_back.mappers.ChamberMapper;
 import st.tt.script_back.repositories.ChamberCapabilityRepository;
-import st.tt.script_back.repositories.ChamberConfigurationRepository;
 import st.tt.script_back.repositories.ChamberRepository;
 import st.tt.script_back.repositories.MachineRepository;
 
@@ -29,7 +28,6 @@ public class ChamberService {
     private final ChamberRepository chamberRepository;
     private final MachineRepository machineRepository;
     private final ChamberCapabilityRepository chamberCapabilityRepository;
-    private final ChamberConfigurationRepository chamberConfigurationRepository;
     private final ChamberMapper chamberMapper;
     private final ChamberCapabilityMapper chamberCapabilityMapper;
     private final ChamberConfigurationMapper chamberConfigurationMapper;
@@ -38,14 +36,13 @@ public class ChamberService {
             ChamberRepository chamberRepository,
             MachineRepository machineRepository,
             ChamberCapabilityRepository chamberCapabilityRepository,
-            ChamberConfigurationRepository chamberConfigurationRepository,
             ChamberMapper chamberMapper,
             ChamberCapabilityMapper chamberCapabilityMapper,
             ChamberConfigurationMapper chamberConfigurationMapper) {
         this.chamberRepository = chamberRepository;
         this.machineRepository = machineRepository;
         this.chamberCapabilityRepository = chamberCapabilityRepository;
-        this.chamberConfigurationRepository = chamberConfigurationRepository;
+        
         this.chamberMapper = chamberMapper;
         this.chamberCapabilityMapper = chamberCapabilityMapper;
         this.chamberConfigurationMapper = chamberConfigurationMapper;

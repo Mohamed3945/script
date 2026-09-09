@@ -1,10 +1,13 @@
 package st.tt.script_back.dto;
 
+import java.time.Instant;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import st.tt.script_back.enums.ActivationState;
+import st.tt.script_back.enums.ComputationStatus;
 
 /**
  * StepParameterDto class for the backend domain.
@@ -20,6 +23,8 @@ public class StepParameterDto {
     private Long stepId;
     private Long definitionId;
     private String definitionName;
+    private String parameterGroup;
+    private Integer parameterGroupOrder;
     private Long parentStepParameterId;
     private Long parentOrderScope;
     private Integer orderIndex;
@@ -29,4 +34,8 @@ public class StepParameterDto {
     private String selectedOptionLabel;
     private ActivationState activationState;
     private boolean lockedByGolden;
+    private boolean userModified;
+    private ComputationStatus computationStatus;
+    private Instant computedAt;
+    private boolean computed;
 }

@@ -1,10 +1,11 @@
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { Recipe } from '../../../../core/models/recipe.model';
 import { RecipeKind } from '../../../../core/models/recipe-kind.model';
-import { RecipeApiService } from '../../../../core/services/recipe-api.service';
+import { DuplicateGoldenRecipePayload, RecipeApiService } from '../../../../core/services/recipe-api.service';
 import { buildRecipeDetailRouteByKind } from '../../../../core/utils/recipe-route.util';
 import { RecipeListTableComponent } from '../../components/recipes/recipe-list-table/recipe-list-table.component';
 import { RecipeListFiltersComponent } from '../../components/recipes/recipe-list-filters/recipe-list-filters.component';
@@ -12,7 +13,7 @@ import { RecipeListFiltersComponent } from '../../components/recipes/recipe-list
 @Component({
   selector: 'app-recipe-list-page',
   standalone: true,
-  imports: [NgIf, AsyncPipe, RecipeListTableComponent, RecipeListFiltersComponent],
+  imports: [NgIf, NgFor, AsyncPipe, FormsModule, RecipeListTableComponent, RecipeListFiltersComponent],
   templateUrl: './recipe-list-page.component.html',
   styleUrl: './recipe-list-page.component.scss'
 })
@@ -22,9 +23,19 @@ import { RecipeListFiltersComponent } from '../../components/recipes/recipe-list
 export class RecipeListPageComponent implements OnInit {
   recipes$ = new BehaviorSubject<Recipe[]>([]);
   loading$ = new BehaviorSubject<boolean>(false);
+  duplicateLoading$ = new BehaviorSubject<boolean>(false);
 
   currentKind: RecipeKind | '' = '';
   currentGolden?: boolean;
+
+  showCreateGoldenModal = false;
+  createMode: 'SCRATCH' | 'EXISTING' = 'SCRATCH';
+  availableGoldenRecipes: Recipe[] = [];
+  selectedSourceGoldenId: number | null = null;
+  targetGoldenName = '';
+  includeFormulas = false;
+  includeRequiredCapabilities = false;
+  includeRequiredConfigurations = false;
 
   constructor(
     private recipeApiService: RecipeApiService,
@@ -70,14 +81,88 @@ export class RecipeListPageComponent implements OnInit {
    * Handles the onCreateGolden workflow.
    */
   onCreateGolden(): void {
-    this.router.navigate(['/recipes/new']);
+    this.openCreateGoldenModal();
   }
 
-  /**
-   * Handles the onCreateDerived workflow.
-   */
-  onCreateDerived(): void {
-    this.router.navigate(['/recipes/new-derived']);
+  openCreateGoldenModal(): void {
+    this.showCreateGoldenModal = true;
+    this.createMode = 'SCRATCH';
+    this.selectedSourceGoldenId = null;
+    this.targetGoldenName = '';
+    this.includeFormulas = false;
+    this.includeRequiredCapabilities = false;
+    this.includeRequiredConfigurations = false;
+
+    this.recipeApiService.getRecipes({ recipeKind: 'GOLDEN' }).subscribe({
+      next: (recipes) => {
+        this.availableGoldenRecipes = recipes;
+      },
+      error: (error) => {
+        console.error('Failed to load golden recipes for duplication', error);
+        this.availableGoldenRecipes = [];
+      }
+    });
+  }
+
+  closeCreateGoldenModal(): void {
+    if (this.duplicateLoading$.value) {
+      return;
+    }
+    this.showCreateGoldenModal = false;
+  }
+
+  confirmCreateGolden(): void {
+    if (this.createMode === 'SCRATCH') {
+      this.showCreateGoldenModal = false;
+      this.router.navigate(['/recipes/new']);
+      return;
+    }
+
+    if (!this.selectedSourceGoldenId || this.targetGoldenName.trim().length === 0) {
+      return;
+    }
+
+    const payload: DuplicateGoldenRecipePayload = {
+      sourceGoldenRecipeId: this.selectedSourceGoldenId,
+      targetName: this.targetGoldenName.trim(),
+      includeFormulas: this.includeFormulas,
+      includeRequiredCapabilities: this.includeRequiredCapabilities,
+      includeRequiredConfigurations: this.includeRequiredConfigurations
+    };
+
+    this.duplicateLoading$.next(true);
+    this.recipeApiService.duplicateGoldenRecipe(payload).subscribe({
+      next: (recipe) => {
+        this.duplicateLoading$.next(false);
+        this.showCreateGoldenModal = false;
+        if (!recipe.id) {
+          this.loadRecipes();
+          return;
+        }
+        this.router.navigate(buildRecipeDetailRouteByKind(recipe.id, recipe.recipeKind));
+      },
+      error: (error) => {
+        console.error('Failed to duplicate golden recipe', error);
+        this.duplicateLoading$.next(false);
+      }
+    });
+  }
+
+  get canSubmitCreateGolden(): boolean {
+    if (this.createMode === 'SCRATCH') {
+      return true;
+    }
+    return this.selectedSourceGoldenId != null
+      && this.targetGoldenName.trim().length > 0
+      && !this.duplicateLoading$.value;
+  }
+
+  onOpenCapabilitiesCatalog(): void {
+    this.router.navigate(['/reference-data/capabilities']);
+  }
+
+  onCreateCapability(): void {
+    this.router.navigate(['/reference-data/capabilities/new']);
   }
 
   /**

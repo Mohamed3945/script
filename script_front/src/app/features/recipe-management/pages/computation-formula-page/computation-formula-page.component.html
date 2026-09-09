@@ -1,0 +1,213 @@
+<section class="page">
+  <div class="page__container">
+    <header class="page-header">
+      <div>
+        <h1>Computation formulas</h1>
+        <p *ngIf="recipeId">Golden recipe #{{ recipeId }}<span *ngIf="recipeName"> - {{ recipeName }}</span></p>
+      </div>
+      <a class="btn" [routerLink]="['/recipes/golden', recipeId]">Back to recipe</a>
+    </header>
+
+    <div class="layout" *ngIf="(formulas$ | async) as formulas">
+      <section class="card matrix-card">
+        <div class="matrix-header">
+          <h2>Recipe matrix picker</h2>
+          <div class="picker-mode">
+            <button
+              type="button"
+              class="btn btn--ghost"
+              [class.is-active]="selectionMode === 'target'"
+              (click)="setSelectionMode('target')"
+            >
+              Pick target
+            </button>
+            <button
+              type="button"
+              class="btn btn--ghost"
+              [class.is-active]="selectionMode === 'reference'"
+              (click)="setSelectionMode('reference', activeReferenceIndex)"
+            >
+              Pick terme
+            </button>
+            <label class="mode-ref-index" *ngIf="selectionMode === 'reference'">
+              Terme
+              <select [value]="activeReferenceIndex" (change)="setSelectionMode('reference', +$any($event.target).value)">
+                <option *ngFor="let refCtrl of referencesArray.controls; let i = index" [value]="i">#{{ i + 1 }}</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="matrix-hint" *ngIf="selectionMode === 'target'">
+          Click a cell to set the target parameter.
+        </div>
+        <div class="matrix-hint" *ngIf="selectionMode === 'reference'">
+          Click a cell to set terme #{{ activeReferenceIndex + 1 }}.
+        </div>
+
+        <div class="matrix-empty" *ngIf="matrixRows.length === 0 || matrixColumns.length === 0">
+          No matrix data available for this recipe.
+        </div>
+
+        <div class="matrix-wrapper" *ngIf="matrixRows.length > 0 && matrixColumns.length > 0">
+          <table class="matrix-table">
+            <thead>
+              <tr>
+                <th>Parameter</th>
+                <th *ngFor="let column of matrixColumns">
+                  <div class="matrix-step-code">{{ column.stepCode }}</div>
+                  <div class="matrix-step-name" *ngIf="column.stepName">{{ column.stepName }}</div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let row of matrixRows; let i = index">
+                <tr class="matrix-group-row" *ngIf="i === 0 || row.parameterGroup !== matrixRows[i - 1].parameterGroup">
+                  <td [attr.colspan]="matrixColumns.length + 1">
+                    {{ row.parameterGroup }}
+                  </td>
+                </tr>
+
+                <tr
+                  [class.matrix-row--target]="row.definitionPath === form.get('targetDefinitionPath')?.value"
+                >
+                <td class="matrix-parameter-col">
+                  <div class="matrix-parameter-head">
+                    <span class="matrix-parameter-name">{{ row.parameterLabel }}</span>
+                    <span class="target-badge" *ngIf="row.definitionPath === form.get('targetDefinitionPath')?.value">TARGET</span>
+                  </div>
+                  <div class="matrix-parameter-path">{{ row.definitionPath }}</div>
+                </td>
+                <td
+                  *ngFor="let column of matrixColumns"
+                  [class.matrix-cell--selected-target]="row.cellsByStepId[column.stepId]?.stepCode === form.get('targetStepCode')?.value && row.cellsByStepId[column.stepId]?.definitionPath === form.get('targetDefinitionPath')?.value"
+                  [class.matrix-cell--selected-term]="row.cellsByStepId[column.stepId] && isCellSelectedAsReference(row.cellsByStepId[column.stepId]!)"
+                >
+                  <ng-container *ngIf="row.cellsByStepId[column.stepId] as cell; else missingCell">
+                    <div class="matrix-cell-content">
+                      <div class="matrix-cell-value">-</div>
+
+                      <ng-container *ngFor="let formula of formulas">
+                        <button
+                          type="button"
+                          class="matrix-cell-formula-badge"
+                          *ngIf="formula.targetStepCode === cell.stepCode && formula.targetDefinitionPath === cell.definitionPath"
+                          (click)="onFormulaBadgeClick(formula, cell, $event)"
+                          [title]="formula.label || formula.expression"
+                        >
+                          {{ formula.label || formula.expression }}
+                        </button>
+                      </ng-container>
+
+                      <button type="button" class="matrix-cell-action" (click)="pickFromMatrix(cell)">
+                        {{ selectionMode === 'target' ? '+ set target' : '+ terme #' + (activeReferenceIndex + 1) }}
+                      </button>
+                    </div>
+                  </ng-container>
+                  <ng-template #missingCell>
+                    <span class="matrix-cell-missing">-</span>
+                  </ng-template>
+                </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card list-card">
+        <h2>Existing formulas</h2>
+
+        <div class="list-empty" *ngIf="formulas.length === 0">
+          No formula yet for this recipe.
+        </div>
+
+        <div class="formula-list">
+          <article class="formula-item" *ngFor="let formula of formulas" (click)="editFormula(formula)">
+            <div class="formula-item__title">{{ formula.label || formula.expression }}</div>
+            <div class="formula-item__target">{{ formula.targetStepCode }} [{{ formula.targetDefinitionPath }}]</div>
+            <div class="formula-item__expr">{{ formula.expression }}</div>
+            <div class="formula-item__actions">
+              <button class="btn btn--ghost" type="button" (click)="$event.stopPropagation(); editFormula(formula)">Edit</button>
+              <button class="btn btn--danger" type="button" (click)="$event.stopPropagation(); deleteFormula(formula)">Delete</button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="card form-card">
+        <h2>{{ editingFormulaId ? ('Edit formula #' + editingFormulaId) : 'Create formula' }}</h2>
+
+        <form [formGroup]="form" (ngSubmit)="submit()" class="formula-form">
+          <div class="grid two-cols">
+            <label class="full">
+              Target parameter
+              <div class="resolved-value" [class.is-empty]="!form.get('targetStepCode')?.value || !form.get('targetDefinitionPath')?.value">
+                {{ getTargetSelectionLabel() }}
+              </div>
+              <button type="button" class="btn btn--ghost btn--inline" (click)="setSelectionMode('target')">Pick in matrix ↑</button>
+              <input type="hidden" formControlName="targetSelection" />
+              <input type="hidden" formControlName="targetStepCode" />
+              <input type="hidden" formControlName="targetDefinitionPath" />
+            </label>
+
+            <label class="full">
+              Expression
+              <input type="text" formControlName="expression" placeholder="{1} + {2} / 100 - 1000" />
+              <span class="field-hint">Use {{ '{' }}1{{ '}' }}, {{ '{' }}2{{ '}' }}... to reference slots defined below.</span>
+            </label>
+
+            <label>
+              Rounding mode
+              <select formControlName="roundingMode">
+                <option *ngFor="let mode of roundingModes" [ngValue]="mode">{{ mode }}</option>
+              </select>
+            </label>
+            <label>
+              Decimals
+              <input type="number" formControlName="decimals" placeholder="2" />
+            </label>
+
+            <label class="full">
+              Label
+              <input type="text" formControlName="label" placeholder="e.g. Ramp = Tend - Tstart" />
+            </label>
+          </div>
+
+          <div class="references">
+            <div class="references__header">
+              <h3>Termes</h3>
+            </div>
+
+            <div formArrayName="references" class="reference-list">
+              <div class="reference-row" *ngFor="let refCtrl of referencesArray.controls; let i = index" [formGroupName]="i">
+                <div class="reference-row__header">
+                  <span>Terme #{{ refCtrl.get('slot')?.value || (i + 1) }}</span>
+                  <button type="button" class="btn btn--danger btn--compact" (click)="removeReference(i)" [disabled]="referencesArray.length <= 1">✕</button>
+                </div>
+
+                <div class="resolved-value" [class.is-empty]="!refCtrl.get('stepCode')?.value || !refCtrl.get('definitionPath')?.value">
+                  {{ getReferenceSelectionLabel(i) }}
+                </div>
+
+                <button type="button" class="btn btn--ghost btn--inline" (click)="setSelectionMode('reference', i)">Pick in matrix ↑</button>
+
+                <input type="hidden" formControlName="sourceSelection" />
+                <input type="hidden" formControlName="slot" />
+                <input type="hidden" formControlName="stepCode" />
+                <input type="hidden" formControlName="definitionPath" />
+              </div>
+            </div>
+
+            <button type="button" class="btn btn--ghost" (click)="addReference()">Add reference</button>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn--full" type="submit" [disabled]="loading$ | async">{{ editingFormulaId ? 'Save changes' : 'Create formula' }}</button>
+            <button class="btn btn--ghost" type="button" (click)="cancelEdit()" *ngIf="editingFormulaId">Cancel</button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </div>
+</section>

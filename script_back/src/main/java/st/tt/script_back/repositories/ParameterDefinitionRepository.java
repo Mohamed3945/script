@@ -2,7 +2,7 @@ package st.tt.script_back.repositories;
 
 import java.util.Optional;
 import java.util.List;
-import st.tt.script_back.enums.StepType;
+import st.tt.script_back.enums.ParameterScope;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -17,7 +17,7 @@ public interface ParameterDefinitionRepository extends JpaRepository<ParameterDe
 
     Optional<ParameterDefinition> findByCode(String code);
 
-    Optional<ParameterDefinition> findByCodeAndStepType(String code, StepType stepType);
+    Optional<ParameterDefinition> findByCodeAndStepType(String code, ParameterScope stepType);
 
     boolean existsByCode(String code);
 
@@ -25,6 +25,17 @@ public interface ParameterDefinitionRepository extends JpaRepository<ParameterDe
 
     Optional<ParameterDefinition> findByName(String name);
 
-    List<ParameterDefinition> findByStepTypeOrderByNameAsc(StepType stepType);
+    List<ParameterDefinition> findByStepTypeOrderByNameAsc(ParameterScope stepType);
+
+    Optional<ParameterDefinition> findTopByParameterGroupRefIdOrderByOrderIndexInGroupDesc(Long parameterGroupId);
+
+    List<ParameterDefinition> findByParameterGroupRefIdOrderByOrderIndexInGroupAsc(Long parameterGroupId);
+
+    List<ParameterDefinition> findByIdIn(List<Long> ids);
+
+    List<ParameterDefinition> findByConfigurationDefinitionIdOrderByNameAsc(
+        Long configurationDefinitionId);
 
 }
+
+

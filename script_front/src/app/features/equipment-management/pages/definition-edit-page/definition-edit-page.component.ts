@@ -37,7 +37,7 @@ export class DefinitionEditPageComponent implements OnInit {
     if (!current?.id) return;
 
     this.configurationDefinitionApiService.updateDefinition(current.id, definition).subscribe({
-      next: () => this.router.navigate(['/configuration-definitions']),
+      next: () => this.router.navigate(['/reference-data/configuration-definitions', current.id]),
       error: (error) => console.error('Failed to update definition', error)
     });
   }

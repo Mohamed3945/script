@@ -92,6 +92,13 @@ public class ParameterDependencyRuleService {
                         + request.getRequiredSourceActivationOptionId() + " not found"));
         }
 
+        validateRuleCombinationNotDuplicate(
+                source.getId(),
+                triggerOption.getId(),
+                requiredSourceActivationOption != null ? requiredSourceActivationOption.getId() : null,
+                target.getId(),
+                null);
+
         ParameterDependencyRule rule = parameterDependencyRuleMapper.toEntity(request);
         rule.setSourceDefinition(source);
         rule.setTargetDefinition(target);
@@ -175,6 +182,13 @@ public class ParameterDependencyRuleService {
                         + request.getRequiredSourceActivationOptionId() + " not found"));
         }
 
+        validateRuleCombinationNotDuplicate(
+                source.getId(),
+                triggerOption.getId(),
+                requiredSourceActivationOption != null ? requiredSourceActivationOption.getId() : null,
+                target.getId(),
+                existing.getId());
+
         parameterDependencyRuleMapper.updateEntityFromDto(request, existing);
         existing.setSourceDefinition(source);
         existing.setTargetDefinition(target);
@@ -214,5 +228,24 @@ public class ParameterDependencyRuleService {
 
         List<Long> recipeIds = stepParameterRepository.findDistinctRecipeIdsByDefinitionIds(nonNullDefinitionIds);
         recipeIds.forEach(parameterActivationService::recalculateRecipeActivationStates);
+    }
+
+    private void validateRuleCombinationNotDuplicate(
+            Long sourceDefinitionId,
+            Long triggerOptionId,
+            Long requiredSourceActivationOptionId,
+            Long targetDefinitionId,
+            Long excludeId) {
+        boolean duplicateExists = parameterDependencyRuleRepository.existsRuleCombination(
+                sourceDefinitionId,
+                triggerOptionId,
+                requiredSourceActivationOptionId,
+                targetDefinitionId,
+                excludeId);
+
+        if (duplicateExists) {
+            throw new IllegalArgumentException(
+                    "A dependency rule with the same source, trigger option, activation context and target already exists.");
+        }
     }
 }

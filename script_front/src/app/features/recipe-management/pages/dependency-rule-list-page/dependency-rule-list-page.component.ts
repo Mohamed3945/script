@@ -55,21 +55,21 @@ export class DependencyRuleListPageComponent implements OnInit {
    * Handles the onCreate workflow.
    */
   onCreate(): void {
-    this.router.navigate(['/recipes/rules/new']);
+    this.router.navigate(['/rules/new']);
   }
 
   /**
    * Handles the onView workflow.
    */
   onView(rule: ParameterDependencyRuleView): void {
-    this.router.navigate(['/recipes/rules', rule.id]);
+    this.router.navigate(['/rules', rule.id]);
   }
 
   /**
    * Handles the onEdit workflow.
    */
   onEdit(rule: ParameterDependencyRuleView): void {
-    this.router.navigate(['/recipes/rules', rule.id, 'edit']);
+    this.router.navigate(['/rules', rule.id, 'edit']);
   }
 
   /**

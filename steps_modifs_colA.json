@@ -1,0 +1,358 @@
+﻿[
+    {
+        "Row":  1,
+        "A":  "PARAMETER"
+    },
+    {
+        "Row":  2,
+        "A":  "Name"
+    },
+    {
+        "Row":  3,
+        "A":  "Chambers"
+    },
+    {
+        "Row":  4,
+        "A":  "Mode"
+    },
+    {
+        "Row":  5,
+        "A":  "Max Time (s)"
+    },
+    {
+        "Row":  6,
+        "A":  "RTC Mode"
+    },
+    {
+        "Row":  7,
+        "A":  "Temp Target (degC)"
+    },
+    {
+        "Row":  8,
+        "A":  "Temp Start (degC)"
+    },
+    {
+        "Row":  9,
+        "A":  "Temp Ramp Rate (degC/s)"
+    },
+    {
+        "Row":  10,
+        "A":  "Temp Offset 1 (degC)"
+    },
+    {
+        "Row":  11,
+        "A":  "Temp Offset 2 (degC)"
+    },
+    {
+        "Row":  12,
+        "A":  "Temp Offset 3 (degC)"
+    },
+    {
+        "Row":  13,
+        "A":  "Temp Offset 4 (degC)"
+    },
+    {
+        "Row":  14,
+        "A":  "Temp Offset 5 (degC)"
+    },
+    {
+        "Row":  15,
+        "A":  "Temp Offset 6 (degC)"
+    },
+    {
+        "Row":  16,
+        "A":  "Temp Offset 7 (degC)"
+    },
+    {
+        "Row":  17,
+        "A":  "Temp Offset 8 (degC)"
+    },
+    {
+        "Row":  18,
+        "A":  "Offset Table"
+    },
+    {
+        "Row":  19,
+        "A":  "Voltage Control"
+    },
+    {
+        "Row":  20,
+        "A":  "Voltage Target (%)"
+    },
+    {
+        "Row":  21,
+        "A":  "Voltage Start (%)"
+    },
+    {
+        "Row":  22,
+        "A":  "Voltage Ramp Rate (%/s)"
+    },
+    {
+        "Row":  23,
+        "A":  "Voltage Zone 1 (%)"
+    },
+    {
+        "Row":  24,
+        "A":  "Voltage Zone 2 (%)"
+    },
+    {
+        "Row":  25,
+        "A":  "Voltage Zone 3 (%)"
+    },
+    {
+        "Row":  26,
+        "A":  "Voltage Zone 4 (%)"
+    },
+    {
+        "Row":  27,
+        "A":  "Voltage Zone 5 (%)"
+    },
+    {
+        "Row":  28,
+        "A":  "Voltage Zone 6 (%)"
+    },
+    {
+        "Row":  29,
+        "A":  "Voltage Zone 7 (%)"
+    },
+    {
+        "Row":  30,
+        "A":  "Voltage Zone 8 (%)"
+    },
+    {
+        "Row":  31,
+        "A":  "Voltage Zone 9 (%)"
+    },
+    {
+        "Row":  32,
+        "A":  "Voltage Zone 10 (%)"
+    },
+    {
+        "Row":  33,
+        "A":  "Voltage Zone 11 (%)"
+    },
+    {
+        "Row":  34,
+        "A":  "Voltage Zone 12 (%)"
+    },
+    {
+        "Row":  35,
+        "A":  "Voltage Zone 13 (%)"
+    },
+    {
+        "Row":  36,
+        "A":  "Voltage Zone 14 (%)"
+    },
+    {
+        "Row":  37,
+        "A":  "Voltage Zone 15 (%)"
+    },
+    {
+        "Row":  38,
+        "A":  "Range Check"
+    },
+    {
+        "Row":  39,
+        "A":  "Lamp Group 1 Minimum (%)"
+    },
+    {
+        "Row":  40,
+        "A":  "Lamp Group 1 Maximum (%)"
+    },
+    {
+        "Row":  41,
+        "A":  "Lamp Group 2 Minimum (%)"
+    },
+    {
+        "Row":  42,
+        "A":  "Lamp Group 2 Maximum (%)"
+    },
+    {
+        "Row":  43,
+        "A":  "Lamp Group 3 Minimum (%)"
+    },
+    {
+        "Row":  44,
+        "A":  "Lamp Group 3 Maximum (%)"
+    },
+    {
+        "Row":  45,
+        "A":  "Lamp Group 4 Minimum (%)"
+    },
+    {
+        "Row":  46,
+        "A":  "Lamp Group 4 Maximum (%)"
+    },
+    {
+        "Row":  47,
+        "A":  "Lamp Group 5 Minimum (%)"
+    },
+    {
+        "Row":  48,
+        "A":  "Lamp Group 5 Maximum (%)"
+    },
+    {
+        "Row":  49,
+        "A":  "Lamp Group 6 Minimum (%)"
+    },
+    {
+        "Row":  50,
+        "A":  "Lamp Group 6 Maximum (%)"
+    },
+    {
+        "Row":  51,
+        "A":  "Lamp Group 7 Minimum (%)"
+    },
+    {
+        "Row":  52,
+        "A":  "Lamp Group 7 Maximum (%)"
+    },
+    {
+        "Row":  53,
+        "A":  "Range Check Vcmd usage"
+    },
+    {
+        "Row":  54,
+        "A":  "Press Mode"
+    },
+    {
+        "Row":  55,
+        "A":  "Press SP (torr)"
+    },
+    {
+        "Row":  56,
+        "A":  "Press Ramp (torr/s)"
+    },
+    {
+        "Row":  57,
+        "A":  "Apply offset"
+    },
+    {
+        "Row":  58,
+        "A":  "Pos SP (%)"
+    },
+    {
+        "Row":  59,
+        "A":  "Pos Ramp (%/s)"
+    },
+    {
+        "Row":  60,
+        "A":  "Lift Pins Pos"
+    },
+    {
+        "Row":  61,
+        "A":  "Speed Cmd"
+    },
+    {
+        "Row":  62,
+        "A":  "Speed (RPM)"
+    },
+    {
+        "Row":  63,
+        "A":  "O2 Step Ctrl"
+    },
+    {
+        "Row":  64,
+        "A":  "Concentration Warn (ppm)"
+    },
+    {
+        "Row":  65,
+        "A":  "Concentration Fault (ppm)"
+    },
+    {
+        "Row":  66,
+        "A":  "Emissivity Limits Min"
+    },
+    {
+        "Row":  67,
+        "A":  "Emissivity Limits Max"
+    },
+    {
+        "Row":  68,
+        "A":  "RPS Power Setpoint (W)"
+    },
+    {
+        "Row":  69,
+        "A":  "Inc Temp 1 in Calc"
+    },
+    {
+        "Row":  70,
+        "A":  "Inc Temp 2 in Calc"
+    },
+    {
+        "Row":  71,
+        "A":  "Inc Temp 3 in Calc"
+    },
+    {
+        "Row":  72,
+        "A":  "Inc Temp 4 in Calc"
+    },
+    {
+        "Row":  73,
+        "A":  "Inc Temp 5 in Calc"
+    },
+    {
+        "Row":  74,
+        "A":  "Inc Temp 6 in Calc"
+    },
+    {
+        "Row":  75,
+        "A":  "Inc Temp 7 in Calc"
+    },
+    {
+        "Row":  76,
+        "A":  "Inc Temp 8 in Calc"
+    },
+    {
+        "Row":  77,
+        "A":  "Sel Oxide Gas Destination"
+    },
+    {
+        "Row":  78,
+        "A":  "H2HIGH Flow Set (slm)"
+    },
+    {
+        "Row":  79,
+        "A":  "H2HIGH Flow Ramp (slm/s)"
+    },
+    {
+        "Row":  80,
+        "A":  "O2HIGH Flow Set (slm)"
+    },
+    {
+        "Row":  81,
+        "A":  "O2HIGH Flow Ramp (slm/s)"
+    },
+    {
+        "Row":  82,
+        "A":  "N2 Flow Set (slm)"
+    },
+    {
+        "Row":  83,
+        "A":  "N2 Flow Ramp (slm/s)"
+    },
+    {
+        "Row":  84,
+        "A":  "Endpoint"
+    },
+    {
+        "Row":  85,
+        "A":  "PressCtrl Status"
+    },
+    {
+        "Row":  86,
+        "A":  "Pressure (torr)"
+    },
+    {
+        "Row":  87,
+        "A":  "Temp in Spec"
+    },
+    {
+        "Row":  88,
+        "A":  "Temperature (deg)"
+    },
+    {
+        "Row":  89,
+        "A":  "Setpoint in Spec"
+    }
+]

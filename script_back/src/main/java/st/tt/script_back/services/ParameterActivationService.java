@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,9 +40,13 @@ import st.tt.script_back.repositories.StepRepository;
 @Service
 public class ParameterActivationService {
 
+    private static final int INACTIVE_SOURCE_PRIORITY = Integer.MAX_VALUE;
+
     private static final Comparator<RuleMatch> RULE_MATCH_COMPARATOR = Comparator
             .comparingInt(RuleMatch::priority)
             .thenComparingInt(match -> effectRank(match.effect()));
+
+    private static final ConcurrentHashMap<Long, ReentrantLock> RECIPE_LOCKS = new ConcurrentHashMap<>();
 
     private final StepRepository stepRepository;
     private final StepParameterRepository stepParameterRepository;
@@ -79,6 +85,9 @@ public class ParameterActivationService {
      */
     @Transactional
     public void recalculateRecipeActivationStates(Long recipeId) {
+        ReentrantLock recipeLock = RECIPE_LOCKS.computeIfAbsent(recipeId, ignored -> new ReentrantLock());
+        recipeLock.lock();
+        try {
         List<Step> steps = stepRepository.findByRecipeIdOrderByOrderIndexAsc(recipeId);
         if (steps.isEmpty()) {
             return;
@@ -88,13 +97,11 @@ public class ParameterActivationService {
         List<StepParameter> parameters = stepParameterRepository
                 .findByStepIdsWithDefinitionAndSelectedOption(stepIds);
 
-        Map<Long, StepParameter> parameterById = new HashMap<>();
         Map<Long, List<StepParameter>> parametersByDefinitionId = new HashMap<>();
         Map<Long, Map<Long, StepParameter>> parametersByStepAndDefinition = new HashMap<>();
         Set<Long> definitionIds = new HashSet<>();
 
         for (StepParameter parameter : parameters) {
-            parameterById.put(parameter.getId(), parameter);
             Long definitionId = parameter.getDefinition() != null ? parameter.getDefinition().getId() : null;
             Long stepId = parameter.getStep() != null ? parameter.getStep().getId() : null;
             if (definitionId != null) {
@@ -115,57 +122,105 @@ public class ParameterActivationService {
             rulesBySourceDefinitionId.put(definitionId, sourceRules);
         }
 
-        Map<Long, List<RuleMatch>> matchesByTargetParameterId = new HashMap<>();
+        Map<Long, ActivationState> currentStates = new HashMap<>();
+        for (StepParameter parameter : parameters) {
+            ActivationState initialState = parameter.getActivationState() == null
+                    ? ActivationState.ENABLED
+                    : parameter.getActivationState();
+            currentStates.put(parameter.getId(), initialState);
+        }
 
-        for (StepParameter sourceParameter : parameters) {
-            if (sourceParameter.getSelectedOption() == null || sourceParameter.getDefinition() == null) {
-                continue;
+        int maxIterations = Math.max(1, parameters.size());
+        for (int iteration = 0; iteration < maxIterations; iteration++) {
+            Map<Long, List<RuleMatch>> matchesByTargetParameterId = new HashMap<>();
+
+            for (StepParameter sourceParameter : parameters) {
+                if (sourceParameter.getDefinition() == null) {
+                    continue;
+                }
+
+                Long sourceDefinitionId = sourceParameter.getDefinition().getId();
+                List<ParameterDependencyRule> rules = rulesBySourceDefinitionId.getOrDefault(sourceDefinitionId, List.of());
+
+                ActivationState sourceState = currentStates.getOrDefault(sourceParameter.getId(), ActivationState.ENABLED);
+                if (sourceState == ActivationState.DISABLED) {
+                    for (ParameterDependencyRule rule : rules) {
+                        List<StepParameter> targetParameters = resolveTargets(rule, sourceParameter, parametersByDefinitionId,
+                                parametersByStepAndDefinition);
+                        for (StepParameter targetParameter : targetParameters) {
+                            matchesByTargetParameterId
+                                    .computeIfAbsent(targetParameter.getId(), ignored -> new ArrayList<>())
+                                    .add(new RuleMatch(RuleEffect.DISABLE, INACTIVE_SOURCE_PRIORITY));
+                        }
+                    }
+                    continue;
+                }
+
+                if (sourceParameter.getSelectedOption() == null || sourceParameter.getSelectedOption().getId() == null) {
+                    continue;
+                }
+
+                Long selectedOptionId = sourceParameter.getSelectedOption().getId();
+
+                for (ParameterDependencyRule rule : rules) {
+                    if (rule.getTriggerOption() == null || rule.getTriggerOption().getId() == null) {
+                        continue;
+                    }
+                    if (!selectedOptionId.equals(rule.getTriggerOption().getId())) {
+                        continue;
+                    }
+                    if (!matchesRequiredSourceActivationContext(
+                            rule,
+                            sourceParameter,
+                            parametersByStepAndDefinition)) {
+                        continue;
+                    }
+
+                    List<StepParameter> targetParameters = resolveTargets(rule, sourceParameter, parametersByDefinitionId,
+                            parametersByStepAndDefinition);
+                    for (StepParameter targetParameter : targetParameters) {
+                        matchesByTargetParameterId
+                                .computeIfAbsent(targetParameter.getId(), ignored -> new ArrayList<>())
+                                .add(new RuleMatch(rule.getEffect(), rule.getPriority()));
+                    }
+                }
             }
 
-            Long sourceDefinitionId = sourceParameter.getDefinition().getId();
-            Long selectedOptionId = sourceParameter.getSelectedOption().getId();
-            List<ParameterDependencyRule> rules = rulesBySourceDefinitionId.getOrDefault(sourceDefinitionId, List.of());
+            Map<Long, ActivationState> nextStates = new HashMap<>();
+            for (StepParameter parameter : parameters) {
+                List<RuleMatch> matches = matchesByTargetParameterId.getOrDefault(parameter.getId(), List.of());
 
-            for (ParameterDependencyRule rule : rules) {
-                if (rule.getTriggerOption() == null || rule.getTriggerOption().getId() == null) {
-                    continue;
-                }
-                if (!selectedOptionId.equals(rule.getTriggerOption().getId())) {
-                    continue;
-                }
-                if (!matchesRequiredSourceActivationContext(rule, sourceParameter)) {
-                    continue;
+                ActivationState newState;
+                if (matches.isEmpty()) {
+                    // No matching rule means this parameter must stay editable by default.
+                    newState = ActivationState.ENABLED;
+                } else {
+                    RuleMatch winningMatch = matches.stream()
+                            .sorted(RULE_MATCH_COMPARATOR.reversed())
+                            .findFirst()
+                            .orElse(null);
+                    newState = winningMatch == null ? ActivationState.ENABLED : toActivationState(winningMatch.effect());
                 }
 
-                List<StepParameter> targetParameters = resolveTargets(rule, sourceParameter, parametersByDefinitionId,
-                        parametersByStepAndDefinition);
-                for (StepParameter targetParameter : targetParameters) {
-                    matchesByTargetParameterId
-                            .computeIfAbsent(targetParameter.getId(), ignored -> new ArrayList<>())
-                            .add(new RuleMatch(rule.getEffect(), rule.getPriority()));
-                }
+                nextStates.put(parameter.getId(), newState);
             }
+
+            if (nextStates.equals(currentStates)) {
+                currentStates = nextStates;
+                break;
+            }
+
+            currentStates = nextStates;
         }
 
         for (StepParameter parameter : parameters) {
-            List<RuleMatch> matches = matchesByTargetParameterId.getOrDefault(parameter.getId(), List.of());
-
-            ActivationState newState;
-            if (matches.isEmpty()) {
-                // No matching rule means this parameter must stay editable by default.
-                newState = ActivationState.ENABLED;
-            } else {
-                RuleMatch winningMatch = matches.stream()
-                        .sorted(RULE_MATCH_COMPARATOR.reversed())
-                        .findFirst()
-                        .orElse(null);
-                newState = winningMatch == null ? ActivationState.ENABLED : toActivationState(winningMatch.effect());
-            }
-
-            parameter.setActivationState(newState);
+            parameter.setActivationState(currentStates.getOrDefault(parameter.getId(), ActivationState.ENABLED));
         }
 
         stepParameterRepository.saveAll(parameters);
+        } finally {
+            recipeLock.unlock();
+        }
     }
 
     /**
@@ -248,21 +303,55 @@ public class ParameterActivationService {
      */
     private static boolean matchesRequiredSourceActivationContext(
             ParameterDependencyRule rule,
-            StepParameter sourceParameter) {
+            StepParameter sourceParameter,
+            Map<Long, Map<Long, StepParameter>> parametersByStepAndDefinition) {
         if (rule.getRequiredSourceActivationOption() == null
                 || rule.getRequiredSourceActivationOption().getId() == null) {
             return true;
         }
 
-        if (sourceParameter.getParentStepParameter() == null
-                || sourceParameter.getParentStepParameter().getSelectedOption() == null
-                || sourceParameter.getParentStepParameter().getSelectedOption().getId() == null) {
+        Long requiredId = rule.getRequiredSourceActivationOption().getId();
+
+        if (sourceParameter.getParentStepParameter() != null
+                && sourceParameter.getParentStepParameter().getSelectedOption() != null
+                && sourceParameter.getParentStepParameter().getSelectedOption().getId() != null
+                && requiredId.equals(sourceParameter.getParentStepParameter().getSelectedOption().getId())) {
+            return true;
+        }
+
+        Long sourceStepId = sourceParameter.getStep() != null ? sourceParameter.getStep().getId() : null;
+        if (sourceStepId == null) {
             return false;
         }
 
-        Long requiredId = rule.getRequiredSourceActivationOption().getId();
-        Long parentSelectedOptionId = sourceParameter.getParentStepParameter().getSelectedOption().getId();
-        return requiredId.equals(parentSelectedOptionId);
+        // Context option can be carried by any sibling parameter in the same step.
+        boolean matchedOnSameStep = parametersByStepAndDefinition
+                .getOrDefault(sourceStepId, Map.of())
+                .values()
+                .stream()
+                .anyMatch(parameter -> parameter.getSelectedOption() != null
+                        && parameter.getSelectedOption().getId() != null
+                        && requiredId.equals(parameter.getSelectedOption().getId()));
+        if (matchedOnSameStep) {
+            return true;
+        }
+
+        Long requiredDefinitionId = rule.getRequiredSourceActivationOption().getDefinition() != null
+                ? rule.getRequiredSourceActivationOption().getDefinition().getId()
+                : null;
+
+        if (requiredDefinitionId == null) {
+            return false;
+        }
+
+        StepParameter contextParameter = parametersByStepAndDefinition
+                .getOrDefault(sourceStepId, Map.of())
+                .get(requiredDefinitionId);
+
+        return contextParameter != null
+                && contextParameter.getSelectedOption() != null
+                && contextParameter.getSelectedOption().getId() != null
+                && requiredId.equals(contextParameter.getSelectedOption().getId());
     }
 
     /**

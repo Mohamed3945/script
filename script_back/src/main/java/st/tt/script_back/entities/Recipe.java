@@ -27,8 +27,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import st.tt.script_back.enums.RecipeIapcMode;
 import st.tt.script_back.enums.RecipeKind;
+import st.tt.script_back.enums.RecipeResumableMode;
 import st.tt.script_back.enums.RecipeStatus;
+import st.tt.script_back.enums.RecipeWaferMode;
 
 /**
  * Recipe class for the backend domain.
@@ -79,6 +82,39 @@ public class Recipe {
 
     @Column(nullable = false)
     private boolean frozen = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "wafer", nullable = false)
+    private RecipeWaferMode wafer = RecipeWaferMode.PRESENT;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "iapc", nullable = false)
+    private RecipeIapcMode iapc = RecipeIapcMode.NO;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "resumable", nullable = false)
+    private RecipeResumableMode resumable = RecipeResumableMode.NO;
+
+    @Column(name = "chamber_type")
+    private String chamberType;
+
+    @Column(name = "access_display_groups")
+    private String accessDisplayGroups = "ALL";
+
+    @Column(name = "access_modify_groups")
+    private String accessModifyGroups = "ALL";
+
+    @Column(name = "uda_file")
+    private String udaFile;
+
+    @Column(name = "type")
+    private String type;
+
+    @Column(name = "max_time")
+    private Integer maxTime;
+
+    @Column(name = "template")
+    private String template;
 
     @Column(name = "create_time", nullable = false, updatable = false)
     private Instant createTime;

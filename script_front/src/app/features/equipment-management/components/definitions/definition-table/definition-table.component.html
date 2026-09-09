@@ -1,16 +1,28 @@
 <div class="table-card">
-  <table *ngIf="definitions.length > 0; else emptyState" class="table">
-    <thead>
-      <tr>
-        <th>Code</th>
-        <th>Name</th>
-        <th>Value type</th>
-        <th>Unit</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let definition of definitions">
+  <div class="table-toolbar">
+    <input
+      class="table-filter"
+      type="text"
+      placeholder="Filter configuration definitions..."
+      [value]="filterText"
+      (input)="onFilterChange($any($event.target).value)"
+    />
+    <div class="table-meta">{{ filteredDefinitions.length }} item(s)</div>
+  </div>
+
+  <div class="table-scroll" *ngIf="filteredDefinitions.length > 0; else emptyState">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Value type</th>
+          <th>Unit</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let definition of pagedDefinitions">
         <td>{{ definition.code }}</td>
         <td>{{ definition.name }}</td>
         <td>{{ definition.valueType }}</td>
@@ -19,9 +31,16 @@
           <button class="link-btn" (click)="edit.emit(definition)">Edit</button>
           <button class="link-btn link-btn--danger" (click)="delete.emit(definition)">Delete</button>
         </td>
-      </tr>
-    </tbody>
-  </table>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-pagination" *ngIf="filteredDefinitions.length > 0">
+    <button class="pager-btn" (click)="previousPage()" [disabled]="currentPage === 1">Previous</button>
+    <span>Page {{ currentPage }} / {{ totalPages }}</span>
+    <button class="pager-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+  </div>
 
   <ng-template #emptyState>
     <div class="empty-state">No configuration definitions found.</div>

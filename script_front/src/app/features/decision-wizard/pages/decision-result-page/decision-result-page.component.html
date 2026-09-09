@@ -10,39 +10,104 @@
       </p>
     </div>
 
-    <div class="result-page__grid">
-      <app-result-info-card
-        title="Golden Recipe"
-        icon="ti ti-file-check"
-        theme="blue"
-        [value]="result.code || '—'"
-        [subValue]="result.goldenRecipeId ? 'ID: ' + result.goldenRecipeId : '—'">
-      </app-result-info-card>
+    <div class="result-page__decision-card">
+      <div class="decision-card__header">
+        <div>
+          <div class="decision-card__title">Compact matrix legend</div>
+          <div class="decision-card__value">{{ result.code || ('Recipe #' + (result.goldenRecipeId ?? '—')) }}</div>
+          <div class="decision-card__meta">
+            Static 5-step x 5-parameter visual guide with coherent sample values and full cell color semantics.
+          </div>
+        </div>
 
-      <app-result-info-card
-        title="Compatible Machines"
-        icon="ti ti-cpu"
-        theme="gold"
-        [value]="machineChoices.length ? machineChoices.length + (machineChoices.length > 1 ? ' matches' : ' match') : '—'"
-        [subValue]="machineChoices.length ? machineChoices[0].label : 'No machine provided by wizard result'">
-      </app-result-info-card>
+        <button
+          type="button"
+          class="validate-btn"
+          [class.validate-btn--active]="goldenValidated"
+          (click)="toggleGoldenValidated()">
+          {{ goldenValidated ? 'Golden validée' : 'Valider cette Golden' }}
+        </button>
+      </div>
+
+      <div class="decision-card__body">
+        <div class="preview-table-wrapper">
+          <table class="preview-table">
+            <thead>
+              <tr>
+                <th class="param-col">Parameter</th>
+                <th *ngFor="let stepCode of legendColumns">{{ stepCode }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of legendRows">
+                <td class="param-col">{{ row.parameterName }}</td>
+                <td
+                  *ngFor="let cell of row.cells"
+                  class="preview-cell"
+                  [ngClass]="'cell--' + getCellStateClass(cell)">
+                  <span>{{ cell.selectedOptionLabel || cell.displayValue || '—' }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="legend-explainer">
+          <div class="legend-explainer__item" *ngFor="let item of colorLegendItems">
+            <span class="legend-swatch" [ngClass]="'legend-swatch--' + item.cssClass"></span>
+            <div class="legend-explainer__copy">
+              <div class="legend-explainer__title">{{ item.title }}</div>
+              <div class="legend-explainer__text">{{ item.description }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="result-page__selection-grid">
-      <app-result-golden-selection-card
-        [goldenRecipeId]="result.goldenRecipeId"
-        [goldenCode]="result.code"
-        [selected]="goldenValidated"
-        (selectedChange)="onGoldenValidatedChange($event)">
-      </app-result-golden-selection-card>
+    <div class="result-page__panels">
+      <div class="result-panel">
+        <h3>Capability required</h3>
+        <div *ngIf="requirements$ | async as requirements; else noReq">
+          <div class="chips" *ngIf="requirements.requiredCapabilities.length > 0; else noReqItems">
+            <span class="chip" *ngFor="let capability of requirements.requiredCapabilities">
+              {{ capability.capabilityCode }}
+            </span>
+          </div>
+          <ng-template #noReqItems>
+            <div class="empty-note">No required capability on this golden.</div>
+          </ng-template>
+        </div>
+        <ng-template #noReq>
+          <div class="empty-note">Loading required capabilities...</div>
+        </ng-template>
+      </div>
 
-      <app-result-info-card
-        title="Customization flow"
-        icon="ti ti-layout-sidebar-right-expand"
-        theme="blue"
-        value="Save and customize"
-        subValue="The derived recipe opens directly. Compatible machines stay visible on the right drawer.">
-      </app-result-info-card>
+      <div class="result-panel">
+        <h3>Compatible machines</h3>
+        <div class="machine-list" *ngIf="machineChoices.length > 0; else noMachine">
+          <label
+            class="machine-item"
+            *ngFor="let machine of machineChoices"
+            [class.machine-item--selected]="machine.id === selectedMachineId">
+            <input
+              type="radio"
+              name="machine-choice"
+              [checked]="machine.id === selectedMachineId"
+              (change)="onMachineSelected(machine.id)" />
+            <div class="machine-item__content">
+              <div class="machine-item__code">{{ machine.code }}</div>
+              <div class="machine-item__label">{{ machine.label }}</div>
+            </div>
+          </label>
+        </div>
+        <ng-template #noMachine>
+          <div class="empty-note">No compatible machine returned for this golden/capability set.</div>
+        </ng-template>
+      </div>
+    </div>
+
+    <div class="result-page__flow-hint">
+      Save and customize opens the derived recipe directly. Compatible machines stay available in the right drawer.
     </div>
 
     <app-result-summary [selections]="(selections$ | async) ?? []"></app-result-summary>

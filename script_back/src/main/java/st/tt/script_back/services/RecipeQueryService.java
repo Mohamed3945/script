@@ -1,8 +1,12 @@
 package st.tt.script_back.services;
 
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.ArrayDeque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,29 +17,35 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
+import st.tt.script_back.dto.ParameterOptionDto;
 import st.tt.script_back.dto.RecipeDto;
 import st.tt.script_back.dto.RecipeMatrixCellDto;
 import st.tt.script_back.dto.RecipeMatrixColumnDto;
 import st.tt.script_back.dto.RecipeMatrixDto;
+import st.tt.script_back.dto.RecipeMatrixEndpointCellDto;
 import st.tt.script_back.dto.RecipeMatrixRowDto;
 import st.tt.script_back.dto.StepDto;
 import st.tt.script_back.dto.StepParameterDto;
 import st.tt.script_back.dto.StepParameterGridRowDto;
-import st.tt.script_back.dto.ParameterOptionDto;
 import st.tt.script_back.entities.ParameterOption;
+import st.tt.script_back.entities.ComputationFormula;
 import st.tt.script_back.entities.Recipe;
 import st.tt.script_back.entities.Step;
+import st.tt.script_back.entities.StepEndpoint;
+import st.tt.script_back.entities.StepEndpointCondition;
 import st.tt.script_back.entities.StepParameter;
 import st.tt.script_back.enums.ActivationState;
 import st.tt.script_back.enums.ParameterValueType;
 import st.tt.script_back.enums.RecipeKind;
 import st.tt.script_back.enums.StepKind;
-import st.tt.script_back.mappers.RecipeMapper;
 import st.tt.script_back.mappers.ParameterOptionMapper;
+import st.tt.script_back.mappers.RecipeMapper;
 import st.tt.script_back.mappers.StepMapper;
 import st.tt.script_back.mappers.StepParameterMapper;
+import st.tt.script_back.repositories.ComputationFormulaRepository;
 import st.tt.script_back.repositories.ParameterOptionRepository;
 import st.tt.script_back.repositories.RecipeRepository;
+import st.tt.script_back.repositories.StepEndpointRepository;
 import st.tt.script_back.repositories.StepParameterRepository;
 import st.tt.script_back.repositories.StepRepository;
 
@@ -50,29 +60,21 @@ public class RecipeQueryService {
 
     private final RecipeRepository recipeRepository;
     private final StepRepository stepRepository;
+    private final StepEndpointRepository stepEndpointRepository;
     private final StepParameterRepository stepParameterRepository;
+    private final ComputationFormulaRepository computationFormulaRepository;
     private final ParameterOptionRepository parameterOptionRepository;
     private final RecipeMapper recipeMapper;
     private final ParameterOptionMapper parameterOptionMapper;
     private final StepMapper stepMapper;
     private final StepParameterMapper stepParameterMapper;
 
-    /**
-     * Executes RecipeQueryService.
-     *
-     * @param recipeRepository input argument consumed by RecipeQueryService.
-     * @param stepRepository input argument consumed by RecipeQueryService.
-     * @param stepParameterRepository input argument consumed by RecipeQueryService.
-     * @param recipeMapper input argument consumed by RecipeQueryService.
-     * @param parameterOptionRepository input argument consumed by RecipeQueryService.
-     * @param parameterOptionMapper input argument consumed by RecipeQueryService.
-     * @param stepMapper input argument consumed by RecipeQueryService.
-     * @param stepParameterMapper input argument consumed by RecipeQueryService.
-     */
     public RecipeQueryService(
             RecipeRepository recipeRepository,
             StepRepository stepRepository,
+            StepEndpointRepository stepEndpointRepository,
             StepParameterRepository stepParameterRepository,
+            ComputationFormulaRepository computationFormulaRepository,
             RecipeMapper recipeMapper,
             ParameterOptionRepository parameterOptionRepository,
             ParameterOptionMapper parameterOptionMapper,
@@ -80,7 +82,9 @@ public class RecipeQueryService {
             StepParameterMapper stepParameterMapper) {
         this.recipeRepository = recipeRepository;
         this.stepRepository = stepRepository;
+        this.stepEndpointRepository = stepEndpointRepository;
         this.stepParameterRepository = stepParameterRepository;
+        this.computationFormulaRepository = computationFormulaRepository;
         this.recipeMapper = recipeMapper;
         this.parameterOptionRepository = parameterOptionRepository;
         this.parameterOptionMapper = parameterOptionMapper;
@@ -88,13 +92,6 @@ public class RecipeQueryService {
         this.stepParameterMapper = stepParameterMapper;
     }
 
-    /**
-     * Executes getRecipes.
-     *
-     * @param recipeKind input argument consumed by getRecipes.
-     * @param golden input argument consumed by getRecipes.
-     * @return computed List<RecipeDto> result returned by getRecipes.
-     */
     @Transactional(readOnly = true)
     public List<RecipeDto> getRecipes(RecipeKind recipeKind, Boolean golden) {
         List<Recipe> recipes;
@@ -112,12 +109,6 @@ public class RecipeQueryService {
         return recipeMapper.toDtoList(recipes);
     }
 
-    /**
-     * Executes getRecipe.
-     *
-     * @param recipeId input argument consumed by getRecipe.
-     * @return computed RecipeDto result returned by getRecipe.
-     */
     @Transactional(readOnly = true)
     public RecipeDto getRecipe(Long recipeId) {
         Recipe recipe = recipeRepository.findById(recipeId)
@@ -125,13 +116,6 @@ public class RecipeQueryService {
         return recipeMapper.toDto(recipe);
     }
 
-    /**
-     * Executes getRecipeSteps.
-     *
-     * @param recipeId input argument consumed by getRecipeSteps.
-     * @param stepKind input argument consumed by getRecipeSteps.
-     * @return computed List<StepDto> result returned by getRecipeSteps.
-     */
     @Transactional(readOnly = true)
     public List<StepDto> getRecipeSteps(Long recipeId, StepKind stepKind) {
         ensureRecipeExists(recipeId);
@@ -143,12 +127,6 @@ public class RecipeQueryService {
         return stepMapper.toDtoList(steps);
     }
 
-    /**
-     * Executes getStep.
-     *
-     * @param stepId input argument consumed by getStep.
-     * @return computed StepDto result returned by getStep.
-     */
     @Transactional(readOnly = true)
     public StepDto getStep(Long stepId) {
         Step step = stepRepository.findById(stepId)
@@ -156,40 +134,92 @@ public class RecipeQueryService {
         return stepMapper.toDto(step);
     }
 
-    /**
-     * Executes getStepParameters.
-     *
-     * @param stepId input argument consumed by getStepParameters.
-     * @return computed List<StepParameterDto> result returned by getStepParameters.
-     */
     @Transactional(readOnly = true)
     public List<StepParameterDto> getStepParameters(Long stepId) {
         ensureStepExists(stepId);
 
         List<StepParameter> parameters = stepParameterRepository.findByStepIdWithDefinitionAndSelectedOption(stepId);
-        return stepParameterMapper.toDtoList(parameters);
+        Set<String> computedTargets = resolveComputedTargetsForStepParameters(parameters);
+        return parameters.stream()
+                .map(parameter -> {
+                    StepParameterDto dto = stepParameterMapper.toDto(parameter);
+                    dto.setComputed(isComputedParameter(parameter, computedTargets));
+                    return dto;
+                })
+                .toList();
     }
 
-    /**
-     * Executes getStepParameter.
-     *
-     * @param stepParameterId input argument consumed by getStepParameter.
-     * @return computed StepParameterDto result returned by getStepParameter.
-     */
     @Transactional(readOnly = true)
     public StepParameterDto getStepParameter(Long stepParameterId) {
         StepParameter parameter = stepParameterRepository.findById(stepParameterId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "StepParameter with id " + stepParameterId + " not found"));
-        return stepParameterMapper.toDto(parameter);
+        Set<String> computedTargets = resolveComputedTargetsForRecipeId(
+            parameter.getStep() != null && parameter.getStep().getRecipe() != null
+                ? parameter.getStep().getRecipe().getId()
+                : null);
+        StepParameterDto dto = stepParameterMapper.toDto(parameter);
+        dto.setComputed(isComputedParameter(parameter, computedTargets));
+        return dto;
     }
 
-    /**
-     * Executes getRecipeStepParameterGrid.
-     *
-     * @param recipeId input argument consumed by getRecipeStepParameterGrid.
-     * @return computed List<StepParameterGridRowDto> result returned by getRecipeStepParameterGrid.
-     */
+    @Transactional(readOnly = true)
+    public List<Long> getComputedDependentsByStepParameterId(Long stepParameterId) {
+        StepParameter source = stepParameterRepository.findById(stepParameterId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "StepParameter with id " + stepParameterId + " not found"));
+
+        Long recipeId = source.getStep() != null && source.getStep().getRecipe() != null
+                ? source.getStep().getRecipe().getId()
+                : null;
+        if (recipeId == null) {
+            return List.of();
+        }
+
+        Long goldenRecipeId = resolveGoldenRecipeId(recipeId);
+        List<ComputationFormula> formulas = computationFormulaRepository.findByRecipeIdWithReferences(goldenRecipeId);
+        if (formulas.isEmpty()) {
+            return List.of();
+        }
+
+        Map<String, Set<String>> dependencyGraph = buildDependencyGraph(formulas);
+
+        String sourceStepCode = source.getStep() != null ? source.getStep().getCode() : null;
+        String sourceDefinitionPath = buildDefinitionPath(source);
+        if (sourceStepCode == null || sourceStepCode.isBlank()
+                || sourceDefinitionPath == null || sourceDefinitionPath.isBlank()) {
+            return List.of();
+        }
+
+        String sourceAddress = toStructuralAddress(sourceStepCode.trim(), sourceDefinitionPath);
+
+        Set<String> impactedAddresses = collectImpactedAddresses(Set.of(sourceAddress), dependencyGraph);
+
+        if (impactedAddresses.isEmpty()) {
+            return List.of();
+        }
+
+        Set<String> computedTargets = resolveComputedTargetsForRecipeId(recipeId);
+        List<StepParameter> recipeParameters = stepParameterRepository.findByRecipeIdWithStepAndDefinition(recipeId);
+
+        return recipeParameters.stream()
+                .filter(parameter -> {
+                    String stepCode = parameter.getStep() != null ? parameter.getStep().getCode() : null;
+                    String definitionPath = buildDefinitionPath(parameter);
+
+                    if (stepCode == null || stepCode.isBlank()
+                            || definitionPath == null || definitionPath.isBlank()) {
+                        return false;
+                    }
+
+                    String address = toStructuralAddress(stepCode.trim(), definitionPath);
+                    return impactedAddresses.contains(address) && computedTargets.contains(address);
+                })
+                .map(StepParameter::getId)
+                .filter(id -> id != null)
+                .toList();
+    }
+
     @Transactional(readOnly = true)
     public List<StepParameterGridRowDto> getRecipeStepParameterGrid(Long recipeId) {
         ensureRecipeExists(recipeId);
@@ -207,23 +237,27 @@ public class RecipeQueryService {
 
         List<StepParameter> parameters = stepParameterRepository.findByStepIdsWithDefinitionAndSelectedOption(stepIds);
 
-        return parameters.stream().map(parameter -> toGridRow(recipeId, stepById, parameter)).toList();
+        return parameters.stream()
+                .sorted(Comparator
+                        .comparing((StepParameter p) -> {
+                            if (p.getDefinition() == null || p.getDefinition().getParameterGroupRef() == null
+                                    || p.getDefinition().getParameterGroupRef().getOrderIndex() == null) {
+                                return Integer.MAX_VALUE;
+                            }
+                            return p.getDefinition().getParameterGroupRef().getOrderIndex();
+                        })
+                        .thenComparing(p -> p.getDefinition() != null && p.getDefinition().getOrderIndexInGroup() != null
+                                ? p.getDefinition().getOrderIndexInGroup()
+                                : Integer.MAX_VALUE)
+                        .thenComparing(p -> p.getDefinition() != null && p.getDefinition().getName() != null
+                                ? p.getDefinition().getName()
+                                : ""))
+                .map(parameter -> toGridRow(recipeId, stepById, parameter))
+                .toList();
     }
 
     /**
      * Builds the matrix view used by the frontend recipe editor.
-     * <p>
-     * Rows represent parameter definitions, columns represent ordered steps, and each cell represents one
-     * step-parameter instance if present.
-     * <p>
-     * Editability rule in each non-empty cell:
-     * <ul>
-     * <li>locked golden values are never editable,</li>
-     * <li>otherwise the cell is editable only when activation state is ENABLED.</li>
-     * </ul>
-     *
-     * @param recipeId recipe identifier.
-     * @return matrix DTO containing columns and rows ready for UI rendering.
      */
     @Transactional(readOnly = true)
     public RecipeMatrixDto getRecipeMatrix(Long recipeId) {
@@ -231,11 +265,25 @@ public class RecipeQueryService {
 
         List<Step> steps = stepRepository.findByRecipeIdOrderByOrderIndexAsc(recipeId);
         if (steps.isEmpty()) {
-            return new RecipeMatrixDto(recipeId, List.of(), List.of());
+            return new RecipeMatrixDto(recipeId, List.of(), List.of(), List.of());
         }
 
         List<Long> stepIds = steps.stream().map(Step::getId).toList();
         List<StepParameter> parameters = stepParameterRepository.findByStepIdsWithDefinitionAndSelectedOption(stepIds);
+        Set<String> computedTargets = resolveComputedTargetsForRecipeId(recipeId);
+        Set<String> computedFromModifiedTargets = resolveComputedTargetsFromModifiedSources(
+            recipeId,
+            parameters,
+            computedTargets);
+        List<StepEndpoint> endpoints = stepEndpointRepository.findByStepIdsWithConditions(stepIds);
+
+        Map<Long, StepEndpoint> endpointByStepId = new HashMap<>();
+        for (StepEndpoint endpoint : endpoints) {
+            if (endpoint.getStep() == null || endpoint.getStep().getId() == null) {
+                continue;
+            }
+            endpointByStepId.putIfAbsent(endpoint.getStep().getId(), endpoint);
+        }
 
         Map<Long, List<ParameterOptionDto>> optionsByDefinitionId = new HashMap<>();
         Set<Long> enumDefinitionIds = parameters.stream()
@@ -281,7 +329,24 @@ public class RecipeQueryService {
             representativeParameterByDefinition.putIfAbsent(definitionId, parameter);
         }
 
-        List<RecipeMatrixRowDto> rows = representativeParameterByDefinition.values().stream()
+        List<StepParameter> sortedRepresentatives = representativeParameterByDefinition.values().stream()
+                .sorted(Comparator
+                        .comparing((StepParameter p) -> {
+                            if (p.getDefinition() == null || p.getDefinition().getParameterGroupRef() == null
+                                    || p.getDefinition().getParameterGroupRef().getOrderIndex() == null) {
+                                return Integer.MAX_VALUE;
+                            }
+                            return p.getDefinition().getParameterGroupRef().getOrderIndex();
+                        })
+                        .thenComparing(p -> p.getDefinition() != null && p.getDefinition().getOrderIndexInGroup() != null
+                                ? p.getDefinition().getOrderIndexInGroup()
+                                : Integer.MAX_VALUE)
+                        .thenComparing(p -> p.getDefinition() != null && p.getDefinition().getName() != null
+                                ? p.getDefinition().getName()
+                                : ""))
+                .toList();
+
+        List<RecipeMatrixRowDto> rows = sortedRepresentatives.stream()
                 .map(parameter -> {
                     Long definitionId = parameter.getDefinition().getId();
 
@@ -304,6 +369,11 @@ public class RecipeQueryService {
                                             optionsByDefinitionId.getOrDefault(definitionId, List.of()),
                                             null,
                                             false,
+                                            false,
+                                            false,
+                                            null,
+                                            null,
+                                            false,
                                             false);
                                 }
 
@@ -311,8 +381,12 @@ public class RecipeQueryService {
                                         ? cellParameter.getSelectedOption().getLabel()
                                         : (cellParameter.getValueJson() != null ? cellParameter.getValueJson() : "-");
 
-                    boolean editable = !cellParameter.isLockedByGolden()
-                        && cellParameter.getActivationState() == ActivationState.ENABLED;
+                                boolean editable = !cellParameter.isLockedByGolden()
+                                        && cellParameter.getActivationState() == ActivationState.ENABLED;
+
+                                boolean computed = isComputedParameter(cellParameter, computedTargets);
+                                boolean computedFromModified = computed
+                                    && isComputedParameter(cellParameter, computedFromModifiedTargets);
 
                                 return new RecipeMatrixCellDto(
                                         step.getId(),
@@ -326,7 +400,12 @@ public class RecipeQueryService {
                                         optionsByDefinitionId.getOrDefault(definitionId, List.of()),
                                         cellParameter.getActivationState(),
                                         cellParameter.isLockedByGolden(),
-                        editable);
+                                        editable,
+                                        cellParameter.isUserModified(),
+                                        cellParameter.getComputationStatus(),
+                                        cellParameter.getComputedAt(),
+                                        computedFromModified,
+                                        computed);
                             })
                             .toList();
 
@@ -334,21 +413,83 @@ public class RecipeQueryService {
                             definitionId,
                             parameter.getDefinition().getName(),
                             parameter.getDefinition().getAlias(),
+                            parameter.getDefinition().getParameterGroupRef() != null
+                                    ? parameter.getDefinition().getParameterGroupRef().getName()
+                                    : null,
+                            parameter.getDefinition().getParameterGroupRef() != null
+                                    && parameter.getDefinition().getParameterGroupRef().getOrderIndex() != null
+                                            ? parameter.getDefinition().getParameterGroupRef().getOrderIndex()
+                                            : Integer.MAX_VALUE,
                             parameter.getDefinition().getValueType(),
                             cells);
                 })
                 .toList();
 
-        return new RecipeMatrixDto(recipeId, columns, rows);
+        List<RecipeMatrixEndpointCellDto> endpointRow = steps.stream()
+                .map(step -> toEndpointCell(step.getId(), endpointByStepId.get(step.getId())))
+                .toList();
+
+        return new RecipeMatrixDto(recipeId, columns, rows, endpointRow);
+    }
+
+    private RecipeMatrixEndpointCellDto toEndpointCell(Long stepId, StepEndpoint endpoint) {
+        if (endpoint == null || endpoint.getConditions() == null || endpoint.getConditions().isEmpty()) {
+            return new RecipeMatrixEndpointCellDto(stepId, null, null, 0, "Time", false);
+        }
+
+        List<StepEndpointCondition> sortedConditions = endpoint.getConditions().stream()
+                .sorted(Comparator.comparing(condition -> condition.getOrderIndex() == null
+                        ? Integer.MAX_VALUE
+                        : condition.getOrderIndex()))
+                .toList();
+
+        int conditionCount = sortedConditions.size();
+        String summaryLabel = conditionCount == 1
+                ? summarizeSingleCondition(sortedConditions.get(0))
+                : conditionCount + " conditions";
+
+        return new RecipeMatrixEndpointCellDto(
+                stepId,
+                endpoint.getId(),
+                endpoint.getClause(),
+                conditionCount,
+                summaryLabel,
+                endpoint.isLockedByGolden());
+    }
+
+    private String summarizeSingleCondition(StepEndpointCondition condition) {
+        if (condition == null) {
+            return "1 condition";
+        }
+
+        String parameterLabel = condition.getEndpointParameter() != null
+                ? (condition.getEndpointParameter().getAlias() != null
+                        ? condition.getEndpointParameter().getAlias()
+                        : condition.getEndpointParameter().getName())
+                : "parameter";
+
+        String operator = condition.getOperator() != null ? condition.getOperator().name() : "EQ";
+
+        String value = "-";
+        if (condition.getSelectedOption() != null && condition.getSelectedOption().getLabel() != null) {
+            value = condition.getSelectedOption().getLabel();
+        } else if (condition.getValueJson() != null && !condition.getValueJson().isBlank()) {
+            value = normalizeScalarForSummary(condition.getValueJson());
+        }
+
+        return parameterLabel + " " + operator + " " + value;
+    }
+
+    private String normalizeScalarForSummary(String rawValue) {
+        String trimmed = rawValue.trim();
+        if (trimmed.length() >= 2 && trimmed.startsWith("\"") && trimmed.endsWith("\"")) {
+            return trimmed.substring(1, trimmed.length() - 1);
+        }
+        return trimmed;
     }
 
     /**
      * Maps a single step-parameter entity to the flattened grid row projection.
-     *
-     * @param recipeId recipe identifier owning the row.
-     * @param stepById step lookup to enrich row with step metadata.
-     * @param parameter source step-parameter entity.
-     * @return flattened row DTO for tabular rendering.
      */
     private StepParameterGridRowDto toGridRow(Long recipeId, Map<Long, Step> stepById, StepParameter parameter) {
         Long stepId = parameter.getStep() != null ? parameter.getStep().getId() : null;
@@ -361,13 +502,20 @@ public class RecipeQueryService {
                 step != null ? step.getStepKind() : null,
                 step != null ? step.getCode() : null,
                 step != null ? step.getOrderIndex() : null,
-                
+
                 parameter.getId(),
                 parameter.getParentStepParameter() != null ? parameter.getParentStepParameter().getId() : null,
                 parameter.getParentOrderScope(),
                 parameter.getOrderIndex(),
                 parameter.getDefinition() != null ? parameter.getDefinition().getId() : null,
                 parameter.getDefinition() != null ? parameter.getDefinition().getName() : null,
+                parameter.getDefinition() != null && parameter.getDefinition().getParameterGroupRef() != null
+                    ? parameter.getDefinition().getParameterGroupRef().getName()
+                    : null,
+                parameter.getDefinition() != null && parameter.getDefinition().getParameterGroupRef() != null
+                    ? parameter.getDefinition().getParameterGroupRef().getOrderIndex()
+                    : null,
+                buildDefinitionPath(parameter),
                 parameter.getDefinition() != null ? parameter.getDefinition().getValueType() : null,
                 parameter.getLabelOverride(),
                 parameter.getValueJson(),
@@ -378,25 +526,236 @@ public class RecipeQueryService {
         );
     }
 
-    /**
-     * Ensures a recipe exists before executing read projections that depend on it.
-     *
-     * @param recipeId recipe identifier.
-     */
     private void ensureRecipeExists(Long recipeId) {
         if (!recipeRepository.existsById(recipeId)) {
             throw new EntityNotFoundException("Recipe with id " + recipeId + " not found");
         }
     }
 
-    /**
-     * Ensures a step exists before loading its parameters.
-     *
-     * @param stepId step identifier.
-     */
     private void ensureStepExists(Long stepId) {
         if (!stepRepository.existsById(stepId)) {
             throw new EntityNotFoundException("Step with id " + stepId + " not found");
         }
+    }
+
+    private Set<String> resolveComputedTargetsForStepParameters(List<StepParameter> parameters) {
+        if (parameters == null || parameters.isEmpty()) {
+            return Set.of();
+        }
+
+        StepParameter first = parameters.get(0);
+        Long recipeId = first.getStep() != null && first.getStep().getRecipe() != null
+                ? first.getStep().getRecipe().getId()
+                : null;
+        return resolveComputedTargetsForRecipeId(recipeId);
+    }
+
+    private Set<String> resolveComputedTargetsForRecipeId(Long recipeId) {
+        if (recipeId == null) {
+            return Set.of();
+        }
+
+        Long goldenRecipeId = resolveGoldenRecipeId(recipeId);
+        List<ComputationFormula> formulas = computationFormulaRepository.findByRecipeIdWithReferences(goldenRecipeId);
+
+        if (formulas.isEmpty()) {
+            return Set.of();
+        }
+
+        Set<String> targets = new HashSet<>();
+        for (ComputationFormula formula : formulas) {
+            String stepCode = formula.getTargetStepCode() == null ? null : formula.getTargetStepCode().trim();
+            String definitionPath = formula.getTargetDefinitionPath() == null
+                    ? null
+                    : formula.getTargetDefinitionPath().trim();
+
+            if (stepCode == null || stepCode.isEmpty() || definitionPath == null || definitionPath.isEmpty()) {
+                continue;
+            }
+
+            targets.add(toStructuralAddress(stepCode, definitionPath));
+        }
+
+        return targets;
+    }
+
+    private Long resolveGoldenRecipeId(Long recipeId) {
+        Recipe current = recipeRepository.findById(recipeId)
+                .orElseThrow(() -> new EntityNotFoundException("Recipe with id " + recipeId + " not found"));
+
+        Set<Long> visited = new HashSet<>();
+        while (current != null && current.getRecipeKind() != RecipeKind.GOLDEN) {
+            if (current.getId() != null && !visited.add(current.getId())) {
+                throw new IllegalStateException("Detected cycle while resolving golden ancestor for recipe " + recipeId);
+            }
+
+            Long parentId = current.getParentRecipe() != null ? current.getParentRecipe().getId() : null;
+            if (parentId == null) {
+                break;
+            }
+
+            current = recipeRepository.findById(parentId)
+                    .orElseThrow(() -> new EntityNotFoundException("Parent recipe with id " + parentId + " not found"));
+        }
+
+        return current != null && current.getId() != null ? current.getId() : recipeId;
+    }
+
+    private Set<String> resolveComputedTargetsFromModifiedSources(
+            Long recipeId,
+            List<StepParameter> parameters,
+            Set<String> computedTargets) {
+        if (recipeId == null || parameters == null || parameters.isEmpty()
+                || computedTargets == null || computedTargets.isEmpty()) {
+            return Set.of();
+        }
+
+        Set<String> sourceAddresses = new HashSet<>();
+        for (StepParameter parameter : parameters) {
+            if (parameter == null || !parameter.isUserModified() || isComputedParameter(parameter, computedTargets)) {
+                continue;
+            }
+
+            String stepCode = parameter.getStep() != null ? parameter.getStep().getCode() : null;
+            String definitionPath = buildDefinitionPath(parameter);
+            if (stepCode == null || stepCode.isBlank() || definitionPath == null || definitionPath.isBlank()) {
+                continue;
+            }
+
+            sourceAddresses.add(toStructuralAddress(stepCode.trim(), definitionPath));
+        }
+
+        if (sourceAddresses.isEmpty()) {
+            return Set.of();
+        }
+
+        Long goldenRecipeId = resolveGoldenRecipeId(recipeId);
+        List<ComputationFormula> formulas = computationFormulaRepository.findByRecipeIdWithReferences(goldenRecipeId);
+        if (formulas.isEmpty()) {
+            return Set.of();
+        }
+
+        Map<String, Set<String>> dependencyGraph = buildDependencyGraph(formulas);
+        if (dependencyGraph.isEmpty()) {
+            return Set.of();
+        }
+
+        Set<String> impactedAddresses = collectImpactedAddresses(sourceAddresses, dependencyGraph);
+        impactedAddresses.retainAll(computedTargets);
+        return impactedAddresses;
+    }
+
+    private Map<String, Set<String>> buildDependencyGraph(List<ComputationFormula> formulas) {
+        if (formulas == null || formulas.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<String, Set<String>> dependencyGraph = new HashMap<>();
+        for (ComputationFormula formula : formulas) {
+            String targetStepCode = formula.getTargetStepCode() == null ? null : formula.getTargetStepCode().trim();
+            String targetDefinitionPath = formula.getTargetDefinitionPath() == null
+                    ? null
+                    : formula.getTargetDefinitionPath().trim();
+            if (targetStepCode == null || targetStepCode.isBlank()
+                    || targetDefinitionPath == null || targetDefinitionPath.isBlank()) {
+                continue;
+            }
+
+            String targetAddress = toStructuralAddress(targetStepCode, targetDefinitionPath);
+            dependencyGraph.computeIfAbsent(targetAddress, ignored -> new HashSet<>());
+
+            if (formula.getReferences() == null) {
+                continue;
+            }
+
+            for (var reference : formula.getReferences()) {
+                String sourceStepCode = reference.getStepCode() == null ? null : reference.getStepCode().trim();
+                String sourceDefinitionPath = reference.getDefinitionPath() == null
+                        ? null
+                        : reference.getDefinitionPath().trim();
+
+                if (sourceStepCode == null || sourceStepCode.isBlank()
+                        || sourceDefinitionPath == null || sourceDefinitionPath.isBlank()) {
+                    continue;
+                }
+
+                String sourceAddress = toStructuralAddress(sourceStepCode, sourceDefinitionPath);
+                dependencyGraph.computeIfAbsent(sourceAddress, ignored -> new HashSet<>()).add(targetAddress);
+            }
+        }
+
+        return dependencyGraph;
+    }
+
+    private Set<String> collectImpactedAddresses(
+            Set<String> sourceAddresses,
+            Map<String, Set<String>> dependencyGraph) {
+        if (sourceAddresses == null || sourceAddresses.isEmpty() || dependencyGraph == null || dependencyGraph.isEmpty()) {
+            return Set.of();
+        }
+
+        Set<String> impactedAddresses = new HashSet<>();
+        ArrayDeque<String> queue = new ArrayDeque<>();
+        for (String sourceAddress : sourceAddresses) {
+            if (sourceAddress != null && !sourceAddress.isBlank()) {
+                queue.add(sourceAddress);
+            }
+        }
+
+        while (!queue.isEmpty()) {
+            String current = queue.removeFirst();
+            Set<String> targets = dependencyGraph.getOrDefault(current, Set.of());
+            for (String target : targets) {
+                if (impactedAddresses.add(target)) {
+                    queue.addLast(target);
+                }
+            }
+        }
+
+        return impactedAddresses;
+    }
+
+    private boolean isComputedParameter(StepParameter parameter, Set<String> computedTargets) {
+        if (parameter == null || computedTargets == null || computedTargets.isEmpty()) {
+            return false;
+        }
+
+        String stepCode = parameter.getStep() != null ? parameter.getStep().getCode() : null;
+        String definitionPath = buildDefinitionPath(parameter);
+
+        if (stepCode == null || stepCode.isBlank() || definitionPath == null || definitionPath.isBlank()) {
+            return false;
+        }
+
+        return computedTargets.contains(toStructuralAddress(stepCode.trim(), definitionPath));
+    }
+
+    private String buildDefinitionPath(StepParameter parameter) {
+        List<String> tokens = new ArrayList<>();
+        StepParameter cursor = parameter;
+        int guard = 0;
+
+        while (cursor != null) {
+            if (guard++ > 256) {
+                throw new IllegalStateException("Invalid parent chain depth for step parameter " + parameter.getId());
+            }
+
+            Long definitionId = cursor.getDefinition() != null ? cursor.getDefinition().getId() : null;
+            if (definitionId == null) {
+                return null;
+            }
+
+            tokens.add(String.valueOf(definitionId));
+            cursor = cursor.getParentStepParameter();
+        }
+
+        Collections.reverse(tokens);
+        return String.join("/", tokens);
+    }
+
+    private String toStructuralAddress(String stepCode, String definitionPath) {
+        String normalizedStepCode = stepCode == null ? "" : stepCode.trim().toLowerCase();
+        String normalizedDefinitionPath = definitionPath == null ? "" : definitionPath.trim().toLowerCase();
+        return normalizedStepCode + "|" + normalizedDefinitionPath;
     }
 }

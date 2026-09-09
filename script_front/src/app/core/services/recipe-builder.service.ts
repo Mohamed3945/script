@@ -31,6 +31,14 @@ export class RecipeBuilderService {
     return this.selectedStepSubject.value;
   }
 
+  get stepsSnapshot(): Step[] {
+    return this.stepsSubject.value;
+  }
+
+  get recipeSnapshot(): Recipe | null {
+    return this.recipeSubject.value;
+  }
+
   constructor(private recipeApiService: RecipeApiService) {}
 
   /**

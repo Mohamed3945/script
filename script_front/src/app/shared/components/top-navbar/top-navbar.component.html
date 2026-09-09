@@ -1,45 +1,67 @@
-<nav class="top-navbar">
-  <div class="brand">
-    <div class="brand__icon">
+<aside class="sidebar" [class.is-collapsed]="collapsed" aria-label="Main navigation">
+  <div class="sidebar__brand">
+    <button
+      type="button"
+      class="sidebar__brand-icon sidebar__brand-toggle"
+      (click)="requestToggle()"
+      [attr.aria-label]="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+      [attr.title]="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+    >
       <i class="ti ti-flask"></i>
-    </div>
-    <div class="brand__text">
-      <span class="brand__title">Golden SCRIPT</span>
-      <span class="brand__subtitle">STMicroelectronics</span>
+    </button>
+    <div class="sidebar__brand-text">
+      <span class="sidebar__title">Golden SCRIPT</span>
+      <span class="sidebar__subtitle">Internal Engineering Tool</span>
     </div>
   </div>
 
-  <div class="top-navbar__actions">
-    <a routerLink="/" class="top-navbar__link">
-      <i class="ti ti-home"></i>
-      Home
-    </a>
+  <nav class="sidebar__tree" aria-label="Feature tree">
+    <div class="sidebar__section">
+      <div class="sidebar__section-title">Decision</div>
+      <a routerLink="/" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" class="sidebar__node sidebar__node--root" title="Home">
+        <i class="ti ti-home"></i>
+        <span class="sidebar__label">Home</span>
+      </a>
+    </div>
 
-    <a routerLink="/recipes" class="top-navbar__link">
-      <i class="ti ti-file-description"></i>
-      Recipes
-    </a>
+    <div class="sidebar__section">
+      <div class="sidebar__section-title">Recipes</div>
+      <a routerLink="/recipes" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" class="sidebar__node sidebar__node--root" title="Recipe Management">
+        <i class="ti ti-file-description"></i>
+        <span class="sidebar__label">Recipe Management</span>
+      </a>
+      <a routerLink="/parameters" routerLinkActive="is-active" class="sidebar__node sidebar__node--leaf" title="Parameter Management">
+        <i class="ti ti-adjustments"></i>
+        <span class="sidebar__label">Parameter Management</span>
+      </a>
+      <a routerLink="/rules" routerLinkActive="is-active" class="sidebar__node sidebar__node--leaf" title="Rules Management">
+        <i class="ti ti-git-branch"></i>
+        <span class="sidebar__label">Rules Management</span>
+      </a>
+    </div>
 
-    <a routerLink="/parameter" class="top-navbar__link">
-      <i class="ti ti-adjustments"></i>
-      Parameters
-    </a>
+    <div class="sidebar__section">
+      <div class="sidebar__section-title">Equipment</div>
+      <a routerLink="/machines" routerLinkActive="is-active" class="sidebar__node sidebar__node--root" title="Machines & Chambers">
+        <i class="ti ti-cpu"></i>
+        <span class="sidebar__label">Machines & Chambers</span>
+      </a>
+      <a routerLink="/reference-data/capabilities" routerLinkActive="is-active" class="sidebar__node sidebar__node--leaf" title="Capabilities Catalog">
+        <i class="ti ti-bolt"></i>
+        <span class="sidebar__label">Capabilities Catalog</span>
+      </a>
+      <a routerLink="/reference-data/configuration-definitions" routerLinkActive="is-active" class="sidebar__node sidebar__node--leaf" title="Configurations Catalog">
+        <i class="ti ti-sliders-horizontal"></i>
+        <span class="sidebar__label">Configurations Catalog</span>
+      </a>
+    </div>
+  </nav>
 
-    <a routerLink="/rules" class="top-navbar__link">
-      <i class="ti ti-git-branch"></i>
-      Rules
-    </a>
-
-    <a routerLink="/machines" class="top-navbar__link">
-      <i class="ti ti-cpu"></i>
-      Machines
-    </a>
-
-    <a routerLink="/configuration-definitions" class="top-navbar__link">
-      <i class="ti ti-sliders-horizontal"></i>
-      Configurations
-    </a>
-
-    <div class="top-navbar__avatar">ML</div>
+  <div class="sidebar__foot">
+    <button type="button" class="sidebar__user" title="User account">
+      <i class="ti ti-user-circle"></i>
+      <span class="sidebar__user-label">User Account</span>
+    </button>
+    <div class="sidebar__foot-tag">STMicroelectronics</div>
   </div>
-</nav>
+</aside>

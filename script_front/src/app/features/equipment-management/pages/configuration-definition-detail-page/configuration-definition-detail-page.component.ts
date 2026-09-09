@@ -32,12 +32,12 @@ export class ConfigurationDefinitionDetailPageComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/configuration-definitions']);
+    this.router.navigate(['/reference-data/configuration-definitions']);
   }
 
   editDefinition(): void {
     const definition = this.definition$.value;
     if (!definition) return;
-    this.router.navigate(['/configuration-definitions', definition.id, 'edit']);
+    this.router.navigate(['/reference-data/configuration-definitions', definition.id, 'edit']);
   }
 }

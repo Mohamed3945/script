@@ -51,6 +51,26 @@ function isSilentSuccessRoute(method: string, endpoint: string): boolean {
     return true;
   }
 
+  if (normalizedMethod === 'POST' && endpoint.includes('/decision-executions/finalize')) {
+    return true;
+  }
+
+  if (normalizedMethod === 'POST' && endpoint.includes('/recipe-compatibility/compatible-machines')) {
+    return true;
+  }
+
+  if (normalizedMethod === 'POST' && endpoint.includes('/parameter-definitions/reorder')) {
+    return true;
+  }
+
+  if (normalizedMethod === 'POST' && endpoint.includes('/parameter-definitions/move')) {
+    return true;
+  }
+
+  if (normalizedMethod === 'POST' && endpoint.includes('/parameter-groups/reorder')) {
+    return true;
+  }
+
   return false;
 }
 
@@ -79,6 +99,17 @@ function buildErrorMessage(method: string, endpoint: string, error: HttpErrorRes
       severity: 'error',
       title: 'Action failed',
       description: codedMessage,
+      backendCode: code ?? undefined,
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  const backendTextMessage = mapBackendDescriptionToMessage(info.description, status);
+  if (backendTextMessage) {
+    return {
+      severity: 'error',
+      title: 'Action failed',
+      description: backendTextMessage,
       backendCode: code ?? undefined,
       timestamp: new Date().toISOString()
     };
@@ -116,6 +147,15 @@ function buildErrorMessage(method: string, endpoint: string, error: HttpErrorRes
       severity: 'error',
       title: 'Item not found',
       description: 'The requested item was not found or has already been deleted.',
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  if (status === 409) {
+    return {
+      severity: 'error',
+      title: 'Data conflict',
+      description: 'This action conflicts with current data. Reload and try again.',
       timestamp: new Date().toISOString()
     };
   }
@@ -210,6 +250,50 @@ function mapErrorCodeToMessage(code: string | null, backendDescription?: string)
   };
 
   return messages[code] ?? null;
+}
+
+function mapBackendDescriptionToMessage(description: string | undefined, status: number): string | null {
+  if (!description || description.trim().length === 0) {
+    return null;
+  }
+
+  const normalized = description.toLowerCase();
+
+  if (
+    normalized.includes('duplicate entry')
+    || normalized.includes('already exists')
+    || normalized.includes('targetname must be different from source golden name')
+    || normalized.includes('uq_pdr_source_trigger_required_target')
+  ) {
+    if (normalized.includes('targetname must be different from source golden name')) {
+      return 'The new golden name must be different from the source golden name.';
+    }
+    if (normalized.includes('uq_pdr_source_trigger_required_target')) {
+      return 'This dependency rule already exists. Choose another source/trigger/context/target combination.';
+    }
+    return 'A duplicate value already exists. Choose another value and try again.';
+  }
+
+  if (
+    normalized.includes('deadlock')
+    || normalized.includes('sqlstate: 40001')
+    || normalized.includes('error: 1213')
+  ) {
+    return 'A temporary database lock conflict occurred. Please retry the action.';
+  }
+
+  if (
+    normalized.includes('record has changed since last read')
+    || normalized.includes('error: 1020')
+  ) {
+    return 'Data changed while saving. Please reload the page and try again.';
+  }
+
+  if (status === 409) {
+    return 'This action conflicts with current data. Reload and try again.';
+  }
+
+  return null;
 }
 
 function extractBackendInfo(payload: unknown): { description?: string; code?: string; details?: string } {

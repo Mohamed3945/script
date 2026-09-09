@@ -21,6 +21,8 @@ import st.tt.script_back.entities.DecisionQuestion;
 import st.tt.script_back.entities.DecisionResultProfile;
 import st.tt.script_back.entities.Recipe;
 import st.tt.script_back.entities.Step;
+import st.tt.script_back.entities.StepEndpoint;
+import st.tt.script_back.entities.StepEndpointCondition;
 import st.tt.script_back.entities.StepParameter;
 import st.tt.script_back.enums.RecipeKind;
 import st.tt.script_back.enums.RecipeStatus;
@@ -29,6 +31,7 @@ import st.tt.script_back.repositories.DecisionOptionRepository;
 import st.tt.script_back.repositories.DecisionQuestionRepository;
 import st.tt.script_back.repositories.DecisionResultProfileRepository;
 import st.tt.script_back.repositories.RecipeRepository;
+import st.tt.script_back.repositories.StepEndpointRepository;
 import st.tt.script_back.repositories.StepParameterRepository;
 import st.tt.script_back.repositories.StepRepository;
 
@@ -41,8 +44,10 @@ public class DecisionFinalizeService {
     private final DecisionExecutionRepository decisionExecutionRepository;
     private final RecipeRepository recipeRepository;
     private final StepRepository stepRepository;
+    private final StepEndpointRepository stepEndpointRepository;
     private final StepParameterRepository stepParameterRepository;
     private final ParameterActivationService parameterActivationService;
+    private final ComputationEvaluationService computationEvaluationService;
 
     public DecisionFinalizeService(
             DecisionResultProfileRepository decisionResultProfileRepository,
@@ -51,16 +56,20 @@ public class DecisionFinalizeService {
             DecisionExecutionRepository decisionExecutionRepository,
             RecipeRepository recipeRepository,
             StepRepository stepRepository,
+            StepEndpointRepository stepEndpointRepository,
             StepParameterRepository stepParameterRepository,
-            ParameterActivationService parameterActivationService) {
+            ParameterActivationService parameterActivationService,
+            ComputationEvaluationService computationEvaluationService) {
         this.decisionResultProfileRepository = decisionResultProfileRepository;
         this.decisionQuestionRepository = decisionQuestionRepository;
         this.decisionOptionRepository = decisionOptionRepository;
         this.decisionExecutionRepository = decisionExecutionRepository;
         this.recipeRepository = recipeRepository;
         this.stepRepository = stepRepository;
+        this.stepEndpointRepository = stepEndpointRepository;
         this.stepParameterRepository = stepParameterRepository;
         this.parameterActivationService = parameterActivationService;
+        this.computationEvaluationService = computationEvaluationService;
     }
 
     @Transactional
@@ -176,9 +185,14 @@ public class DecisionFinalizeService {
         for (Step goldenStep : goldenSteps) {
             Step clonedStep = stepCloneByOriginalStepId.get(goldenStep.getId());
             cloneStepParameters(goldenStep, clonedStep);
+            cloneStepEndpoint(goldenStep, clonedStep);
         }
 
+        // Defensive reset: derived recipes must start with no user-modified markers.
+        stepParameterRepository.resetUserModifiedByRecipeId(savedDerivedRecipe.getId());
+
         parameterActivationService.recalculateRecipeActivationStates(savedDerivedRecipe.getId());
+        computationEvaluationService.recomputeRecipeComputedParameters(savedDerivedRecipe.getId());
 
         return savedDerivedRecipe;
     }
@@ -228,6 +242,7 @@ public class DecisionFinalizeService {
                 clonedParameter.setSelectedOption(goldenParameter.getSelectedOption());
                 clonedParameter.setActivationState(goldenParameter.getActivationState());
                 clonedParameter.setLockedByGolden(goldenParameter.isLockedByGolden());
+                clonedParameter.setUserModified(false);
 
                 StepParameter savedClonedParameter = stepParameterRepository.save(clonedParameter);
                 parameterCloneByOriginalParameterId.put(goldenParameter.getId(), savedClonedParameter);
@@ -240,6 +255,40 @@ public class DecisionFinalizeService {
                                 + ": parent relationship is inconsistent");
             }
         }
+    }
+
+    private void cloneStepEndpoint(Step goldenStep, Step clonedStep) {
+        StepEndpoint goldenEndpoint = stepEndpointRepository
+                .findByStepIdWithConditions(goldenStep.getId())
+                .orElse(null);
+
+        if (goldenEndpoint == null) {
+            return;
+        }
+
+        StepEndpoint clonedEndpoint = new StepEndpoint();
+        clonedEndpoint.setStep(clonedStep);
+        clonedEndpoint.setClause(goldenEndpoint.getClause());
+        clonedEndpoint.setLockedByGolden(goldenEndpoint.isLockedByGolden());
+
+        StepEndpoint savedEndpoint = stepEndpointRepository.save(clonedEndpoint);
+
+        List<StepEndpointCondition> goldenConditions = goldenEndpoint.getConditions() == null
+                ? List.of()
+                : goldenEndpoint.getConditions();
+
+        for (StepEndpointCondition goldenCondition : goldenConditions) {
+            StepEndpointCondition clonedCondition = new StepEndpointCondition();
+            clonedCondition.setEndpoint(savedEndpoint);
+            clonedCondition.setEndpointParameter(goldenCondition.getEndpointParameter());
+            clonedCondition.setValueJson(goldenCondition.getValueJson());
+            clonedCondition.setSelectedOption(goldenCondition.getSelectedOption());
+            clonedCondition.setOperator(goldenCondition.getOperator());
+            clonedCondition.setOrderIndex(goldenCondition.getOrderIndex());
+            savedEndpoint.getConditions().add(clonedCondition);
+        }
+
+        stepEndpointRepository.save(savedEndpoint);
     }
 
     private Integer nextDerivedVersion(Long parentRecipeId) {

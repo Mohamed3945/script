@@ -1,6 +1,11 @@
 ﻿<section class="page" *ngIf="recipe$ | async as recipe">
   <div class="page__container">
-    <app-recipe-detail-header [recipe]="recipe"></app-recipe-detail-header>
+    <app-recipe-detail-header
+      [recipe]="recipe"
+      (exportXmlClicked)="onExportXmlRequested()"
+      (editClicked)="onEditRecipe()"
+      (deleteClicked)="onDeleteRecipe()">
+    </app-recipe-detail-header>
 
     <div class="workspace" [class.workspace--drawer-open]="showRightDrawer">
       <main class="workspace__main">
@@ -39,11 +44,11 @@
 
         <app-recipe-prestep-view
           *ngIf="activeTab === 'prestep'"
-          [prestepStep]="prestepStep"
-          [rows]="(prestepRows$ | async)"
-          (addParameterClicked)="openPrestepParameterModal()"
-          (deleteParameterClicked)="onDeletePrestepParameter($event)"
-          (cellUpdated)="onPrestepCellUpdated($event)">
+          [matrix]="(prestepMatrix$ | async)"
+          [workspaceMode]="workspaceMode === 'golden' ? 'golden' : 'derived'"
+          (cellUpdated)="onPrestepCellUpdated($event)"
+          (cellContextRequested)="onPrestepCellContextRequested($event)"
+          (parameterRowContextRequested)="onPrestepParameterRowContextRequested($event)">
         </app-recipe-prestep-view>
 
         <ng-container *ngIf="activeTab === 'steps'">
@@ -52,8 +57,14 @@
               <app-recipe-matrix-view
                 *ngIf="viewMode === 'matrix'"
                 [matrix]="(stepsViewMatrix$ | async)"
-                (addStepClicked)="openStepModal()"
-                (cellUpdated)="onMatrixCellUpdated($event)">
+                [recomputedPulseStepParameterIds]="recomputedPulseStepParameterIds"
+                [recomputedPulseTick]="recomputedPulseTick"
+                [workspaceMode]="workspaceMode === 'golden' ? 'golden' : 'derived'"
+                (cellUpdated)="onMatrixCellUpdated($event)"
+                (stepHeaderContextRequested)="onStepHeaderContextRequested($event)"
+                (cellContextRequested)="onMatrixCellContextRequested($event)"
+                (endpointCellContextRequested)="onEndpointCellContextRequested($event)"
+                (parameterRowContextRequested)="onParameterRowContextRequested($event)">
               </app-recipe-matrix-view>
 
               <app-recipe-step-focus-view
@@ -63,12 +74,66 @@
                 [selectedStep]="(stepsViewSelectedStep$ | async)"
                 [parameters]="(stepParameters$ | async) ?? []"
                 (stepSelected)="onStepSelected($event)"
-                (addParameterClicked)="openStepParameterModal()"
                 (deleteParameterClicked)="onDeleteStepParameter($event)">
               </app-recipe-step-focus-view>
             </div>
           </section>
         </ng-container>
+
+        <div
+          class="context-menu"
+          *ngIf="stepContextMenu.visible"
+          [style.left.px]="stepContextMenu.x"
+          [style.top.px]="stepContextMenu.y"
+          (click)="$event.stopPropagation()">
+          <button
+            type="button"
+            class="context-menu__action context-menu__action--danger"
+            [disabled]="!canDeleteStepFromContext"
+            (click)="onDeleteStepFromContext()">
+            <span class="menu-action__icon" aria-hidden="true">DEL</span>
+            <span>Delete step</span>
+          </button>
+        </div>
+
+        <div
+          class="context-menu"
+          *ngIf="parameterRowContextMenu.visible"
+          [style.left.px]="parameterRowContextMenu.x"
+          [style.top.px]="parameterRowContextMenu.y"
+          (click)="$event.stopPropagation()">
+          <button
+            type="button"
+            class="context-menu__action context-menu__action--danger"
+            (click)="onDeleteRecipeWideParameterFromContext()">
+            <span class="menu-action__icon" aria-hidden="true">DEL</span>
+            <span>Delete parameter</span>
+          </button>
+        </div>
+
+        <div
+          class="cell-action-bar"
+          *ngIf="cellActionBar.visible"
+          [style.left.px]="cellActionBar.x"
+          [style.top.px]="cellActionBar.y"
+          (click)="$event.stopPropagation()">
+          <button
+            type="button"
+            class="cell-action-bar__action"
+            *ngIf="canEditEndpointFromContext"
+            (click)="onEditEndpointFromContext()">
+            <span class="menu-action__icon" aria-hidden="true">EDT</span>
+            <span>Edit endpoint</span>
+          </button>
+          <button
+            type="button"
+            class="cell-action-bar__action"
+            [disabled]="!canToggleGoldenFromContext"
+            (click)="onToggleGoldenFromContext()">
+            <span class="menu-action__icon" aria-hidden="true">{{ goldenToggleLabel.startsWith('Unlock') ? 'ULK' : 'LCK' }}</span>
+            <span>{{ goldenToggleLabel }}</span>
+          </button>
+        </div>
       </main>
 
       <aside class="workspace__drawer" [class.workspace__drawer--open]="showRightDrawer">
@@ -81,24 +146,43 @@
         </button>
 
         <div class="drawer__body" *ngIf="showRightDrawer">
-          <section class="drawer-section">
-            <h4 class="drawer-section__title">Structure</h4>
-            <button type="button" class="drawer-action" (click)="openStepModal()">
-              <span class="drawer-action__icon">[+]</span>
-              <span class="drawer-action__label">Add step</span>
-            </button>
+          <section class="drawer-section" *ngIf="isGoldenWorkspace">
+            <h4 class="drawer-section__title">Structure actions</h4>
+
             <button
               type="button"
               class="drawer-action"
-              [disabled]="!canAddParameter"
-              (click)="openContextualParameterModal()">
-              <span class="drawer-action__icon">[+]</span>
+              (click)="openStepModal()">
+              <span class="drawer-action__icon">STEP</span>
+              <span class="drawer-action__label">Add step</span>
+            </button>
+
+            <button
+              type="button"
+              class="drawer-action"
+              (click)="activeTab === 'prestep' ? openPrestepParameterModal() : openStepParameterModal()"
+              [disabled]="!canAddParameter">
+              <span class="drawer-action__icon">PARAM</span>
               <span class="drawer-action__label">Add parameter</span>
             </button>
-            <button type="button" class="drawer-action" [disabled]="true">
-              <span class="drawer-action__icon">[LOCK]</span>
-              <span class="drawer-action__label">Delete parameter</span>
+
+            <button
+              type="button"
+              class="drawer-action"
+              (click)="openComputationFormulasPage()">
+              <span class="drawer-action__icon">FORM</span>
+              <span class="drawer-action__label">Manage formulas</span>
             </button>
+          </section>
+
+          <section class="drawer-section" *ngIf="isDerivedWorkspace">
+            <h4 class="drawer-section__title">Compatible machines</h4>
+            <app-recipe-compatible-machines-panel
+              [compatibility]="(compatibility$ | async)"
+              [loading]="compatibilityLoading"
+              [filteringHighlightActive]="compatibilityFilteringFeedbackActive"
+              [filteringPulseTick]="compatibilityFilteringFeedbackTick">
+            </app-recipe-compatible-machines-panel>
           </section>
 
           <section class="drawer-section">
@@ -108,19 +192,11 @@
               [availableCapabilities]="(availableCapabilities$ | async) ?? []"
               [availableConfigurationDefinitions]="(availableConfigurationDefinitions$ | async) ?? []"
               [readOnly]="isDerivedWorkspace"
-              [sourceHint]="isDerivedWorkspace ? 'Inherited from parent golden recipe. Edit requirements on golden only.' : 'Managed directly on this golden recipe.'"
               (addCapability)="onAddRequiredCapability($event)"
               (removeCapability)="onRemoveRequiredCapability($event)"
               (addConfiguration)="onAddRequiredConfiguration($event)"
               (removeConfiguration)="onRemoveRequiredConfiguration($event)">
             </app-recipe-requirements-panel>
-          </section>
-
-          <section class="drawer-section" *ngIf="isDerivedWorkspace">
-            <h4 class="drawer-section__title">Compatible machines</h4>
-            <app-recipe-compatible-machines-panel
-              [compatibility]="(compatibility$ | async)">
-            </app-recipe-compatible-machines-panel>
           </section>
         </div>
       </aside>
@@ -137,7 +213,37 @@
     [visible]="showStepParameterModal"
     [stepKind]="modalStepKind"
     [parentCandidates]="modalParentCandidates"
+    [excludedDefinitionIds]="modalExcludedDefinitionIds"
     (closed)="closeStepParameterModal()"
     (submitted)="onCreateStepParameter($event)">
   </app-step-parameter-modal>
+
+  <app-step-endpoint-modal
+    [visible]="showEndpointModal"
+    [stepId]="endpointModalStepId"
+    [workspaceMode]="workspaceMode === 'golden' ? 'golden' : 'derived'"
+    [lockedByGolden]="endpointModalLockedByGolden"
+    (closed)="closeEndpointModal()"
+    (saved)="onEndpointSaved()">
+  </app-step-endpoint-modal>
+
+  <app-recipe-xml-export-review-modal
+    [visible]="showXmlExportReviewModal"
+    [recipeName]="recipe.name"
+    [requirements]="(requirements$ | async)"
+    [customizationSummary]="xmlExportCustomizationSummary"
+    [loadingCustomizationSummary]="xmlExportLoadingCustomizationSummary"
+    [compatibility]="(compatibility$ | async)"
+    [selectedMachineId]="xmlExportSelectedMachineId"
+    [selectedChamberId]="xmlExportSelectedChamberId"
+    [selectedChamberDetail]="xmlExportSelectedChamberDetail"
+    [loadingChamberDetail]="xmlExportLoadingChamberDetail"
+    [understandChecked]="xmlExportUnderstandChecked"
+    [downloading]="xmlExportDownloading"
+    (closed)="closeXmlExportReviewModal()"
+    (machineChanged)="onXmlExportMachineChanged($event)"
+    (chamberChanged)="onXmlExportChamberChanged($event)"
+    (understandChanged)="onXmlExportUnderstandChanged($event)"
+    (downloadRequested)="onXmlExportDownloadConfirmed()">
+  </app-recipe-xml-export-review-modal>
 </section>

@@ -25,4 +25,5 @@ public interface StepRepository extends JpaRepository<Step, Long> {
 
     Step findTopByRecipeIdOrderByOrderIndexDesc(Long recipeId);
 
+    Optional<Step> findTopByRecipeIdAndStepKindOrderByOrderIndexDesc(Long recipeId, StepKind stepKind);
 }

@@ -1,12 +1,16 @@
 package st.tt.script_back.repositories;
 
 import java.util.List;
+import java.util.Set;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import st.tt.script_back.entities.StepParameter;
+import st.tt.script_back.enums.ActivationState;
+import st.tt.script_back.enums.StepKind;
 
 /**
  * Repository for step parameter persistence and projection-oriented fetch queries.
@@ -26,16 +30,27 @@ public interface StepParameterRepository extends JpaRepository<StepParameter, Lo
 
     List<StepParameter> findByStepIdAndParentOrderScopeOrderByOrderIndexAsc(Long stepId, Long parentOrderScope);
 
-    /**
-     * Loads all parameters of one step with associations required by activation and UI mapping.
-     *
-     * @param stepId step identifier.
-     * @return ordered parameters with definition, selected option, parent parameter, and parent selected option.
-     */
+    List<StepParameter> findByStepRecipeIdAndDefinitionId(Long recipeId, Long definitionId);
+
+    @Query("""
+            select sp
+            from StepParameter sp
+            join fetch sp.step s
+            join fetch sp.definition d
+            left join fetch d.parameterGroupRef pg
+            left join fetch sp.selectedOption so
+            left join fetch sp.parentStepParameter psp
+            left join fetch psp.definition pdef
+            where s.recipe.id = :recipeId
+            order by s.orderIndex asc, sp.parentOrderScope asc, sp.orderIndex asc
+            """)
+    List<StepParameter> findByRecipeIdWithStepAndDefinition(@Param("recipeId") Long recipeId);
+
     @Query("""
             select sp
             from StepParameter sp
             join fetch sp.definition d
+            left join fetch d.parameterGroupRef pg
             left join fetch sp.selectedOption so
             left join fetch sp.parentStepParameter psp
             left join fetch psp.selectedOption pso
@@ -44,16 +59,11 @@ public interface StepParameterRepository extends JpaRepository<StepParameter, Lo
             """)
     List<StepParameter> findByStepIdWithDefinitionAndSelectedOption(@Param("stepId") Long stepId);
 
-    /**
-     * Loads parameters for a set of steps with all associations needed by activation and matrix builders.
-     *
-     * @param stepIds ordered or unordered step identifiers.
-     * @return step parameters sorted by step and within-step order.
-     */
     @Query("""
             select sp
             from StepParameter sp
             join fetch sp.definition d
+            left join fetch d.parameterGroupRef pg
             left join fetch sp.selectedOption so
             left join fetch sp.parentStepParameter psp
             left join fetch psp.selectedOption pso
@@ -62,12 +72,6 @@ public interface StepParameterRepository extends JpaRepository<StepParameter, Lo
             """)
     List<StepParameter> findByStepIdsWithDefinitionAndSelectedOption(@Param("stepIds") List<Long> stepIds);
 
-    /**
-     * Finds all recipes containing at least one parameter linked to any of the provided definitions.
-     *
-     * @param definitionIds parameter definition identifiers.
-     * @return distinct recipe identifiers.
-     */
     @Query("""
                 select distinct sp.step.recipe.id
                 from StepParameter sp
@@ -75,4 +79,50 @@ public interface StepParameterRepository extends JpaRepository<StepParameter, Lo
                 """)
     List<Long> findDistinctRecipeIdsByDefinitionIds(@Param("definitionIds") List<Long> definitionIds);
 
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+                        update StepParameter sp
+                        set sp.userModified = false
+                        where sp.step.recipe.id = :recipeId
+                        """)
+    int resetUserModifiedByRecipeId(@Param("recipeId") Long recipeId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            delete from StepParameter sp
+            where sp.step.recipe.id = :recipeId
+              and sp.definition.id = :definitionId
+            """)
+    int deleteByRecipeIdAndDefinitionId(@Param("recipeId") Long recipeId, @Param("definitionId") Long definitionId);
+
+    @Query("""
+            select sp
+            from StepParameter sp
+            join fetch sp.definition d
+            left join fetch d.parameterGroupRef pg
+            left join fetch sp.selectedOption so
+            left join fetch sp.parentStepParameter psp
+            left join fetch psp.selectedOption pso
+            where sp.step.id = :stepId
+            order by sp.parentOrderScope asc, sp.orderIndex asc
+            """)
+    List<StepParameter> findForStepClone(@Param("stepId") Long stepId);
+
+
+    @Query("""
+            select sp
+            from StepParameter sp
+            join fetch sp.step s
+            join fetch sp.definition d
+            left join fetch d.configurationDefinition cd
+            left join fetch sp.selectedOption so
+            where s.recipe.id = :recipeId
+              and s.stepKind in :stepKinds
+              and sp.activationState <> :disabledState
+            order by s.orderIndex asc, sp.parentOrderScope asc, sp.orderIndex asc
+            """)
+    List<StepParameter> findActiveCompatibilityParametersByRecipeId(
+            @Param("recipeId") Long recipeId,
+            @Param("stepKinds") Set<StepKind> stepKinds,
+            @Param("disabledState") ActivationState disabledState);
 }

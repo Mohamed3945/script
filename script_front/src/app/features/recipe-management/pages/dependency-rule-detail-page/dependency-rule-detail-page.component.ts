@@ -48,7 +48,7 @@ export class DependencyRuleDetailPageComponent implements OnInit {
     if (!rule) {
       return;
     }
-    this.router.navigate(['/recipes/rules', rule.id, 'edit']);
+    this.router.navigate(['/rules', rule.id, 'edit']);
   }
 
   /**
@@ -68,7 +68,7 @@ export class DependencyRuleDetailPageComponent implements OnInit {
     }
 
     this.parameterDependencyRuleApiService.deleteRule(rule.id).subscribe({
-      next: () => this.router.navigate(['/recipes/rules']),
+      next: () => this.router.navigate(['/rules']),
       error: (error) => console.error('Failed to delete dependency rule', error)
     });
   }

@@ -1,6 +1,6 @@
 .summary-shell {
   border: 1px solid var(--border-soft);
-  border-radius: 8px;
+  border-radius: 6px;
   background: #fff;
   padding: 0;
   overflow: hidden;
@@ -14,7 +14,7 @@
 .summary-grid th,
 .summary-grid td {
   border-bottom: 1px solid var(--border-soft);
-  padding: 10px 12px;
+  padding: 6px 7px;
   vertical-align: middle;
 }
 
@@ -28,8 +28,8 @@
 }
 
 .summary-grid__key {
-  width: 220px;
-  font-size: 12px;
+  width: 165px;
+  font-size: 11px;
   font-weight: 700;
   color: #2b3f52;
   font-family: Consolas, 'Courier New', monospace;
@@ -38,13 +38,13 @@
 
 .summary-input {
   width: 100%;
-  min-height: 34px;
+  min-height: 28px;
   border: 1px solid var(--border-soft);
-  border-radius: 6px;
+  border-radius: 5px;
   background: #fff;
   color: var(--text-main);
-  padding: 6px 8px;
-  font-size: 13px;
+  padding: 3px 5px;
+  font-size: 11px;
   font-family: Consolas, 'Courier New', monospace;
 }
 
@@ -60,7 +60,7 @@
 }
 
 .summary-input--textarea {
-  min-height: 72px;
+  min-height: 52px;
   resize: vertical;
 }
 
@@ -68,6 +68,6 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: 11px;
   color: #2b3f52;
 }
