@@ -16,6 +16,12 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * Crée et valide les jetons JWT utilisés par l'authentification de l'API.
+ *
+ * <p>Les jetons utilisent l'algorithme HMAC-SHA256 et contiennent l'identifiant
+ * utilisateur, son nom, ses rôles, ainsi que leurs dates d'émission et d'expiration.
+ */
 @Service
 public class JwtService {
 
@@ -32,6 +38,12 @@ public class JwtService {
         this.expirationMs = expirationMs;
     }
 
+    /**
+     * Génère un jeton signé pour l'utilisateur fourni.
+     *
+     * @param userDetails identité et autorités de l'utilisateur authentifié
+     * @return jeton JWT composé d'un en-tête, d'une charge utile et d'une signature
+     */
     public String generateToken(AppUserDetails userDetails) {
         Instant now = Instant.now();
         Map<String, Object> header = new LinkedHashMap<>();
@@ -51,10 +63,25 @@ public class JwtService {
         return unsignedToken + "." + sign(unsignedToken);
     }
 
+    /**
+     * Extrait le sujet du jeton après vérification de sa structure et de sa signature.
+     *
+     * @param token jeton JWT à analyser
+     * @return nom d'utilisateur porté par la propriété {@code sub}
+     * @throws IllegalArgumentException si le jeton est invalide
+     */
     public String extractUsername(String token) {
         return String.valueOf(readPayload(token).get("sub"));
     }
 
+    /**
+     * Vérifie que le jeton appartient à l'utilisateur et n'est pas expiré.
+     *
+     * @param token jeton JWT à vérifier
+     * @param userDetails utilisateur auquel le jeton doit correspondre
+     * @return {@code true} si le sujet, l'expiration et la signature sont valides
+     * @throws IllegalArgumentException si la charge utile du jeton est illisible
+     */
     public boolean isTokenValid(String token, AppUserDetails userDetails) {
         Map<String, Object> payload = readPayload(token);
         Object expiration = payload.get("exp");

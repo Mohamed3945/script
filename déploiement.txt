@@ -663,6 +663,234 @@ Observations :
 
 Conclusion :
 - le backend est empaqueté et prêt à être transféré sur la VM
+
+======================================================================
+44. TRANSFERT DU JAR BACKEND SUR LA VM ET INSTALLATION FINALE
+======================================================================
+
+Contexte :
+- Le backend Spring Boot a été buildé sur le poste Windows
+- Le jar généré localement a été transféré vers la VM
+- Une confusion initiale est apparue entre l’arborescence locale Maven et l’arborescence réelle de la VM
+
+Clarification d’arborescence :
+- Le répertoire target existe sur le poste local Windows dans le projet Maven
+- Ce répertoire n’existe pas sur la VM car seul le jar a été transféré
+- Sur la VM, le fichier transféré a été placé temporairement dans /tmp
+
+Fichier transféré sur la VM :
+- /tmp/script_back-0.0.1-SNAPSHOT.jar
+
+Vérification du transfert :
+ls -l /tmp/script_back-0.0.1-SNAPSHOT.jar
+
+Résultat :
+- le jar est bien présent sur la VM
+- taille cohérente avec l’artefact généré localement
+
+Installation dans l’emplacement final :
+sudo cp /tmp/script_back-0.0.1-SNAPSHOT.jar /opt/script_back/backend/script_back.jar
+sudo chown scriptback:scriptback /opt/script_back/backend/script_back.jar
+sudo chmod 640 /opt/script_back/backend/script_back.jar
+
+Pourquoi :
+- standardiser le nom du jar pour le service systemd
+- donner la propriété du fichier à l’utilisateur de service dédié
+- limiter les droits du fichier à la lecture autorisée
+
+Vérification finale du jar installé :
+sudo ls -l /opt/script_back/backend/script_back.jar
+
+Résultat :
+- /opt/script_back/backend/script_back.jar
+- propriétaire : scriptback
+- groupe : scriptback
+- permissions : 640
+- taille : 66296812 octets
+
+Fichier d’environnement vérifié :
+sudo ls -l /opt/script_back/config/script_back.env
+
+Résultat :
+- le fichier est présent
+- permissions : 600
+- propriétaire : scriptback
+
+Service systemd vérifié :
+sudo systemctl cat script_back
+
+Configuration confirmée :
+- WorkingDirectory=/opt/script_back/backend
+- EnvironmentFile=/opt/script_back/config/script_back.env
+- ExecStart=/usr/bin/java -jar /opt/script_back/backend/script_back.jar --server.address=127.0.0.1 --server.port=8080
+
+Interprétation :
+- le backend est maintenant correctement installé sur la VM
+- les permissions sont cohérentes
+- la configuration du service est prête pour un premier démarrage
+
+Conclusion :
+- la phase de transfert et d’installation du jar backend sur la VM est terminée avec succès
+- l’étape suivante est le premier démarrage du service script_back
+
+======================================================================
+45. PREMIER DEMARRAGE BACKEND REUSSI
+======================================================================
+
+Commandes exécutées :
+sudo systemctl daemon-reload
+sudo systemctl start script_back
+sudo systemctl status script_back
+sudo journalctl -u script_back -n 100 --no-pager
+
+Résultat du service :
+- script_back.service actif
+- état : active (running)
+- process Java lancé correctement
+- backend démarré sur 127.0.0.1:8080
+
+Ligne ExecStart effective :
+/usr/bin/java -jar /opt/script_back/backend/script_back.jar --server.address=127.0.0.1 --server.port=8080
+
+Résultats observés dans les logs :
+- connexion base OK
+- Flyway exécuté correctement
+- schéma détecté :
+  golden_script: << Empty Schema >>
+- migrations appliquées :
+  version 33 - schema baseline
+  version 34 - create users and roles
+- application Spring Boot démarrée avec succès
+
+Avertissements observés :
+- plusieurs warnings Flyway :
+  "Trigger does not exist"
+- warning Spring Security / AuthenticationManager
+
+Interprétation :
+- les warnings n’ont pas bloqué le démarrage
+- le backend est opérationnel
+- Flyway a modifié la base lors du premier lancement
+
+Conclusion :
+- le backend Spring Boot est désormais déployé et en cours d’exécution sur la VM
+- l’application écoute en local sur 127.0.0.1:8080
+- la prochaine étape consiste à tester les endpoints localement, puis via Nginx
+======================================================================
+46. VALIDATION DU BACKEND ET DU REVERSE PROXY NGINX
+======================================================================
+
+Tests réalisés sur la VM :
+
+1. Vérification de l’écoute backend :
+ss -tuln | grep 8080
+
+Résultat :
+- le backend écoute sur 127.0.0.1:8080 uniquement
+
+Interprétation :
+- le bind local fonctionne comme prévu
+- le backend n’est pas exposé directement sur le réseau
+
+2. Vérification de l’état de santé :
+curl http://127.0.0.1:8080/actuator/health
+
+Résultat :
+{"status":"UP"}
+
+Interprétation :
+- l’application est démarrée et opérationnelle
+
+3. Test de la racine backend :
+curl -i http://127.0.0.1:8080/
+
+Résultat :
+- HTTP/1.1 403
+
+Interprétation :
+- le backend répond bien
+- l’URL racine n’est pas autorisée ou n’est pas un endpoint exploitable
+
+4. Test du reverse proxy Nginx :
+curl -i http://localhost/api/
+
+Résultat :
+- HTTP/1.1 403
+- réponse servie via nginx
+
+Interprétation :
+- Nginx reçoit correctement les requêtes sur /api/
+- le proxy vers le backend fonctionne
+- la réponse 403 provient de l’application backend, pas de Nginx
+
+Conclusion :
+- le backend Spring Boot est déployé et fonctionne
+- le reverse proxy Nginx est opérationnel
+- il reste à tester les vrais endpoints métier et à déployer le frontend Angular réel
+
+======================================================================
+51. BUILD FRONTEND REUSSI
+======================================================================
+
+Commande utilisée :
+npm run build -- --configuration production
+
+Résultat :
+- build Angular réussi
+- génération du frontend dans :
+  dist/script_front
+
+Structure observée :
+- dist/script_front/browser
+- dist/script_front/server
+
+Interprétation :
+- le frontend est construit avec succès
+- les fichiers statiques exploitables par Nginx se trouvent dans :
+  dist/script_front/browser
+
+Avertissements observés :
+- dépassement du budget initial du bundle
+- dépassements de budget sur plusieurs fichiers SCSS
+
+Analyse :
+- ces avertissements ne bloquent pas le build
+- ils relèvent de l’optimisation frontend et non de l’échec de déploiement
+
+Conclusion :
+- le frontend est prêt à être transféré sur la VM
+- le dossier à déployer derrière Nginx est dist/script_front/browser
+
+======================================================================
+53. FRONTEND REEL SERVI PAR NGINX
+======================================================================
+
+Commandes exécutées :
+sudo cp -r /tmp/script_front/* /var/www/script_front/
+sudo chown -R root:root /var/www/script_front
+sudo find /var/www/script_front -type d -exec chmod 755 {} \;
+sudo find /var/www/script_front -type f -exec chmod 644 {} \;
+
+Erreur rencontrée avant correction :
+- utilisation erronée du chemin /temp/script_front
+- correction vers le bon chemin : /tmp/script_front
+
+Vérification effectuée :
+ls -la /var/www/script_front
+curl http://localhost
+
+Résultats :
+- les fichiers Angular buildés sont bien présents dans /var/www/script_front
+- Nginx sert désormais le vrai index.html Angular
+- la page de test temporaire a été remplacée avec succès
+
+Interprétation :
+- le frontend statique est correctement déployé
+- Nginx sert le frontend applicatif réel
+
+Conclusion :
+- le frontend Angular est en place sur la VM
+- l’étape suivante consiste à valider les accès applicatifs réels dans le navigateur et à vérifier les appels API depuis le frontend
 ======================================================================
 FIN DU DOCUMENT
 ======================================================================

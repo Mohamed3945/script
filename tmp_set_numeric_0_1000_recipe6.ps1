@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$base = 'http://localhost:8080/api'
+$base = /api'
 $recipeId = 6
 
 $steps = Invoke-RestMethod "$base/recipes/$recipeId/steps"

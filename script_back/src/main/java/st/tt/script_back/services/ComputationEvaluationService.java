@@ -31,6 +31,13 @@ import st.tt.script_back.repositories.ComputationFormulaRepository;
 import st.tt.script_back.repositories.RecipeRepository;
 import st.tt.script_back.repositories.StepParameterRepository;
 
+/**
+ * Évalue les formules numériques et met à jour les paramètres calculés.
+ *
+ * <p>Les formules sont triées selon leurs dépendances avant évaluation. Les
+ * erreurs fonctionnelles sont reportées dans {@link ComputationStatus} plutôt
+ * que propagées comme erreurs techniques vers l'appelant.
+ */
 @Service
 public class ComputationEvaluationService {
 
@@ -50,6 +57,20 @@ public class ComputationEvaluationService {
     }
 
     @Transactional
+    /**
+     * Recalcule tous les paramètres calculés d'une recette.
+     *
+     * <p>Les formules sont lues depuis la recette golden associée. Les références
+     * sont adressées par code d'étape et chemin de définition, puis les résultats
+     * sont arrondis selon la politique de chaque formule.
+     *
+     * <p>Un identifiant nul, une recette sans formule ou une recette sans paramètre
+     * entraîne une absence d'opération. Les paramètres invalides sont marqués avec
+     * un statut de calcul adapté et leur valeur est supprimée.
+     *
+     * @param recipeId identifiant de la recette à recalculer
+     * @throws EntityNotFoundException si la recette n'existe pas
+     */
     public void recomputeRecipeComputedParameters(Long recipeId) {
         if (recipeId == null) {
             return;

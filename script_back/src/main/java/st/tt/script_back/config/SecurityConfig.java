@@ -19,6 +19,17 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import st.tt.script_back.security.AppUserDetailsService;
 import st.tt.script_back.security.JwtAuthenticationFilter;
 
+/**
+ * Configure la sécurité HTTP de l'API.
+ *
+ * <p>L'application est sans session : chaque requête protégée doit présenter un
+ * jeton JWT valide. Les opérations de lecture sont accessibles aux rôles
+ * {@code SIMPLE} et {@code SUPER}, tandis que les opérations d'administration
+ * nécessitent généralement le rôle {@code SUPER}.</p>
+ *
+ * <p>La chaîne de filtres laisse notamment publics la connexion, la documentation
+ * OpenAPI et les endpoints d'information de santé.</p>
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -26,6 +37,12 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AppUserDetailsService appUserDetailsService;
 
+    /**
+     * Construit la configuration de sécurité.
+     *
+     * @param jwtAuthenticationFilter filtre qui authentifie les requêtes porteuses d'un JWT
+     * @param appUserDetailsService service de chargement des utilisateurs applicatifs
+     */
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter,
             AppUserDetailsService appUserDetailsService) {
@@ -33,6 +50,13 @@ public class SecurityConfig {
         this.appUserDetailsService = appUserDetailsService;
     }
 
+    /**
+     * Déclare la chaîne de filtres appliquée à toutes les requêtes HTTP.
+     *
+     * @param http objet de configuration Spring Security
+     * @return chaîne de filtres construite
+     * @throws Exception si Spring Security ne peut pas construire la chaîne
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -62,6 +86,11 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Configure l'authentification par identifiant et mot de passe.
+     *
+     * @return fournisseur utilisant les utilisateurs applicatifs et BCrypt
+     */
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(appUserDetailsService);
@@ -69,11 +98,23 @@ public class SecurityConfig {
         return provider;
     }
 
+    /**
+     * Expose le gestionnaire d'authentification construit par Spring.
+     *
+     * @param configuration configuration d'authentification Spring
+     * @return gestionnaire d'authentification
+     * @throws Exception si le gestionnaire ne peut pas être obtenu
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
 
+    /**
+     * Fournit l'encodeur utilisé pour les mots de passe persistés.
+     *
+     * @return encodeur BCrypt
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

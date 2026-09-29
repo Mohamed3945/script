@@ -19,11 +19,7 @@ import st.tt.script_back.services.StepParameterService;
 import st.tt.script_back.services.StepService;
 import java.util.List;
 
-/**
- * RecipeCommandController class for the backend domain.
- * <p>
- * This type exposes behavior used by the application service layer.
- */
+/** Expose les commandes de création, modification et suppression des recettes et étapes. */
 @RestController
 @RequestMapping("/api")
 public class RecipeCommandController {
@@ -33,11 +29,9 @@ public class RecipeCommandController {
     private final StepParameterService stepParameterService;
 
     /**
-     * Executes RecipeCommandController.
-     *
-     * @param recipeService input argument consumed by RecipeCommandController.
-     * @param stepService input argument consumed by RecipeCommandController.
-     * @param stepParameterService input argument consumed by RecipeCommandController.
+     * @param recipeService service de modification des recettes
+     * @param stepService service de modification des étapes
+     * @param stepParameterService service de modification des paramètres d'étape
      */
     public RecipeCommandController(
             RecipeService recipeService,
@@ -49,11 +43,10 @@ public class RecipeCommandController {
     }
 
     /**
-     * Executes createRecipe.
-     *
-     * @param request input argument consumed by createRecipe.
-         * @param resultProfileId input argument consumed by createRecipe.
-     * @return computed RecipeDto result returned by createRecipe.
+     * Crée une recette, éventuellement à partir d'un profil de résultat.
+     * @param request données de la recette
+     * @param resultProfileId profil de résultat facultatif
+     * @return recette créée
      */
     @PostMapping("/recipes")
     public RecipeDto createRecipe(
@@ -62,19 +55,18 @@ public class RecipeCommandController {
         return recipeService.createRecipe(request, resultProfileId);
     }
 
+    /**
+     * Duplique une recette golden pour créer une recette de travail dérivée.
+     * @param request recette source et informations de duplication
+     * @return recette dérivée créée
+     */
     @PostMapping("/recipes/duplicate-golden")
     public RecipeDto duplicateGoldenRecipe(
             @RequestBody DuplicateGoldenRecipeRequestDto request) {
         return recipeService.duplicateGoldenRecipe(request);
     }
 
-    /**
-     * Executes updateRecipe.
-     *
-     * @param recipeId input argument consumed by updateRecipe.
-     * @param request input argument consumed by updateRecipe.
-     * @return computed RecipeDto result returned by updateRecipe.
-     */
+    /** @param recipeId recette à modifier @param request nouvelles données @return recette mise à jour */
     @PutMapping("/recipes/{recipeId}")
     public RecipeDto updateRecipe(
             @PathVariable Long recipeId,
@@ -82,23 +74,13 @@ public class RecipeCommandController {
         return recipeService.updateRecipe(recipeId, request);
     }
 
-    /**
-     * Executes deleteRecipe.
-     *
-     * @param recipeId input argument consumed by deleteRecipe.
-     */
+    /** @param recipeId identifiant de la recette à supprimer */
     @DeleteMapping("/recipes/{recipeId}")
     public void deleteRecipe(@PathVariable Long recipeId) {
         recipeService.deleteRecipe(recipeId);
     }
 
-    /**
-     * Executes createStep.
-     *
-     * @param recipeId input argument consumed by createStep.
-     * @param request input argument consumed by createStep.
-     * @return computed StepDto result returned by createStep.
-     */
+    /** @param recipeId recette parente @param request données de l'étape @return étape créée */
     @PostMapping("/recipes/{recipeId}/steps")
     public StepDto createStep(
             @PathVariable Long recipeId,
@@ -107,11 +89,11 @@ public class RecipeCommandController {
     }
 
     /**
-     * Creates one step parameter across all steps of a recipe filtered by step kind.
-     *
-     * Example:
-     * POST /api/recipes/12/step-parameters/propagate?stepKind=STEP
-     * POST /api/recipes/12/step-parameters/propagate?stepKind=PRESTEP
+     * Crée un même paramètre dans toutes les étapes correspondant au type demandé.
+     * @param recipeId recette dont les étapes sont ciblées
+     * @param stepKind type d'étape à traiter
+     * @param request définition et valeur initiale du paramètre
+     * @return paramètres créés dans les étapes concernées
      */
     @PostMapping("/recipes/{recipeId}/step-parameters/propagate")
     public List<StepParameterDto> propagateStepParameterToRecipeSteps(
@@ -120,13 +102,7 @@ public class RecipeCommandController {
             @RequestBody StepParameterDto request) {
         return stepParameterService.createRecipeWideStepParameter(recipeId, stepKind, request);
     }
-    /**
-     * Executes updateStep.
-     *
-     * @param stepId input argument consumed by updateStep.
-     * @param request input argument consumed by updateStep.
-     * @return computed StepDto result returned by updateStep.
-     */
+    /** @param stepId étape à modifier @param request nouvelles données @return étape mise à jour */
     @PutMapping("/steps/{stepId}")
     public StepDto updateStep(
             @PathVariable Long stepId,
@@ -134,23 +110,13 @@ public class RecipeCommandController {
         return stepService.updateStep(stepId, request);
     }
 
-    /**
-     * Executes deleteStep.
-     *
-     * @param stepId input argument consumed by deleteStep.
-     */
+    /** @param stepId identifiant de l'étape à supprimer */
     @DeleteMapping("/steps/{stepId}")
     public void deleteStep(@PathVariable Long stepId) {
         stepService.deleteStep(stepId);
     }
 
-    /**
-     * Executes createStepParameter.
-     *
-     * @param stepId input argument consumed by createStepParameter.
-     * @param request input argument consumed by createStepParameter.
-     * @return computed StepParameterDto result returned by createStepParameter.
-     */
+    /** @param stepId étape cible @param request paramètre à créer @return paramètre créé */
     @PostMapping("/steps/{stepId}/parameters")
     public StepParameterDto createStepParameter(
             @PathVariable Long stepId,
@@ -158,13 +124,7 @@ public class RecipeCommandController {
         return stepParameterService.createStepParameter(stepId, request);
     }
 
-    /**
-     * Executes createStepParametersBulk.
-     *
-     * @param stepId input argument consumed by createStepParametersBulk.
-     * @param requests input argument consumed by createStepParametersBulk.
-     * @return computed List<StepParameterDto> result returned by createStepParametersBulk.
-     */
+    /** @param stepId étape cible @param requests paramètres à créer @return paramètres créés */
     @PostMapping("/steps/{stepId}/parameters/bulk")
     public List<StepParameterDto> createStepParametersBulk(
             @PathVariable Long stepId,
@@ -172,13 +132,7 @@ public class RecipeCommandController {
         return stepParameterService.createStepParametersBulk(stepId, requests);
     }
 
-    /**
-     * Executes updateStepParameter.
-     *
-     * @param stepParameterId input argument consumed by updateStepParameter.
-     * @param request input argument consumed by updateStepParameter.
-     * @return computed StepParameterDto result returned by updateStepParameter.
-     */
+    /** @param stepParameterId paramètre à modifier @param request nouvelles données @return paramètre mis à jour */
     @PutMapping("/step-parameters/{stepParameterId}")
     public StepParameterDto updateStepParameter(
             @PathVariable Long stepParameterId,
@@ -186,21 +140,16 @@ public class RecipeCommandController {
         return stepParameterService.updateStepParameter(stepParameterId, request);
     }
 
-    /**
-     * Executes deleteStepParameter.
-     *
-     * @param stepParameterId input argument consumed by deleteStepParameter.
-     */
+    /** @param stepParameterId identifiant du paramètre à supprimer */
     @DeleteMapping("/step-parameters/{stepParameterId}")
     public void deleteStepParameter(@PathVariable Long stepParameterId) {
         stepParameterService.deleteStepParameter(stepParameterId);
     }
 
     /**
-     * Executes deleteRecipeWideStepParameter.
-     *
-     * @param recipeId input argument consumed by deleteRecipeWideStepParameter.
-     * @param definitionId input argument consumed by deleteRecipeWideStepParameter.
+     * Supprime une définition de paramètre de toutes les étapes de la recette.
+     * @param recipeId recette concernée
+     * @param definitionId définition de paramètre à retirer
      */
     @DeleteMapping("/recipes/{recipeId}/parameter-definitions/{definitionId}")
     public void deleteRecipeWideStepParameter(

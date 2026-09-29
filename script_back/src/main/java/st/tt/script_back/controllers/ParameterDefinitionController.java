@@ -18,67 +18,38 @@ import st.tt.script_back.dto.ParameterDefinitionReorderRequestDto;
 import st.tt.script_back.enums.ParameterScope;
 import st.tt.script_back.services.ParameterDefinitionService;
 
-/**
- * ParameterDefinitionController class for the backend domain.
- * <p>
- * This type exposes behavior used by the application service layer.
- */
+/** Administre les définitions de paramètres et leur organisation dans les groupes. */
 @RestController
 @RequestMapping("/api/parameter-definitions")
 public class ParameterDefinitionController {
 
     private final ParameterDefinitionService parameterDefinitionService;
 
-    /**
-     * Executes ParameterDefinitionController.
-     *
-     * @param parameterDefinitionService input argument consumed by ParameterDefinitionController.
-     */
+    /** @param parameterDefinitionService service métier des définitions de paramètres */
     public ParameterDefinitionController(ParameterDefinitionService parameterDefinitionService) {
         this.parameterDefinitionService = parameterDefinitionService;
     }
 
-    /**
-     * Executes getParameterDefinitions.
-     *
-         * @param stepType input argument consumed by getParameterDefinitions.
-     * @return computed List<ParameterDefinitionDto> result returned by getParameterDefinitions.
-     */
+    /** @param stepType filtre optionnel sur le périmètre d'étape @return définitions disponibles */
     @GetMapping
     public List<ParameterDefinitionDto> getParameterDefinitions(
             @RequestParam(required = false) ParameterScope stepType) {
         return parameterDefinitionService.getParameterDefinitions(stepType);
     }
 
-    /**
-     * Executes getParameterDefinition.
-     *
-     * @param id input argument consumed by getParameterDefinition.
-     * @return computed ParameterDefinitionDto result returned by getParameterDefinition.
-     */
+    /** @param id identifiant de la définition @return définition demandée */
     @GetMapping("/{id}")
     public ParameterDefinitionDto getParameterDefinition(@PathVariable Long id) {
         return parameterDefinitionService.getParameterDefinition(id);
     }
 
-    /**
-     * Executes createParameterDefinition.
-     *
-     * @param request input argument consumed by createParameterDefinition.
-     * @return computed ParameterDefinitionDto result returned by createParameterDefinition.
-     */
+    /** @param request définition à créer @return définition créée */
     @PostMapping
     public ParameterDefinitionDto createParameterDefinition(@RequestBody ParameterDefinitionDto request) {
         return parameterDefinitionService.createParameterDefinition(request);
     }
 
-    /**
-     * Executes updateParameterDefinition.
-     *
-     * @param id input argument consumed by updateParameterDefinition.
-     * @param request input argument consumed by updateParameterDefinition.
-     * @return computed ParameterDefinitionDto result returned by updateParameterDefinition.
-     */
+    /** @param id identifiant de la définition @param request nouvelles données @return définition mise à jour */
     @PutMapping("/{id}")
     public ParameterDefinitionDto updateParameterDefinition(
             @PathVariable Long id,
@@ -86,37 +57,25 @@ public class ParameterDefinitionController {
         return parameterDefinitionService.updateParameterDefinition(id, request);
     }
 
-    /**
-     * Executes deleteParameterDefinition.
-     *
-     * @param id input argument consumed by deleteParameterDefinition.
-     */
+    /** @param id identifiant de la définition à supprimer */
     @DeleteMapping("/{id}")
     public void deleteParameterDefinition(@PathVariable Long id) {
         parameterDefinitionService.deleteParameterDefinition(id);
     }
 
-    /**
-     * Executes reorderDefinitions.
-     *
-     * @param request input argument consumed by reorderDefinitions.
-     */
+    /** @param request ordre des définitions dans leur groupe */
     @PostMapping("/reorder")
     public void reorderDefinitions(@RequestBody ParameterDefinitionReorderRequestDto request) {
         parameterDefinitionService.reorderDefinitionsInGroup(request);
     }
 
-    /**
-     * Executes moveDefinition.
-     *
-     * @param request input argument consumed by moveDefinition.
-     * @return computed ParameterDefinitionDto result returned by moveDefinition.
-     */
+    /** @param request définition et groupe de destination @return définition déplacée */
     @PostMapping("/move")
     public ParameterDefinitionDto moveDefinition(@RequestBody ParameterDefinitionMoveRequestDto request) {
         return parameterDefinitionService.moveDefinitionToGroup(request);
     }
 
+    /** @param configDefId identifiant de la configuration @return définitions associées */
     @GetMapping("/by-configuration-definition/{configDefId}")
     public List<ParameterDefinitionDto> getByConfigurationDefinition(
             @PathVariable Long configDefId) {

@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { ParameterGroup } from '../models/parameter-group.model';
 import { ParameterScope } from '../models/parameter-scope.model';
 
 @Injectable({ providedIn: 'root' })
 export class ParameterGroupApiService {
-  private readonly baseUrl = 'http://localhost:8080/api';
+  private readonly baseUrl = environment.apiBaseUrl;
 
   constructor(private http: HttpClient) {}
 

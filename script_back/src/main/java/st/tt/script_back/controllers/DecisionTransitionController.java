@@ -8,30 +8,21 @@ import st.tt.script_back.dto.DecisionNextResponseDto;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-/**
- * DecisionTransitionController class for the backend domain.
- * <p>
- * This type exposes behavior used by the application service layer.
- */
+/** Calcule la prochaine question du parcours selon les réponses déjà fournies. */
 @RestController
 @RequestMapping("/api/transitions")
 public class DecisionTransitionController {
     private final DecisionTransitionService decisionTransitionService;
 
-    /**
-     * Executes DecisionTransitionController.
-     *
-     * @param decisionTransitionService input argument consumed by DecisionTransitionController.
-     */
+    /** @param decisionTransitionService service d'évaluation des transitions */
     public DecisionTransitionController(DecisionTransitionService decisionTransitionService) {
         this.decisionTransitionService = decisionTransitionService;
     }
 
     /**
-     * Executes getNextTransition.
-     *
-     * @param request input argument consumed by getNextTransition.
-     * @return computed DecisionNextResponseDto result returned by getNextTransition.
+     * Détermine la prochaine étape du questionnaire.
+     * @param request question courante et réponse sélectionnée
+     * @return prochaine question, ou indication de fin du parcours
      */
     @PostMapping("/next")
     public DecisionNextResponseDto getNextTransition(@RequestBody DecisionNextRequestDto request) {

@@ -3,12 +3,13 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 
+import { environment } from '../../../environments/environment';
 import { CurrentUser, LoginRequest, LoginResponse, RoleCode } from '../models/auth.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthSessionService {
   private readonly platformId = inject(PLATFORM_ID);
-  private readonly baseUrl = 'http://localhost:8080/api/auth';
+  private readonly baseUrl = `${environment.apiBaseUrl}/auth`;
   private readonly tokenStorageKey = 'golden-script.auth.token';
   private readonly userStorageKey = 'golden-script.auth.user';
   private readonly currentUserSubject = new BehaviorSubject<CurrentUser | null>(this.readStoredUser());

@@ -35,6 +35,14 @@ public class RecipeXmlExportController {
     private final RecipeCustomizationSummaryService recipeCustomizationSummaryService;
     private final int maxUntouchedModifiableSpForExport;
 
+    /**
+     * Construit le contrôleur d'export XML.
+     *
+     * @param recipeXmlExportService service chargé de produire le document XML
+     * @param recipeCustomizationSummaryService service calculant les indicateurs de personnalisation
+     * @param maxUntouchedModifiableSpForExport nombre maximal de paramètres modifiables non personnalisés
+     *        autorisés pour une recette dérivée, ou {@code -1} pour désactiver le contrôle
+     */
     public RecipeXmlExportController(
             RecipeXmlExportService recipeXmlExportService,
             RecipeCustomizationSummaryService recipeCustomizationSummaryService,
@@ -44,6 +52,26 @@ public class RecipeXmlExportController {
         this.maxUntouchedModifiableSpForExport = maxUntouchedModifiableSpForExport;
     }
 
+    /**
+     * Exporte une recette au format XML compatible avec Soft Machine.
+     *
+     * <p>Avant l'export, le contrôleur calcule le résumé de personnalisation. Lorsque la
+     * propriété {@code script.export.max-untouched-modifiable-sp} est configurée à une
+     * valeur positive ou nulle, une recette dérivée dépassant cette limite est refusée
+     * avec le statut HTTP {@code 409 CONFLICT}.</p>
+     *
+     * <p>La réponse contient le XML en UTF-8, est marquée comme pièce jointe et expose
+     * le taux de personnalisation ainsi que le nombre de paramètres non personnalisés
+     * dans les en-têtes {@code X-Customization-Rate} et
+     * {@code X-Untouched-Modifiable-SP}.</p>
+     *
+     * @param recipeId identifiant de la recette à exporter
+     * @param machineId identifiant facultatif de la machine cible, utilisé pour produire
+     *        un export spécifique à cette machine
+     * @return réponse HTTP contenant le fichier XML et ses métadonnées de téléchargement
+     * @throws ResponseStatusException avec le statut {@code 409} lorsque la limite de
+     *         personnalisation configurée est dépassée
+     */
     @GetMapping("/{recipeId}/export/xml")
     public ResponseEntity<byte[]> exportXml(
             @PathVariable Long recipeId,

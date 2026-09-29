@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, forkJoin, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { ParameterDefinition } from '../models/parameter-definition.model';
 import { ParameterDefinitionDetail } from '../models/parameter-definition-detail.model';
 import { ParameterOption } from '../models/parameter-option.model';
@@ -8,7 +9,7 @@ import { ParameterScope } from '../models/parameter-scope.model';
 
 @Injectable({ providedIn: 'root' })
 export class ParameterDefinitionApiService {
-  private readonly baseUrl = 'http://localhost:8080/api';
+  private readonly baseUrl = environment.apiBaseUrl;
 
   constructor(private http: HttpClient) {}
 
