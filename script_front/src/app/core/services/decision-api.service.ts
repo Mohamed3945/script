@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { DecisionQuestion } from '../models/decision-question.model';
 import { DecisionNextRequest } from '../models/decision-next-request.model';
 import { DecisionNextResponse } from '../models/decision-next-response.model';
@@ -12,7 +13,7 @@ import { DecisionNextResponse } from '../models/decision-next-response.model';
  * DecisionApiService coordinates UI logic for this feature.
  */
 export class DecisionApiService {
-  private readonly baseUrl = 'http://localhost:8080/api';
+  private readonly baseUrl = environment.apiBaseUrl;
 
   constructor(private http: HttpClient) {}
 

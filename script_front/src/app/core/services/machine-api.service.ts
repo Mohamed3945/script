@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { Machine } from '../models/machine.model';
 import { MachineDetail } from '../models/machine-detail.model';
 
 @Injectable({ providedIn: 'root' })
 export class MachineApiService {
-  private readonly baseUrl = 'http://localhost:8080/api/machines';
+  private readonly baseUrl = `${environment.apiBaseUrl}/machines`;
 
   constructor(private http: HttpClient) {}
 

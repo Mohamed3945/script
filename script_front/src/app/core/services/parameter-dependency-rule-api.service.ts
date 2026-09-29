@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { ParameterDependencyRule } from '../models/parameter-dependency-rule.model';
 import { ParameterDependencyRuleView } from '../models/parameter-dependency-rule-view.model';
 
@@ -9,7 +10,7 @@ import { ParameterDependencyRuleView } from '../models/parameter-dependency-rule
  * ParameterDependencyRuleApiService coordinates UI logic for this feature.
  */
 export class ParameterDependencyRuleApiService {
-  private readonly baseUrl = 'http://localhost:8080/api';
+  private readonly baseUrl = environment.apiBaseUrl;
 
   constructor(private http: HttpClient) {}
 

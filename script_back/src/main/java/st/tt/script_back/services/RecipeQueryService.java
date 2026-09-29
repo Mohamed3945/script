@@ -97,6 +97,17 @@ public class RecipeQueryService {
     }
 
     @Transactional(readOnly = true)
+    /**
+     * Recherche les recettes selon le rôle courant et les filtres demandés.
+     *
+     * <p>Les utilisateurs qui ne sont pas super-utilisateurs sont limités à
+     * leurs recettes dérivées. Les super-utilisateurs peuvent consulter toute
+     * la collection et appliquer les filtres {@code recipeKind} ou {@code golden}.
+     *
+     * @param recipeKind type de recette à rechercher, ou {@code null}
+     * @param golden indique si la recherche doit sélectionner les recettes golden
+     * @return recettes mappées en DTO et triées par date de révision décroissante
+     */
     public List<RecipeDto> getRecipes(RecipeKind recipeKind, Boolean golden) {
         if (!authService.isSuperUser()) {
             return recipeMapper.toDtoList(recipeRepository.findByRecipeKindAndCreatorIdOrderByReviseTimeDesc(
@@ -120,6 +131,13 @@ public class RecipeQueryService {
     }
 
     @Transactional(readOnly = true)
+    /**
+     * Charge une recette après vérification de son existence et de son accessibilité.
+     *
+     * @param recipeId identifiant de la recette
+     * @return représentation DTO de la recette
+     * @throws EntityNotFoundException si aucune recette ne correspond à l'identifiant
+     */
     public RecipeDto getRecipe(Long recipeId) {
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new EntityNotFoundException("Recipe with id " + recipeId + " not found"));
@@ -128,6 +146,14 @@ public class RecipeQueryService {
     }
 
     @Transactional(readOnly = true)
+    /**
+     * Charge les étapes d'une recette dans l'ordre d'exécution.
+     *
+     * @param recipeId identifiant de la recette
+     * @param stepKind filtre optionnel sur le type d'étape
+     * @return étapes converties en DTO
+     * @throws EntityNotFoundException si la recette n'existe pas
+     */
     public List<StepDto> getRecipeSteps(Long recipeId, StepKind stepKind) {
         ensureRecipeExists(recipeId);
 
@@ -146,6 +172,13 @@ public class RecipeQueryService {
     }
 
     @Transactional(readOnly = true)
+    /**
+     * Retourne les paramètres d'une étape et enrichit chaque DTO avec son état calculé.
+     *
+     * @param stepId identifiant de l'étape
+     * @return paramètres avec définition, option sélectionnée et indicateur calculé
+     * @throws EntityNotFoundException si l'étape n'existe pas
+     */
     public List<StepParameterDto> getStepParameters(Long stepId) {
         ensureStepExists(stepId);
 
@@ -175,6 +208,17 @@ public class RecipeQueryService {
     }
 
     @Transactional(readOnly = true)
+    /**
+     * Détermine les paramètres calculés impactés par un paramètre source.
+     *
+     * <p>La recherche parcourt le graphe de dépendances des formules de la recette
+     * golden associée, puis conserve uniquement les paramètres calculés présents
+     * dans la recette consultée.
+     *
+     * @param stepParameterId identifiant du paramètre source
+     * @return identifiants des paramètres calculés impactés
+     * @throws EntityNotFoundException si le paramètre source n'existe pas
+     */
     public List<Long> getComputedDependentsByStepParameterId(Long stepParameterId) {
         StepParameter source = stepParameterRepository.findById(stepParameterId)
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -232,6 +276,15 @@ public class RecipeQueryService {
     }
 
     @Transactional(readOnly = true)
+    /**
+     * Construit la projection tabulaire des paramètres d'une recette.
+     *
+     * <p>Les lignes sont ordonnées par groupe, position dans le groupe puis nom
+     * de définition. Une recette sans étape produit une liste vide.
+     *
+     * @param recipeId identifiant de la recette
+     * @return lignes de grille destinées à l'éditeur de recette
+     */
     public List<StepParameterGridRowDto> getRecipeStepParameterGrid(Long recipeId) {
         ensureRecipeExists(recipeId);
 

@@ -16,11 +16,7 @@ import st.tt.script_back.dto.ParameterDependencyRuleViewDto;
 import st.tt.script_back.services.ParameterDependencyRuleQueryService;
 import st.tt.script_back.services.ParameterDependencyRuleService;
 
-/**
- * ParameterDependencyRuleController class for the backend domain.
- * <p>
- * This type exposes behavior used by the application service layer.
- */
+/** Administre les règles qui activent ou désactivent des paramètres selon d'autres paramètres. */
 @RestController
 @RequestMapping("/api/parameter-dependency-rules")
 public class ParameterDependencyRuleController {
@@ -29,10 +25,8 @@ public class ParameterDependencyRuleController {
     private final ParameterDependencyRuleQueryService parameterDependencyRuleQueryService;
 
     /**
-     * Executes ParameterDependencyRuleController.
-     *
-     * @param parameterDependencyRuleService input argument consumed by ParameterDependencyRuleController.
-     * @param parameterDependencyRuleQueryService input argument consumed by ParameterDependencyRuleController.
+     * @param parameterDependencyRuleService service de création et modification
+     * @param parameterDependencyRuleQueryService service de consultation enrichie
      */
     public ParameterDependencyRuleController(
             ParameterDependencyRuleService parameterDependencyRuleService,
@@ -41,44 +35,25 @@ public class ParameterDependencyRuleController {
         this.parameterDependencyRuleQueryService = parameterDependencyRuleQueryService;
     }
 
-    /**
-     * Executes getParameterDependencyRules.
-     * @return computed List<ParameterDependencyRuleViewDto> result returned by getParameterDependencyRules.
-     */
+    /** @return règles enrichies pour l'affichage et l'analyse des dépendances */
     @GetMapping
     public List<ParameterDependencyRuleViewDto> getParameterDependencyRules() {
         return parameterDependencyRuleQueryService.getRules();
     }
 
-    /**
-     * Executes getParameterDependencyRule.
-     *
-     * @param id input argument consumed by getParameterDependencyRule.
-     * @return computed ParameterDependencyRuleViewDto result returned by getParameterDependencyRule.
-     */
+    /** @param id identifiant de la règle @return règle enrichie demandée */
     @GetMapping("/{id}")
     public ParameterDependencyRuleViewDto getParameterDependencyRule(@PathVariable Long id) {
         return parameterDependencyRuleQueryService.getRule(id);
     }
 
-    /**
-     * Executes createParameterDependencyRule.
-     *
-     * @param request input argument consumed by createParameterDependencyRule.
-     * @return computed ParameterDependencyRuleDto result returned by createParameterDependencyRule.
-     */
+    /** @param request règle à créer @return règle créée */
     @PostMapping
     public ParameterDependencyRuleDto createParameterDependencyRule(@RequestBody ParameterDependencyRuleDto request) {
         return parameterDependencyRuleService.createParameterDependencyRule(request);
     }
 
-    /**
-     * Executes updateParameterDependencyRule.
-     *
-     * @param id input argument consumed by updateParameterDependencyRule.
-     * @param request input argument consumed by updateParameterDependencyRule.
-     * @return computed ParameterDependencyRuleDto result returned by updateParameterDependencyRule.
-     */
+    /** @param id identifiant de la règle @param request nouvelles données @return règle mise à jour */
     @PutMapping("/{id}")
     public ParameterDependencyRuleDto updateParameterDependencyRule(
             @PathVariable Long id,
@@ -86,11 +61,7 @@ public class ParameterDependencyRuleController {
         return parameterDependencyRuleService.updateParameterDependencyRule(id, request);
     }
 
-    /**
-     * Executes deleteParameterDependencyRule.
-     *
-     * @param id input argument consumed by deleteParameterDependencyRule.
-     */
+    /** @param id identifiant de la règle à supprimer */
     @DeleteMapping("/{id}")
     public void deleteParameterDependencyRule(@PathVariable Long id) {
         parameterDependencyRuleService.deleteParameterDependencyRule(id);

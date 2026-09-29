@@ -20,9 +20,12 @@ import st.tt.script_back.services.RecipeCustomizationSummaryService;
 import st.tt.script_back.services.RecipeQueryService;
 
 /**
- * RecipeController class for the backend domain.
- * <p>
- * This type exposes behavior used by the application service layer.
+ * Expose les opérations de consultation des recettes et de leur structure.
+ *
+ * <p>Les réponses sont destinées aux écrans de consultation et d'édition :
+ * recettes, étapes, paramètres, grille de paramètres et matrice de recette.
+ * Les règles d'accès et l'assemblage des projections restent délégués aux
+ * services métier.
  */
 @RestController
 @RequestMapping("/api")
@@ -32,9 +35,10 @@ public class RecipeController {
     private final RecipeCustomizationSummaryService recipeCustomizationSummaryService;
 
     /**
-     * Executes RecipeController.
+     * Crée le contrôleur avec ses services de lecture.
      *
-     * @param recipeQueryService input argument consumed by RecipeController.
+     * @param recipeQueryService service de consultation des recettes et étapes
+     * @param recipeCustomizationSummaryService service de synthèse des personnalisations
      */
     public RecipeController(
             RecipeQueryService recipeQueryService,
@@ -44,11 +48,16 @@ public class RecipeController {
     }
 
     /**
-     * Executes getRecipes.
+     * Retourne les recettes visibles par l'utilisateur courant.
      *
-         * @param recipeKind input argument consumed by getRecipes.
-         * @param golden input argument consumed by getRecipes.
-     * @return computed List<RecipeDto> result returned by getRecipes.
+     * <p>Un super-utilisateur peut filtrer par type ou par statut golden.
+     * Un utilisateur standard ne reçoit que ses recettes dérivées.
+     * Les résultats sont classés de la révision la plus récente à la plus ancienne.
+     *
+     * @param recipeKind filtre optionnel sur le type de recette
+     * @param golden filtre optionnel : {@code true} pour les recettes golden,
+     *        {@code false} pour les autres recettes
+     * @return recettes accessibles sous forme de DTO
      */
     @GetMapping("/recipes")
     public List<RecipeDto> getRecipes(
@@ -58,10 +67,12 @@ public class RecipeController {
     }
 
     /**
-     * Executes getRecipe.
+     * Retourne le détail d'une recette accessible.
      *
-     * @param id input argument consumed by getRecipe.
-     * @return computed RecipeDto result returned by getRecipe.
+     * @param id identifiant de la recette
+     * @return recette convertie en DTO
+     * @throws jakarta.persistence.EntityNotFoundException si la recette n'existe pas
+     * @throws org.springframework.security.access.AccessDeniedException si elle n'est pas accessible
      */
     @GetMapping("/recipes/{id}")
     public RecipeDto getRecipe(@PathVariable Long id) {
@@ -69,11 +80,11 @@ public class RecipeController {
     }
 
     /**
-     * Executes getRecipeSteps.
+     * Retourne les étapes d'une recette dans leur ordre d'exécution.
      *
-     * @param recipeId input argument consumed by getRecipeSteps.
-         * @param stepKind input argument consumed by getRecipeSteps.
-     * @return computed List<StepDto> result returned by getRecipeSteps.
+     * @param recipeId identifiant de la recette
+     * @param stepKind filtre optionnel sur le type d'étape
+     * @return étapes triées par {@code orderIndex}
      */
     @GetMapping("/recipes/{recipeId}/steps")
     public List<StepDto> getRecipeSteps(
@@ -83,10 +94,11 @@ public class RecipeController {
     }
 
     /**
-     * Executes getStep.
+     * Retourne le détail d'une étape.
      *
-     * @param id input argument consumed by getStep.
-     * @return computed StepDto result returned by getStep.
+     * @param id identifiant de l'étape
+     * @return étape convertie en DTO
+     * @throws jakarta.persistence.EntityNotFoundException si l'étape n'existe pas
      */
     @GetMapping("/steps/{id}")
     public StepDto getStep(@PathVariable Long id) {
@@ -94,10 +106,10 @@ public class RecipeController {
     }
 
     /**
-     * Executes getStepParameters.
+     * Retourne les paramètres d'une étape avec leur définition et leur état calculé.
      *
-     * @param stepId input argument consumed by getStepParameters.
-     * @return computed List<StepParameterDto> result returned by getStepParameters.
+     * @param stepId identifiant de l'étape
+     * @return paramètres associés à l'étape
      */
     @GetMapping("/steps/{stepId}/parameters")
     public List<StepParameterDto> getStepParameters(@PathVariable Long stepId) {
@@ -105,26 +117,33 @@ public class RecipeController {
     }
 
     /**
-     * Executes getStepParameter.
+     * Retourne un paramètre d'étape et indique s'il est produit par une formule.
      *
-     * @param id input argument consumed by getStepParameter.
-     * @return computed StepParameterDto result returned by getStepParameter.
+     * @param id identifiant du paramètre d'étape
+     * @return paramètre converti en DTO
      */
     @GetMapping("/step-parameters/{id}")
     public StepParameterDto getStepParameter(@PathVariable Long id) {
         return recipeQueryService.getStepParameter(id);
     }
 
+    /**
+     * Retourne les paramètres calculés qui dépendent directement ou indirectement
+     * de la valeur du paramètre fourni.
+     *
+     * @param id identifiant du paramètre source
+     * @return identifiants des paramètres calculés impactés
+     */
     @GetMapping("/step-parameters/{id}/computed-dependents")
     public List<Long> getComputedDependents(@PathVariable Long id) {
         return recipeQueryService.getComputedDependentsByStepParameterId(id);
     }
 
     /**
-     * Executes getRecipeStepParameterGrid.
+     * Construit la grille des paramètres d'une recette pour l'interface d'édition.
      *
-     * @param recipeId input argument consumed by getRecipeStepParameterGrid.
-     * @return computed List<StepParameterGridRowDto> result returned by getRecipeStepParameterGrid.
+     * @param recipeId identifiant de la recette
+     * @return lignes triées par groupe, position dans le groupe puis nom
      */
     @GetMapping("/recipes/{recipeId}/step-parameter-grid")
     public List<StepParameterGridRowDto> getRecipeStepParameterGrid(@PathVariable Long recipeId) {
@@ -132,10 +151,10 @@ public class RecipeController {
     }
 
     /**
-     * Executes getRecipeMatrix.
+     * Construit la matrice croisant les étapes et les définitions de paramètres.
      *
-     * @param recipeId input argument consumed by getRecipeMatrix.
-     * @return computed RecipeMatrixDto result returned by getRecipeMatrix.
+     * @param recipeId identifiant de la recette
+     * @return matrice comprenant colonnes, lignes et cellules de paramètres
      */
     @GetMapping("/recipes/{recipeId}/matrix")
     public RecipeMatrixDto getRecipeMatrix(@PathVariable Long recipeId) {
@@ -143,7 +162,10 @@ public class RecipeController {
     }
 
     /**
-     * Returns a customization summary for derived recipes before XML export.
+     * Retourne le résumé de personnalisation d'une recette dérivée avant export XML.
+     * @param recipeId identifiant de la recette
+     * @param limit nombre maximal d'éléments détaillés à retourner
+     * @return statistiques et éléments non personnalisés de la recette
      */
     @GetMapping("/recipes/{recipeId}/customization-summary")
     public RecipeCustomizationSummaryDto getCustomizationSummary(

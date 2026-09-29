@@ -70,6 +70,11 @@ export class DecisionResultPageComponent {
       description: 'Editable value changed by the user in derived customization.'
     },
     {
+      cssClass: 'computer-modified-after-computation',
+      title: 'Computer modified after computation',
+      description: 'Editable value changed by the system in derived customization.'
+    },
+    {
       cssClass: 'readonly-neutral',
       title: 'Read-only neutral',
       description: 'Displayed for context only; no direct edit allowed.'
@@ -158,6 +163,9 @@ export class DecisionResultPageComponent {
     }
     if (cell.lockedByGolden) {
       return cell.activationState === 'DISABLED' ? 'golden-inactive' : 'golden-active';
+    }
+    if (cell.computedFromModified) {
+      return 'computer-modified-after-computation';
     }
     if (cell.computed) {
       return 'computed';
@@ -249,7 +257,12 @@ export class DecisionResultPageComponent {
           this.createLegendCell(2, 'ENUM', 'CONST_CURRENT', 'editable-default', { selectedOptionLabel: 'CONST_CURRENT', editable: true }),
           this.createLegendCell(3, 'ENUM', 'CONST_VOLTAGE', 'user-modified', { selectedOptionLabel: 'CONST_VOLTAGE', editable: true, userModified: true }),
           this.createLegendCell(4, 'ENUM', 'CONST_VOLTAGE', 'computed', { selectedOptionLabel: 'CONST_VOLTAGE', computed: true }),
-          this.createLegendCell(5, 'ENUM', 'CONST_CURRENT', 'readonly-neutral', { selectedOptionLabel: 'CONST_CURRENT' })
+          this.createLegendCell(5, 'ENUM', 'CONST_CURRENT', 'computer-modified-after-computation', {
+            selectedOptionLabel: 'CONST_CURRENT',
+            editable: true,
+            computed: true,
+            computedFromModified: true
+          })
         ]
       },
       {
@@ -278,6 +291,14 @@ export class DecisionResultPageComponent {
       computed: { lockedByGolden: false, activationState: 'ENABLED', editable: false, userModified: false, computed: true },
       'editable-default': { lockedByGolden: false, activationState: 'ENABLED', editable: true, userModified: false, computed: false },
       'user-modified': { lockedByGolden: false, activationState: 'ENABLED', editable: true, userModified: true, computed: false },
+      'computer-modified-after-computation': {
+        lockedByGolden: false,
+        activationState: 'ENABLED',
+        editable: true,
+        userModified: false,
+        computed: true,
+        computedFromModified: true
+      },
       'readonly-neutral': { lockedByGolden: false, activationState: 'ENABLED', editable: false, userModified: false, computed: false }
     };
 

@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { ChamberCapability } from '../models/chamber-capability.model';
 
 @Injectable({ providedIn: 'root' })
 export class ChamberCapabilityApiService {
-  private readonly baseUrl = 'http://localhost:8080/api/chamber-capabilities';
+  private readonly baseUrl = `${environment.apiBaseUrl}/chamber-capabilities`;
 
   constructor(private http: HttpClient) {}
 

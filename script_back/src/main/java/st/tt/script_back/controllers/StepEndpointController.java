@@ -12,7 +12,7 @@ import st.tt.script_back.dto.StepEndpointDto;
 import st.tt.script_back.services.StepEndpointService;
 
 /**
- * Gestion de l'endpoint d'arrêt d'un step.
+ * Gère l'endpoint d'arrêt d'une étape.
  *
  * Un endpoint est la condition de fin d'un step dans une recette Soft Machine.
  * Il peut être :
@@ -30,15 +30,18 @@ public class StepEndpointController {
 
     private final StepEndpointService stepEndpointService;
 
+    /** @param stepEndpointService service métier des endpoints d'étape */
     public StepEndpointController(StepEndpointService stepEndpointService) {
         this.stepEndpointService = stepEndpointService;
     }
 
+    /** @param stepId étape concernée @return endpoint actuel, éventuellement vide */
     @GetMapping
     public StepEndpointDto getEndpoint(@PathVariable Long stepId) {
         return stepEndpointService.getEndpoint(stepId);
     }
 
+    /** @param stepId étape concernée @param request endpoint à créer ou remplacer @return endpoint enregistré */
     @PutMapping
     public StepEndpointDto upsertEndpoint(
             @PathVariable Long stepId,
@@ -46,6 +49,7 @@ public class StepEndpointController {
         return stepEndpointService.upsertEndpoint(stepId, request);
     }
 
+    /** @param stepId étape dont l'endpoint doit être supprimé */
     @DeleteMapping
     public void deleteEndpoint(@PathVariable Long stepId) {
         stepEndpointService.deleteEndpoint(stepId);

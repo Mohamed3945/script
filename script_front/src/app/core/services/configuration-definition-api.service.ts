@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { ConfigurationDefinition } from '../models/configuration-definition.model';
 import { ConfigurationDefinitionDetail } from '../models/configuration-definition-detail.model';
 
 @Injectable({ providedIn: 'root' })
 export class ConfigurationDefinitionApiService {
-  private readonly baseUrl = 'http://localhost:8080/api/configuration-definitions';
+  private readonly baseUrl = `${environment.apiBaseUrl}/configuration-definitions`;
 
   constructor(private http: HttpClient) {}
 

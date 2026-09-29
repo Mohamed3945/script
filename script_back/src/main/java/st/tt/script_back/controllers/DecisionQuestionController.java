@@ -7,61 +7,35 @@ import st.tt.script_back.dto.DecisionQuestionDto;
 import st.tt.script_back.dto.DecisionOptionDto;
 import java.util.List;
 
-/**
- * DecisionQuestionController class for the backend domain.
- * <p>
- * This type exposes behavior used by the application service layer.
- */
+/** Expose les questions et options du parcours de décision. */
 @RestController
 public class DecisionQuestionController {
     private final DecisionQuestionService decisionQuestionService;
 
-    /**
-     * Executes DecisionQuestionController.
-     *
-     * @param decisionQuestionService input argument consumed by DecisionQuestionController.
-     */
+    /** @param decisionQuestionService service de consultation des questions */
     public DecisionQuestionController(DecisionQuestionService decisionQuestionService) {
         this.decisionQuestionService = decisionQuestionService;
     }
 
-    /**
-     * Executes getEntryPointQuestion.
-     * @return computed DecisionQuestionDto result returned by getEntryPointQuestion.
-     */
+    /** @return question initiale du parcours de décision */
     @GetMapping("/api/questions/entry-point")
     public DecisionQuestionDto getEntryPointQuestion() {
         return decisionQuestionService.getEntryPointQuestion();
     }
 
-    /**
-     * Executes getQuestionByCode.
-     *
-     * @param code input argument consumed by getQuestionByCode.
-     * @return computed DecisionQuestionDto result returned by getQuestionByCode.
-     */
+    /** @param code code fonctionnel de la question @return question correspondante */
     @GetMapping("/api/questions/code/{code}")
     public DecisionQuestionDto getQuestionByCode(@PathVariable String code) {
         return decisionQuestionService.getQuestionByCode(code);
     }
 
-    /**
-     * Executes getOptionsForQuestion.
-     *
-     * @param id input argument consumed by getOptionsForQuestion.
-     * @return computed List<DecisionOptionDto> result returned by getOptionsForQuestion.
-     */
+    /** @param id identifiant de la question @return options proposées pour la question */
     @GetMapping("/api/questions/{id}/options")
     public List<DecisionOptionDto> getOptionsForQuestion(@PathVariable Long id) {
         return decisionQuestionService.getOptionForQuestion(id);
     }
 
-    /**
-     * Executes getQuestionById.
-     *
-     * @param id input argument consumed by getQuestionById.
-     * @return computed DecisionQuestionDto result returned by getQuestionById.
-     */
+    /** @param id identifiant de la question @return question correspondante */
     @GetMapping("/api/questions/{id}")
     public DecisionQuestionDto getQuestionById(@PathVariable Long id) {
         return decisionQuestionService.findById(id);

@@ -165,6 +165,10 @@
   background: #1db9e8;
   color: #fff;
 }
+.preview-cell.cell--computer-modified-after-computation {
+  background: #bfe8ff;
+  color: #16445c;
+}
 
 .preview-cell.cell--readonly-neutral {
   background: #f7fafc;
@@ -214,6 +218,10 @@
 
 .legend-swatch--user-modified {
   background: #1db9e8;
+}
+
+.legend-swatch--computer-modified-after-computation {
+  background: #bfe8ff;
 }
 
 .legend-swatch--readonly-neutral {
