@@ -11,5 +11,5 @@ import java.util.List;
 public interface DecisionOptionRepository extends JpaRepository<DecisionOption, Long> {
 
     List<DecisionOption> findByDecisionQuestionIdOrderByOrderIndexAsc(Long questionId);
-    
+
 }

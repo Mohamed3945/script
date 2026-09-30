@@ -58,6 +58,10 @@
 
     <div class="sidebar__section" *ngIf="isSuperUser">
       <div class="sidebar__section-title">Admin</div>
+      <a routerLink="/decision-admin" routerLinkActive="is-active" class="sidebar__node sidebar__node--root" title="Questionnaire Management">
+        <i class="ti ti-list-details"></i>
+        <span class="sidebar__label">Questionnaire</span>
+      </a>
       <a routerLink="/users" routerLinkActive="is-active" class="sidebar__node sidebar__node--root" title="User Management">
         <i class="ti ti-users"></i>
         <span class="sidebar__label">User Management</span>

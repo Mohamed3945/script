@@ -18,6 +18,7 @@ public class DecisionResultProfileDto {
     private Long id;
     private String code;
     private String description;
+    private boolean active;
     private Long goldenRecipeId;
     private Long machineId;
     

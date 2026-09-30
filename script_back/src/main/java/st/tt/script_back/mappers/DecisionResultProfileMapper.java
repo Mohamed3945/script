@@ -25,6 +25,7 @@ public class DecisionResultProfileMapper {
                 profile.getId(),
                 profile.getCode(),
                 profile.getDescription(),
+                profile.isActive(),
                 profile.getGoldenRecipeId() ,
                 profile.getMachineId() 
         );
