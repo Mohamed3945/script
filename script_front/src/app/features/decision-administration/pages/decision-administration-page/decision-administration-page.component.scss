@@ -1,0 +1,79 @@
+.decision-admin {
+  padding: 22px;
+  color: var(--text-main);
+}
+
+.decision-admin__header,
+.decision-admin__panel-heading,
+.decision-admin__form-actions,
+.decision-admin__option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.decision-admin__header { margin-bottom: 18px; }
+.decision-admin__eyebrow { color: var(--accent-gold); font: 11px 'JetBrains Mono', monospace; text-transform: uppercase; }
+.decision-admin__header h1 { margin: 4px 0 0; font-size: 26px; }
+.decision-admin__tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border-soft); margin-bottom: 16px; }
+.decision-admin__tabs button { display: inline-flex; align-items: center; gap: 8px; border: 0; border-bottom: 2px solid transparent; background: transparent; padding: 10px 12px; color: var(--text-soft); font: inherit; cursor: pointer; }
+.decision-admin__tabs button.is-active { color: var(--text-main); border-bottom-color: var(--accent-gold); font-weight: 700; }
+.decision-admin__tabs span { padding: 1px 6px; border-radius: 10px; background: #edf1f3; font-size: 11px; }
+.decision-admin__layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(330px, 390px); gap: 16px; align-items: start; }
+.decision-admin__transition-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(290px, 350px); gap: 16px; align-items: start; }
+.decision-admin__result-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(290px, 350px); gap: 16px; align-items: start; }
+.decision-admin__panel { min-width: 0; padding: 16px; background: #fff; }
+.decision-admin__panel-heading { margin-bottom: 12px; color: var(--text-soft); }
+.decision-admin__panel-heading h2, .decision-admin__panel-heading h3 { margin: 0; color: var(--text-main); font-size: 16px; }
+.decision-admin__panel-heading h3 { font-size: 14px; }
+.decision-admin__panel-heading > span { font-size: 12px; }
+.decision-admin__table-wrap { overflow-x: auto; }
+.decision-admin__table { width: 100%; border-collapse: collapse; }
+.decision-admin__table th, .decision-admin__table td { padding: 10px 8px; border-top: 1px solid var(--border-soft); text-align: left; vertical-align: middle; font-size: 12px; }
+.decision-admin__table th { color: var(--text-soft); font-size: 11px; font-weight: 700; }
+.decision-admin__table tr.is-selected { background: #f5f7f7; }
+.decision-admin__table td strong, .decision-admin__table td small, .decision-admin__option-row strong, .decision-admin__option-row small { display: block; }
+.decision-admin__table td small, .decision-admin__option-row small { margin-top: 3px; color: var(--text-soft); font-size: 11px; }
+.decision-admin__table td:first-child small { color: var(--accent-gold); }
+.decision-admin__status, .decision-admin__target { display: inline-block; padding: 3px 7px; border-radius: 4px; background: #e6f2eb; color: #28704b; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.decision-admin__status.is-off { background: #eef1f2; color: var(--text-soft); }
+.decision-admin__target.is-result { background: #fff0d9; color: #86560c; }
+.decision-admin__actions { white-space: nowrap; }
+.decision-admin__icon-button { width: 30px; height: 30px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: var(--text-soft); cursor: pointer; }
+.decision-admin__icon-button:hover { border-color: var(--border-soft); background: #f5f7f7; color: var(--text-main); }
+.decision-admin__icon-button.is-danger:hover { color: var(--danger); }
+.decision-admin__form { display: grid; gap: 12px; }
+.decision-admin__field { display: grid; gap: 6px; min-width: 0; }
+.decision-admin__field > span { color: var(--text-soft); font-size: 12px; font-weight: 700; }
+.decision-admin__field input, .decision-admin__field select { width: 100%; min-width: 0; min-height: 38px; box-sizing: border-box; border: 1px solid var(--border-soft); border-radius: 5px; padding: 8px 9px; background: #fff; color: var(--text-main); font: inherit; }
+.decision-admin__field textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--border-soft); border-radius: 5px; padding: 8px 9px; resize: vertical; color: var(--text-main); font: inherit; }
+.decision-admin__field-row { display: grid; grid-template-columns: minmax(0, 1fr) 100px; gap: 10px; }
+.decision-admin__toggles { display: flex; flex-wrap: wrap; gap: 16px; }
+.decision-admin__toggles label { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; }
+.decision-admin__form-actions { justify-content: flex-end; margin-top: 4px; }
+.decision-admin__button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; border: 1px solid var(--border-soft); border-radius: 5px; padding: 7px 10px; background: #fff; color: var(--text-main); font: inherit; font-size: 12px; cursor: pointer; }
+.decision-admin__button--primary { border-color: var(--accent-gold); background: var(--accent-gold); color: #fff; }
+.decision-admin__button:disabled { opacity: .65; cursor: wait; }
+.decision-admin__options { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--border-soft); }
+.decision-admin__option-list { margin-bottom: 14px; }
+.decision-admin__option-row { padding: 8px 0; border-bottom: 1px solid var(--border-soft); }
+.decision-admin__option-form { padding-top: 12px; }
+.decision-admin__target-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 0; border: 0; padding: 0; }
+.decision-admin__target-choice legend { margin-bottom: 7px; color: var(--text-soft); font-size: 12px; font-weight: 700; }
+.decision-admin__target-choice label { display: flex; align-items: center; gap: 7px; min-height: 36px; padding: 0 8px; border: 1px solid var(--border-soft); border-radius: 5px; font-size: 11px; cursor: pointer; }
+.decision-admin__target-choice label.is-active { border-color: var(--accent-gold); background: #fffaf0; }
+.decision-admin__error, .decision-admin__empty, .decision-admin__hint { padding: 11px 12px; color: var(--text-soft); background: #eef3f7; font-size: 12px; }
+.decision-admin__error { margin-bottom: 12px; color: var(--danger); background: var(--danger-bg); }
+
+@media (max-width: 1000px) {
+  .decision-admin__layout, .decision-admin__transition-layout, .decision-admin__result-layout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+  .decision-admin { padding: 14px; }
+  .decision-admin__header { align-items: flex-start; }
+  .decision-admin__header h1 { font-size: 22px; }
+  .decision-admin__panel { padding: 12px; }
+  .decision-admin__tabs button { padding-inline: 8px; font-size: 12px; }
+}

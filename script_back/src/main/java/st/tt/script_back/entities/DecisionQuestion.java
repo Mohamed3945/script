@@ -21,6 +21,7 @@ import st.tt.script_back.enums.QuestionType;
 import java.util.List;
 import java.util.ArrayList;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.CascadeType;
 import lombok.NoArgsConstructor;
 
@@ -60,6 +61,7 @@ public class DecisionQuestion {
 
     @JsonManagedReference("question-options")
     @OneToMany(mappedBy = "decisionQuestion", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("orderIndex ASC, id ASC")
     private List<DecisionOption> options = new ArrayList<>();
 
     @JsonManagedReference("question-current-transitions")

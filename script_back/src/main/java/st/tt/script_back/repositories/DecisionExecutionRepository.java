@@ -8,6 +8,8 @@ import st.tt.script_back.entities.DecisionExecution;
 
 public interface DecisionExecutionRepository extends JpaRepository<DecisionExecution, Long> {
 
+	boolean existsByResultProfileId(Long resultProfileId);
+
 	@Modifying
 	@Query("""
 			update DecisionExecution de

@@ -1,0 +1,179 @@
+<section class="decision-admin">
+  <header class="decision-admin__header">
+    <div>
+      <span class="decision-admin__eyebrow">Administration</span>
+      <h1>Questionnaire de décision</h1>
+    </div>
+    <button *ngIf="activeTab === 'questions'" type="button" class="decision-admin__button decision-admin__button--primary" (click)="resetQuestionForm()">
+      <i class="ti ti-plus"></i><span>Nouvelle question</span>
+    </button>
+    <button *ngIf="activeTab === 'transitions'" type="button" class="decision-admin__button decision-admin__button--primary" (click)="resetTransitionForm()">
+      <i class="ti ti-plus"></i><span>Nouvelle transition</span>
+    </button>
+  </header>
+
+  <nav class="decision-admin__tabs" aria-label="Gestion du questionnaire">
+    <button type="button" [class.is-active]="activeTab === 'questions'" (click)="setTab('questions')">Questions et réponses <span>{{ questions.length }}</span></button>
+    <button type="button" [class.is-active]="activeTab === 'transitions'" (click)="setTab('transitions')">Transitions <span>{{ transitions.length }}</span></button>
+    <button type="button" [class.is-active]="activeTab === 'results'" (click)="setTab('results')">Profils de résultat <span>{{ resultProfiles.length }}</span></button>
+  </nav>
+
+  <div *ngIf="errorMessage" class="decision-admin__error" role="alert">{{ errorMessage }}</div>
+  <div *ngIf="loading" class="decision-admin__empty">Chargement des questions...</div>
+
+  <div *ngIf="activeTab === 'questions' && !loading" class="decision-admin__layout">
+    <article class="decision-admin__panel">
+      <div class="decision-admin__panel-heading"><h2>Questions</h2><span>{{ questions.length }} au total</span></div>
+      <div class="decision-admin__table-wrap">
+        <table class="decision-admin__table">
+          <thead><tr><th>Code</th><th>Question</th><th>Type</th><th>Ordre</th><th>Etat</th><th></th></tr></thead>
+          <tbody>
+            <tr *ngFor="let question of questions" [class.is-selected]="selectedQuestionId === question.id">
+              <td><strong>{{ question.code }}</strong><small *ngIf="question.entryPoint">Entrée</small></td>
+              <td>{{ question.label }}</td><td>{{ question.questionType }}</td><td>{{ question.orderIndex }}</td>
+              <td><span class="decision-admin__status" [class.is-off]="!question.active">{{ question.active ? 'Active' : 'Inactive' }}</span></td>
+              <td class="decision-admin__actions">
+                <button type="button" class="decision-admin__icon-button" title="Modifier" aria-label="Modifier" (click)="editQuestion(question)"><i class="ti ti-edit"></i></button>
+                <button type="button" class="decision-admin__icon-button is-danger" title="Supprimer" aria-label="Supprimer" (click)="deleteQuestion(question)"><i class="ti ti-trash"></i></button>
+              </td>
+            </tr>
+            <tr *ngIf="questions.length === 0"><td colspan="6" class="decision-admin__empty">Aucune question configurée.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="decision-admin__panel decision-admin__editor">
+      <div class="decision-admin__panel-heading"><h2>{{ questionForm.id ? 'Modifier la question' : 'Créer une question' }}</h2></div>
+      <form class="decision-admin__form" (ngSubmit)="saveQuestion()">
+        <label class="decision-admin__field"><span>Code unique</span><input name="questionCode" [(ngModel)]="questionForm.code" required maxlength="255" /></label>
+        <label class="decision-admin__field"><span>Libellé</span><input name="questionLabel" [(ngModel)]="questionForm.label" required maxlength="255" /></label>
+        <div class="decision-admin__field-row">
+          <label class="decision-admin__field"><span>Type</span><select name="questionType" [(ngModel)]="questionForm.questionType"><option *ngFor="let type of questionTypes" [ngValue]="type">{{ type }}</option></select></label>
+          <label class="decision-admin__field"><span>Ordre</span><input name="questionOrder" type="number" [(ngModel)]="questionForm.orderIndex" /></label>
+        </div>
+        <div class="decision-admin__toggles">
+          <label><input name="entryPoint" type="checkbox" [(ngModel)]="questionForm.entryPoint" /><span>Question d’entrée</span></label>
+          <label><input name="questionActive" type="checkbox" [(ngModel)]="questionForm.active" /><span>Active</span></label>
+        </div>
+        <div class="decision-admin__form-actions">
+          <button type="button" class="decision-admin__button" (click)="resetQuestionForm()">Annuler</button>
+          <button type="submit" class="decision-admin__button decision-admin__button--primary" [disabled]="saving"><i class="ti ti-device-floppy"></i><span>{{ saving ? 'Enregistrement...' : 'Enregistrer' }}</span></button>
+        </div>
+      </form>
+
+      <section *ngIf="selectedQuestion" class="decision-admin__options">
+        <div class="decision-admin__panel-heading"><h3>Réponses</h3><span>{{ selectedQuestion.options.length }} au total</span></div>
+        <div *ngIf="selectedQuestion.options.length" class="decision-admin__option-list">
+          <div *ngFor="let option of selectedQuestion.options" class="decision-admin__option-row">
+            <div><strong>{{ option.label }}</strong><small>{{ option.value }} · ordre {{ option.orderIndex }}</small></div>
+            <div class="decision-admin__actions">
+              <button type="button" class="decision-admin__icon-button" title="Modifier la réponse" aria-label="Modifier la réponse" (click)="editOption(option)"><i class="ti ti-edit"></i></button>
+              <button type="button" class="decision-admin__icon-button is-danger" title="Supprimer la réponse" aria-label="Supprimer la réponse" (click)="deleteOption(option)"><i class="ti ti-trash"></i></button>
+            </div>
+          </div>
+        </div>
+        <form class="decision-admin__form decision-admin__option-form" (ngSubmit)="saveOption()">
+          <label class="decision-admin__field"><span>{{ optionForm.id ? 'Modifier la réponse' : 'Nouvelle réponse' }}</span><input name="optionLabel" [(ngModel)]="optionForm.label" required maxlength="255" placeholder="Libellé affiché" /></label>
+          <div class="decision-admin__field-row">
+            <label class="decision-admin__field"><span>Valeur</span><input name="optionValue" [(ngModel)]="optionForm.value" required maxlength="255" /></label>
+            <label class="decision-admin__field"><span>Ordre</span><input name="optionOrder" type="number" [(ngModel)]="optionForm.orderIndex" /></label>
+          </div>
+          <div class="decision-admin__form-actions">
+            <button *ngIf="optionForm.id" type="button" class="decision-admin__button" (click)="resetOptionForm()">Annuler</button>
+            <button type="submit" class="decision-admin__button decision-admin__button--primary"><i class="ti ti-plus"></i><span>{{ optionForm.id ? 'Mettre à jour' : 'Ajouter la réponse' }}</span></button>
+          </div>
+        </form>
+      </section>
+    </article>
+  </div>
+
+  <div *ngIf="activeTab === 'transitions'" class="decision-admin__transition-layout">
+    <article class="decision-admin__panel">
+      <div class="decision-admin__panel-heading"><h2>Transitions</h2><span>{{ transitions.length }} au total</span></div>
+      <div class="decision-admin__table-wrap">
+        <table class="decision-admin__table">
+          <thead><tr><th>Question actuelle</th><th>Réponse</th><th>Destination</th><th></th></tr></thead>
+          <tbody>
+            <tr *ngFor="let transition of transitions">
+              <td><strong>{{ transition.currentQuestionCode }}</strong><small>{{ transition.currentQuestionLabel }}</small></td>
+              <td>{{ transition.optionLabel }}</td>
+              <td><span class="decision-admin__target" [class.is-result]="!!transition.resultProfileId">{{ transition.nextQuestionCode || transition.resultProfileCode }}</span></td>
+              <td class="decision-admin__actions">
+                <button type="button" class="decision-admin__icon-button" title="Modifier" aria-label="Modifier" (click)="editTransition(transition)"><i class="ti ti-edit"></i></button>
+                <button type="button" class="decision-admin__icon-button is-danger" title="Supprimer" aria-label="Supprimer" (click)="deleteTransition(transition)"><i class="ti ti-trash"></i></button>
+              </td>
+            </tr>
+            <tr *ngIf="transitions.length === 0"><td colspan="4" class="decision-admin__empty">Aucune transition configurée.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="decision-admin__panel decision-admin__transition-editor">
+      <div class="decision-admin__panel-heading"><h2>{{ transitionForm.id ? 'Modifier la transition' : 'Créer une transition' }}</h2></div>
+      <form class="decision-admin__form" (ngSubmit)="saveTransition()">
+        <label class="decision-admin__field"><span>Question actuelle</span>
+          <select name="currentQuestion" [ngModel]="transitionForm.currentQuestionId" (ngModelChange)="changeTransitionQuestion($event)"><option [ngValue]="null">Choisir une question</option><option *ngFor="let question of questions" [ngValue]="question.id">{{ question.code }} · {{ question.label }}</option></select>
+        </label>
+        <label class="decision-admin__field"><span>Réponse</span>
+          <select name="transitionOption" [(ngModel)]="transitionForm.optionId" [disabled]="!transitionForm.currentQuestionId"><option [ngValue]="null">Choisir une réponse</option><option *ngFor="let option of transitionOptions" [ngValue]="option.id">{{ option.label }}</option></select>
+        </label>
+        <fieldset class="decision-admin__target-choice"><legend>Destination</legend>
+          <label [class.is-active]="targetType === 'QUESTION'"><input type="radio" name="targetType" value="QUESTION" [(ngModel)]="targetType" /><span>Question suivante</span></label>
+          <label [class.is-active]="targetType === 'RESULT'"><input type="radio" name="targetType" value="RESULT" [(ngModel)]="targetType" /><span>Profil de résultat</span></label>
+        </fieldset>
+        <label *ngIf="targetType === 'QUESTION'" class="decision-admin__field"><span>Question suivante</span>
+          <select name="nextQuestion" [(ngModel)]="transitionForm.nextQuestionId"><option [ngValue]="null">Choisir une question</option><option *ngFor="let question of questions" [ngValue]="question.id">{{ question.code }} · {{ question.label }}</option></select>
+        </label>
+        <label *ngIf="targetType === 'RESULT'" class="decision-admin__field"><span>Profil de résultat</span>
+          <select name="resultProfile" [(ngModel)]="transitionForm.resultProfileId"><option [ngValue]="null">Choisir un profil</option><option *ngFor="let profile of resultProfiles" [ngValue]="profile.id">{{ profile.code }}</option></select>
+        </label>
+        <div class="decision-admin__form-actions">
+          <button type="button" class="decision-admin__button" (click)="resetTransitionForm()">Annuler</button>
+          <button type="submit" class="decision-admin__button decision-admin__button--primary" [disabled]="saving"><i class="ti ti-device-floppy"></i><span>{{ saving ? 'Enregistrement...' : 'Enregistrer' }}</span></button>
+        </div>
+      </form>
+    </article>
+  </div>
+
+  <div *ngIf="activeTab === 'results'" class="decision-admin__result-layout">
+    <article class="decision-admin__panel">
+      <div class="decision-admin__panel-heading"><h2>Profils de résultat</h2><span>{{ resultProfiles.length }} au total</span></div>
+      <div class="decision-admin__table-wrap">
+        <table class="decision-admin__table">
+          <thead><tr><th>Code</th><th>Description</th><th>Recette Golden</th><th>État</th><th></th></tr></thead>
+          <tbody>
+            <tr *ngFor="let profile of resultProfiles">
+              <td><strong>{{ profile.code }}</strong></td>
+              <td>{{ profile.description || '—' }}</td>
+              <td>{{ recipeName(profile.goldenRecipeId) }}</td>
+              <td><span class="decision-admin__status" [class.is-off]="!profile.active">{{ profile.active ? 'Actif' : 'Inactif' }}</span></td>
+              <td class="decision-admin__actions">
+                <button type="button" class="decision-admin__icon-button" title="Modifier" aria-label="Modifier" (click)="editResultProfile(profile)"><i class="ti ti-edit"></i></button>
+                <button type="button" class="decision-admin__icon-button is-danger" title="Supprimer" aria-label="Supprimer" (click)="deleteResultProfile(profile)"><i class="ti ti-trash"></i></button>
+              </td>
+            </tr>
+            <tr *ngIf="resultProfiles.length === 0"><td colspan="5" class="decision-admin__empty">Aucun profil de résultat configuré.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="decision-admin__panel decision-admin__result-editor">
+      <div class="decision-admin__panel-heading"><h2>{{ resultProfileForm.id ? 'Modifier le profil' : 'Créer un profil' }}</h2></div>
+      <form class="decision-admin__form" (ngSubmit)="saveResultProfile()">
+        <label class="decision-admin__field"><span>Code unique</span><input name="profileCode" [(ngModel)]="resultProfileForm.code" required maxlength="255" /></label>
+        <label class="decision-admin__field"><span>Description</span><textarea name="profileDescription" [(ngModel)]="resultProfileForm.description" rows="4"></textarea></label>
+        <label class="decision-admin__field"><span>Recette Golden</span>
+          <select name="profileRecipe" [(ngModel)]="resultProfileForm.goldenRecipeId"><option [ngValue]="null">Aucune</option><option *ngFor="let recipe of goldenRecipes" [ngValue]="recipe.id">{{ recipe.name }}</option></select>
+        </label>
+        <label class="decision-admin__toggles"><label><input name="profileActive" type="checkbox" [(ngModel)]="resultProfileForm.active" /><span>Profil actif</span></label></label>
+        <div class="decision-admin__form-actions">
+          <button type="button" class="decision-admin__button" (click)="resetResultProfileForm()">Annuler</button>
+          <button type="submit" class="decision-admin__button decision-admin__button--primary" [disabled]="saving"><i class="ti ti-device-floppy"></i><span>{{ saving ? 'Enregistrement...' : 'Enregistrer' }}</span></button>
+        </div>
+      </form>
+    </article>
+  </div>
+</section>

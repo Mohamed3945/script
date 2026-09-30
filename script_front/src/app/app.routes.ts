@@ -165,6 +165,13 @@ export const routes: Routes = [
       .then(m => m.USER_MANAGEMENT_ROUTES)
   },
   {
+    path: 'decision-admin',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['SUPER'] },
+    loadComponent: () => import('./features/decision-administration/pages/decision-administration-page/decision-administration-page.component')
+      .then(m => m.DecisionAdministrationPageComponent)
+  },
+  {
     path: '',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['SUPER'] },
